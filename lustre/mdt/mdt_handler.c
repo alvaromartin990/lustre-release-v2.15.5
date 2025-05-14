@@ -46,6 +46,8 @@
 #include <linux/module.h>
 #include <linux/pagemap.h>
 
+#include <linux/ktime.h> 
+
 #include <dt_object.h>
 #include <lustre_acl.h>
 #include <lustre_export.h>
@@ -2903,7 +2905,25 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	struct mdt_body		*repbody;
 	int			 rc = 0, rc2;
 
+	ktime_t kstart = ktime_get(); /* Add timing start */
+	const char *op_name = NULL; /* Add operation name */
+
 	ENTRY;
+
+	/* Get operation name for logging */
+    switch (op) {
+    case REINT_SETATTR:  op_name = "SETATTR"; break;
+    case REINT_CREATE:   op_name = "CREATE"; break;
+    case REINT_LINK:     op_name = "LINK"; break;
+    case REINT_UNLINK:   op_name = "UNLINK"; break;
+    case REINT_RENAME:   op_name = "RENAME"; break;
+    case REINT_OPEN:     op_name = "OPEN"; break;
+    case REINT_SETXATTR: op_name = "SETXATTR"; break;
+    case REINT_RMENTRY:  op_name = "RMENTRY"; break;
+    case REINT_MIGRATE:  op_name = "MIGRATE"; break;
+    case REINT_RESYNC:   op_name = "RESYNC"; break;
+    default:             op_name = "UNKNOWN"; break;
+    }
 
 	rc = mdt_reint_unpack(info, op);
 	if (rc != 0) {
@@ -2973,6 +2993,33 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 		GOTO(out_ucred, rc);
 	}
 	rc = mdt_reint_rec(info, lhc);
+
+	if (op_name) {
+    	unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
+    	CDEBUG(D_INFO, "%s MDT operation took %lu microseconds\n", op_name, elapsed);
+		
+		/* Also increment a counter if we're updating permanent stats */
+		if (op == REINT_CREATE)
+			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_CREATE, elapsed);
+		else if (op == REINT_LINK)
+			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_LINK, elapsed);
+		else if (op == REINT_SETATTR)
+			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_SETATTR, elapsed);
+		else if (op == REINT_UNLINK)
+			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_UNLINK, elapsed);
+		else if (op == REINT_RENAME)
+			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RENAME, elapsed);
+		else if (op == REINT_OPEN)
+			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_OPEN, elapsed);
+		else if (op == REINT_SETXATTR)
+			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_SETXATTR, elapsed);
+		else if (op == REINT_RMENTRY)
+			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RMENTRY, elapsed);
+		else if (op == REINT_MIGRATE)
+			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_MIGRATE, elapsed);
+		else if (op == REINT_RESYNC)
+			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RESYNC, elapsed);
+	}
 	EXIT;
 out_ucred:
 	mdt_exit_ucred(info);
