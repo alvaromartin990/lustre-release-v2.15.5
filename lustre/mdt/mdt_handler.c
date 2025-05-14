@@ -2994,32 +2994,32 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	}
 	rc = mdt_reint_rec(info, lhc);
 
-	if (op_name) {
-    	unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
-    	CDEBUG(D_INFO, "%s MDT operation took %lu microseconds\n", op_name, elapsed);
+	// if (op_name) {
+    // 	unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
+    // 	CDEBUG(D_INFO, "%s MDT operation took %lu microseconds\n", op_name, elapsed);
 		
-		/* Also increment a counter if we're updating permanent stats */
-		if (op == REINT_CREATE)
-			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_CREATE, elapsed);
-		else if (op == REINT_LINK)
-			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_LINK, elapsed);
-		else if (op == REINT_SETATTR)
-			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_SETATTR, elapsed);
-		else if (op == REINT_UNLINK)
-			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_UNLINK, elapsed);
-		else if (op == REINT_RENAME)
-			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RENAME, elapsed);
-		else if (op == REINT_OPEN)
-			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_OPEN, elapsed);
-		else if (op == REINT_SETXATTR)
-			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_SETXATTR, elapsed);
-		else if (op == REINT_RMENTRY)
-			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RMENTRY, elapsed);
-		else if (op == REINT_MIGRATE)
-			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_MIGRATE, elapsed);
-		else if (op == REINT_RESYNC)
-			mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RESYNC, elapsed);
-	}
+	// 	/* Also increment a counter if we're updating permanent stats */
+	// 	if (op == REINT_CREATE)
+	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_CREATE, elapsed);
+	// 	else if (op == REINT_LINK)
+	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_LINK, elapsed);
+	// 	else if (op == REINT_SETATTR)
+	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_SETATTR, elapsed);
+	// 	else if (op == REINT_UNLINK)
+	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_UNLINK, elapsed);
+	// 	else if (op == REINT_RENAME)
+	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RENAME, elapsed);
+	// 	else if (op == REINT_OPEN)
+	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_OPEN, elapsed);
+	// 	else if (op == REINT_SETXATTR)
+	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_SETXATTR, elapsed);
+	// 	else if (op == REINT_RMENTRY)
+	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RMENTRY, elapsed);
+	// 	else if (op == REINT_MIGRATE)
+	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_MIGRATE, elapsed);
+	// 	else if (op == REINT_RESYNC)
+	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RESYNC, elapsed);
+	// }
 	EXIT;
 out_ucred:
 	mdt_exit_ucred(info);
@@ -3037,6 +3037,12 @@ out_shrink:
 	if (rc == 0 && op == REINT_OPEN && !req_is_replay(pill->rc_req))
 		rc = mdt_dom_read_on_open(info, info->mti_mdt,
 					  &lhc->mlh_reg_lh);
+	
+	if (op_name) {
+        unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
+        CDEBUG(D_INFO, "%s: MDT %s operation took %lu microseconds\n", 
+               mdt_obd_name(info->mti_mdt), op_name, elapsed);
+    }
 
 	return rc;
 }
