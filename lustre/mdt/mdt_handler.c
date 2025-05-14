@@ -2905,6 +2905,8 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	struct mdt_body		*repbody;
 	int			 rc = 0, rc2;
 
+	printk(KERN_ALERT "MDT_DEBUG: mdt_reint_internal called with op=%d\n", op);
+
 	ktime_t kstart = ktime_get(); /* Add timing start */
 	const char *op_name = NULL; /* Add operation name */
 
