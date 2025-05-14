@@ -2905,8 +2905,6 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	struct mdt_body		*repbody;
 	int			 rc = 0, rc2;
 
-	printk(KERN_ALERT "MDT_DEBUG: mdt_reint_internal called with op=%d\n", op);
-
 	ktime_t kstart = ktime_get(); /* Add timing start */
 	const char *op_name = NULL; /* Add operation name */
 
@@ -3022,6 +3020,11 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	// 	else if (op == REINT_RESYNC)
 	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RESYNC, elapsed);
 	// }
+
+	/* Print the time without depending on op_name */
+    unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
+    /* Use KERN_ALERT for highest visibility */
+    printk(KERN_ALERT "MDT_TIMING: Operation %d took %lu microseconds\n", op, elapsed);
 	EXIT;
 out_ucred:
 	mdt_exit_ucred(info);
@@ -3040,11 +3043,16 @@ out_shrink:
 		rc = mdt_dom_read_on_open(info, info->mti_mdt,
 					  &lhc->mlh_reg_lh);
 	
-	if (op_name) {
-        unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
-        CDEBUG(D_INFO, "%s: MDT %s operation took %lu microseconds\n", 
-               mdt_obd_name(info->mti_mdt), op_name, elapsed);
-    }
+	// if (op_name) {
+    //     unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
+    //     CDEBUG(D_INFO, "%s: MDT %s operation took %lu microseconds\n", 
+    //            mdt_obd_name(info->mti_mdt), op_name, elapsed);
+    // }
+
+	/* Print the time without depending on op_name */
+    unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
+    /* Use KERN_ALERT for highest visibility */
+    printk(KERN_ALERT "MDT_TIMING: Operation %d took %lu microseconds\n", op, elapsed);
 
 	return rc;
 }
