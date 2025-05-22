@@ -3003,11 +3003,18 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 
 	/* ENHANCED TIMING: More detailed logging */
 	elapsed = ktime_us_delta(ktime_get(), kstart);
-	printk(KERN_ALERT "MDT_TIMING_DEBUG: About to log operation %s (%d)\n", op_name, op);
-	printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
+	
+	// printk(KERN_ALERT "MDT_TIMING_DEBUG: About to log operation %s (%d)\n", op_name, op);
+	// printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
+
+	// if (op == REINT_OPEN) {
+	// 	printk(KERN_ALERT "MDT_TIMING_DEBUG: This is an OPEN operation!\n");
+	// 	printk(KERN_ALERT "MDT_TIMING: Operation %s_FILE_OP (%d) took %lu microseconds\n", op_name, op, elapsed);
+	// } else {
+	// 	printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
+	// }
 
 	if (op == REINT_OPEN) {
-		printk(KERN_ALERT "MDT_TIMING_DEBUG: This is an OPEN operation!\n");
 		printk(KERN_ALERT "MDT_TIMING: Operation %s_FILE_OP (%d) took %lu microseconds\n", op_name, op, elapsed);
 	} else {
 		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
