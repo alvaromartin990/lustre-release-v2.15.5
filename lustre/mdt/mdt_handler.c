@@ -2995,54 +2995,46 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 		GOTO(out_ucred, rc);
 	}
 
+	/* ENHANCED TIMING: Analyze OPEN operation details BEFORE calling mdt_reint_rec */
 	if (op == REINT_OPEN) {
-		struct mdt_rec_create *rec = &info->mti_rec.cr;
-		__u32 flags = rec->cr_flags_l;
-		__u32 mode = rec->cr_mode;
-		struct lu_fid *fid = &rec->cr_fid2;
-		bool file_exists = false;
-	
-		/* Check if target file already exists */
-		if (!fid_is_zero(fid)) {
-			struct mdt_object *obj = mdt_object_find(info->mti_env, info->mti_mdt, fid);
-			if (!IS_ERR(obj)) {
-				file_exists = mdt_object_exists(obj);
-				mdt_object_put(info->mti_env, obj);
-			}
-		}
-	
-		/* Detailed operation classification */
-		if (flags & MDS_OPEN_CREAT) {
-			if (file_exists) {
-				if (flags & MDS_OPEN_EXCL) {
-					op_detail = "CREATE_FAIL_EXISTS";  /* O_CREAT|O_EXCL on existing file */
-				} else {
-					op_detail = "OPEN_EXISTING_CREAT";  /* O_CREAT on existing file */
-				}
-			} else {
+		struct mdt_rec_create *rec;
+		__u32 flags = 0;
+		__u32 mode = 0;
+		
+		/* Get the record from the request capsule */
+		rec = req_capsule_client_get(pill, &RMF_REC_REINT);
+		if (rec != NULL) {
+			flags = rec->cr_flags_l;
+			mode = rec->cr_mode;
+			
+			/* Detailed operation classification */
+			if (flags & MDS_OPEN_CREAT) {
 				if (flags & MDS_OPEN_EXCL) {
 					op_detail = "CREATE_NEW_EXCL";     /* O_CREAT|O_EXCL creating new file */
 				} else {
 					op_detail = "CREATE_NEW";          /* O_CREAT creating new file */
 				}
-			}
-		} else {
-			/* No O_CREAT flag - opening existing file */
-			if (flags & MDS_OPEN_TRUNC) {
-				op_detail = "OPEN_TRUNCATE";
-			} else if (flags & MDS_FMODE_WRITE) {
-				op_detail = "OPEN_WRITE";
-			} else if (flags & MDS_FMODE_READ) {
-				op_detail = "OPEN_READ";
 			} else {
-				op_detail = "OPEN_OTHER";
+				/* No O_CREAT flag - opening existing file */
+				if (flags & MDS_OPEN_TRUNC) {
+					op_detail = "OPEN_TRUNCATE";
+				} else if (flags & MDS_FMODE_WRITE) {
+					op_detail = "OPEN_WRITE";
+				} else if (flags & MDS_FMODE_READ) {
+					op_detail = "OPEN_READ";
+				} else {
+					op_detail = "OPEN_OTHER";
+				}
 			}
+			
+			/* Log detailed information for debugging */
+			printk(KERN_DEBUG "MDT_TIMING_DEBUG: OPEN operation details - "
+				"flags=0x%x, mode=0x%x, detail=%s\n",
+				flags, mode, op_detail);
+		} else {
+			op_detail = "OPEN_UNKNOWN";
+			printk(KERN_DEBUG "MDT_TIMING_DEBUG: Could not get OPEN record details\n");
 		}
-	
-		/* Log detailed information for debugging */
-		printk(KERN_DEBUG "MDT_TIMING_DEBUG: OPEN operation details - "
-			"flags=0x%x, mode=0x%x, exists=%s, detail=%s\n",
-			flags, mode, file_exists ? "yes" : "no", op_detail);
 	}
 
 	rc = mdt_reint_rec(info, lhc);
@@ -3051,11 +3043,9 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	elapsed = ktime_us_delta(ktime_get(), kstart);
 	
 	if (op == REINT_OPEN && op_detail) {
-		printk(KERN_ALERT "MDT_TIMING: Operation %s_%s (%d) took %lu microseconds\n", 
-		       op_name, op_detail, op, elapsed);
+		printk(KERN_ALERT "MDT_TIMING: Operation %s_%s (%d) took %lu microseconds\n", op_name, op_detail, op, elapsed);
 	} else {
-		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", 
-		       op_name, op, elapsed);
+		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
 	}
 	
 	EXIT;
