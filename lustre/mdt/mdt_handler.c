@@ -2997,28 +2997,14 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 
 	/* DEBUG: Always log when we enter OPEN processing */
 	if (op == REINT_OPEN) {
-		printk(KERN_ALERT "MDT_DEBUG: Entered OPEN processing section\n");
-		op_detail = "FILE_OP";  /* Simple classification for now */
-		printk(KERN_ALERT "MDT_DEBUG: Set op_detail to FILE_OP\n");
-	} else {
-		printk(KERN_ALERT "MDT_DEBUG: Operation is not REINT_OPEN, op=%d\n", op);
-	}
+    printk(KERN_ALERT "MDT_DEBUG: This is an OPEN operation!\n");
+	}	
 
 	rc = mdt_reint_rec(info, lhc);
 
 	/* ENHANCED TIMING: More detailed logging */
 	elapsed = ktime_us_delta(ktime_get(), kstart);
-	
-	printk(KERN_ALERT "MDT_DEBUG: About to log timing - op=%d, op_detail=%s\n", 
-	       op, op_detail ? op_detail : "NULL");
-	
-	if (op == REINT_OPEN && op_detail) {
-		printk(KERN_ALERT "MDT_TIMING: Operation %s_%s (%d) took %lu microseconds\n", 
-		       op_name, op_detail, op, elapsed);
-	} else {
-		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", 
-		       op_name, op, elapsed);
-	}
+	printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
 	
 	EXIT;
 out_ucred:
