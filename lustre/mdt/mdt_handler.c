@@ -2907,7 +2907,7 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 
 	ktime_t kstart = ktime_get(); /* Add timing start */
 	const char *op_name = NULL; /* Add operation name */
-	const char *op_detail = NULL; /* Add operation detail for OPEN */
+	/* const char *op_detail = NULL; /* Add operation detail for OPEN */
 	unsigned long elapsed;
 
 	ENTRY;
