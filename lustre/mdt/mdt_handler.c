@@ -2907,6 +2907,7 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 
 	ktime_t kstart = ktime_get(); /* Add timing start */
 	const char *op_name = NULL; /* Add operation name */
+	const char *op_detail = NULL; /* Add operation detail for OPEN */
 	unsigned long elapsed;
 
 	ENTRY;
@@ -2993,38 +2994,69 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 		rc = lustre_msg_get_status(mdt_info_req(info)->rq_repmsg);
 		GOTO(out_ucred, rc);
 	}
+
+	if (op == REINT_OPEN) {
+		struct mdt_rec_create *rec = &info->mti_rec.cr;
+		__u32 flags = rec->cr_flags_l;
+		__u32 mode = rec->cr_mode;
+		struct lu_fid *fid = &rec->cr_fid2;
+		bool file_exists = false;
+	
+		/* Check if target file already exists */
+		if (!fid_is_zero(fid)) {
+			struct mdt_object *obj = mdt_object_find(info->mti_env, info->mti_mdt, fid);
+			if (!IS_ERR(obj)) {
+				file_exists = mdt_object_exists(obj);
+				mdt_object_put(info->mti_env, obj);
+			}
+		}
+	
+		/* Detailed operation classification */
+		if (flags & MDS_OPEN_CREAT) {
+			if (file_exists) {
+				if (flags & MDS_OPEN_EXCL) {
+					op_detail = "CREATE_FAIL_EXISTS";  /* O_CREAT|O_EXCL on existing file */
+				} else {
+					op_detail = "OPEN_EXISTING_CREAT";  /* O_CREAT on existing file */
+				}
+			} else {
+				if (flags & MDS_OPEN_EXCL) {
+					op_detail = "CREATE_NEW_EXCL";     /* O_CREAT|O_EXCL creating new file */
+				} else {
+					op_detail = "CREATE_NEW";          /* O_CREAT creating new file */
+				}
+			}
+		} else {
+			/* No O_CREAT flag - opening existing file */
+			if (flags & MDS_OPEN_TRUNC) {
+				op_detail = "OPEN_TRUNCATE";
+			} else if (flags & MDS_FMODE_WRITE) {
+				op_detail = "OPEN_WRITE";
+			} else if (flags & MDS_FMODE_READ) {
+				op_detail = "OPEN_READ";
+			} else {
+				op_detail = "OPEN_OTHER";
+			}
+		}
+	
+		/* Log detailed information for debugging */
+		printk(KERN_DEBUG "MDT_TIMING_DEBUG: OPEN operation details - "
+			"flags=0x%x, mode=0x%x, exists=%s, detail=%s\n",
+			flags, mode, file_exists ? "yes" : "no", op_detail);
+	}
+
 	rc = mdt_reint_rec(info, lhc);
 
-	// if (op_name) {
-    // 	unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
-    // 	CDEBUG(D_INFO, "%s MDT operation took %lu microseconds\n", op_name, elapsed);
-		
-	// 	/* Also increment a counter if we're updating permanent stats */
-	// 	if (op == REINT_CREATE)
-	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_CREATE, elapsed);
-	// 	else if (op == REINT_LINK)
-	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_LINK, elapsed);
-	// 	else if (op == REINT_SETATTR)
-	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_SETATTR, elapsed);
-	// 	else if (op == REINT_UNLINK)
-	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_UNLINK, elapsed);
-	// 	else if (op == REINT_RENAME)
-	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RENAME, elapsed);
-	// 	else if (op == REINT_OPEN)
-	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_OPEN, elapsed);
-	// 	else if (op == REINT_SETXATTR)
-	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_SETXATTR, elapsed);
-	// 	else if (op == REINT_RMENTRY)
-	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RMENTRY, elapsed);
-	// 	else if (op == REINT_MIGRATE)
-	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_MIGRATE, elapsed);
-	// 	else if (op == REINT_RESYNC)
-	// 		mdt_counter_incr(mdt_info_req(info), LPROC_MDT_RESYNC, elapsed);
-	// }
-
-	/* Calculate elapsed time just once at the end */
+	/* ENHANCED TIMING: More detailed logging */
 	elapsed = ktime_us_delta(ktime_get(), kstart);
-	printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
+	
+	if (op == REINT_OPEN && op_detail) {
+		printk(KERN_ALERT "MDT_TIMING: Operation %s_%s (%d) took %lu microseconds\n", 
+		       op_name, op_detail, op, elapsed);
+	} else {
+		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", 
+		       op_name, op, elapsed);
+	}
 	
 	EXIT;
 out_ucred:
