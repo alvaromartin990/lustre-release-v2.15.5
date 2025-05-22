@@ -2995,46 +2995,13 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 		GOTO(out_ucred, rc);
 	}
 
-	/* ENHANCED TIMING: Analyze OPEN operation details BEFORE calling mdt_reint_rec */
+	/* DEBUG: Always log when we enter OPEN processing */
 	if (op == REINT_OPEN) {
-		struct mdt_rec_create *rec;
-		__u32 flags = 0;
-		__u32 mode = 0;
-		
-		/* Get the record from the request capsule */
-		rec = req_capsule_client_get(pill, &RMF_REC_REINT);
-		if (rec != NULL) {
-			flags = rec->cr_flags_l;
-			mode = rec->cr_mode;
-			
-			/* Detailed operation classification */
-			if (flags & MDS_OPEN_CREAT) {
-				if (flags & MDS_OPEN_EXCL) {
-					op_detail = "CREATE_NEW_EXCL";     /* O_CREAT|O_EXCL creating new file */
-				} else {
-					op_detail = "CREATE_NEW";          /* O_CREAT creating new file */
-				}
-			} else {
-				/* No O_CREAT flag - opening existing file */
-				if (flags & MDS_OPEN_TRUNC) {
-					op_detail = "OPEN_TRUNCATE";
-				} else if (flags & MDS_FMODE_WRITE) {
-					op_detail = "OPEN_WRITE";
-				} else if (flags & MDS_FMODE_READ) {
-					op_detail = "OPEN_READ";
-				} else {
-					op_detail = "OPEN_OTHER";
-				}
-			}
-			
-			/* Log detailed information for debugging */
-			printk(KERN_DEBUG "MDT_TIMING_DEBUG: OPEN operation details - "
-				"flags=0x%x, mode=0x%x, detail=%s\n",
-				flags, mode, op_detail);
-		} else {
-			op_detail = "OPEN_UNKNOWN";
-			printk(KERN_DEBUG "MDT_TIMING_DEBUG: Could not get OPEN record details\n");
-		}
+		printk(KERN_ALERT "MDT_DEBUG: Entered OPEN processing section\n");
+		op_detail = "FILE_OP";  /* Simple classification for now */
+		printk(KERN_ALERT "MDT_DEBUG: Set op_detail to FILE_OP\n");
+	} else {
+		printk(KERN_ALERT "MDT_DEBUG: Operation is not REINT_OPEN, op=%d\n", op);
 	}
 
 	rc = mdt_reint_rec(info, lhc);
@@ -3042,10 +3009,15 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	/* ENHANCED TIMING: More detailed logging */
 	elapsed = ktime_us_delta(ktime_get(), kstart);
 	
+	printk(KERN_ALERT "MDT_DEBUG: About to log timing - op=%d, op_detail=%s\n", 
+	       op, op_detail ? op_detail : "NULL");
+	
 	if (op == REINT_OPEN && op_detail) {
-		printk(KERN_ALERT "MDT_TIMING: Operation %s_%s (%d) took %lu microseconds\n", op_name, op_detail, op, elapsed);
+		printk(KERN_ALERT "MDT_TIMING: Operation %s_%s (%d) took %lu microseconds\n", 
+		       op_name, op_detail, op, elapsed);
 	} else {
-		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
+		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", 
+		       op_name, op, elapsed);
 	}
 	
 	EXIT;
