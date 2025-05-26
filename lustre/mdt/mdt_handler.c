@@ -1615,7 +1615,7 @@ static int mdt_getattr(struct tgt_session_info *tsi)
         struct mdt_body         *reqbody;
         struct mdt_body         *repbody;
         int rc, rc2;
-		ktime_t kstart = ktime_get(); 
+		// ktime_t kstart = ktime_get(); 
         ENTRY;
 
 	if (unlikely(info->mti_object == NULL))
