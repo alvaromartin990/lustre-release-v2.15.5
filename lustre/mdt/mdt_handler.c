@@ -571,8 +571,7 @@ static int mdt_statfs(struct tgt_session_info *tsi)
 		osfs->os_bavail <<= current_blockbits - COMPAT_BSIZE_SHIFT;
 		osfs->os_bsize = 1 << COMPAT_BSIZE_SHIFT;
 	}
-	if (rc == 0)
-
+	if (rc == 0) {
 		unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
     	const char *mdt_name = mdt_obd_name(mdt);
     	u32 mdt_node_id = mdt_seq_site(mdt)->ss_node_id;
@@ -582,7 +581,7 @@ static int mdt_statfs(struct tgt_session_info *tsi)
 				 ktime_us_delta(ktime_get(), kstart));
 
 		printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation in STATFS took %lu microseconds\n",
-           mdt_name, mdt_node_id, elapsed);
+           mdt_name, mdt_node_id, elapsed);}
 out:
 	mdt_thread_info_fini(info);
 	RETURN(rc);
