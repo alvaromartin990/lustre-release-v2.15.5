@@ -2928,6 +2928,8 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	ktime_t kstart = ktime_get(); /* Add timing start */
 	const char *op_name = NULL; /* Add operation name */
 	unsigned long elapsed;
+	const char *mdt_name;
+	u32 mdt_node_id;
 
 	ENTRY;
 
@@ -3031,9 +3033,10 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
 	}
 
+	mdt_name = mdt_obd_name(info->mti_mdt);
+	mdt_node_id = mdt_seq_site(info->mti_mdt)->ss_node_id;
+
 	/* Get MDT identification information */
-	char *mdt_name = mdt_obd_name(info->mti_mdt);
-	u32 mdt_node_id = mdt_seq_site(info->mti_mdt)->ss_node_id;
 	printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation %s (%d) took %lu microseconds\n", mdt_name, mdt_node_id, op_name, op, elapsed);
 
 	
