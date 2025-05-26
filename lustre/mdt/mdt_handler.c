@@ -572,8 +572,17 @@ static int mdt_statfs(struct tgt_session_info *tsi)
 		osfs->os_bsize = 1 << COMPAT_BSIZE_SHIFT;
 	}
 	if (rc == 0)
+
+		unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
+    	const char *mdt_name = mdt_obd_name(mdt);
+    	u32 mdt_node_id = mdt_seq_site(mdt)->ss_node_id;
+
+
 		mdt_counter_incr(req, LPROC_MDT_STATFS,
 				 ktime_us_delta(ktime_get(), kstart));
+
+		printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation in STATFS took %lu microseconds\n",
+           mdt_name, mdt_node_id, elapsed);
 out:
 	mdt_thread_info_fini(info);
 	RETURN(rc);
@@ -1607,6 +1616,7 @@ static int mdt_getattr(struct tgt_session_info *tsi)
         struct mdt_body         *reqbody;
         struct mdt_body         *repbody;
         int rc, rc2;
+		ktime_t kstart = ktime_get(); 
         ENTRY;
 
 	if (unlikely(info->mti_object == NULL))
@@ -1679,6 +1689,17 @@ static int mdt_getattr(struct tgt_session_info *tsi)
 		GOTO(out_shrink, rc);
 
 	rc = mdt_pack_encctx_in_reply(info, obj);
+	
+	// New piece of code for MDT identification and timing
+	if (rc == 0) {
+        unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
+        const char *mdt_name = mdt_obd_name(info->mti_mdt);
+        u32 mdt_node_id = mdt_seq_site(info->mti_mdt)->ss_node_id;
+        
+        printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation in GETATTR took %lu microseconds\n",
+               mdt_name, mdt_node_id, elapsed);
+    }
+
 	EXIT;
 out_shrink:
 	mdt_client_compatibility(info);
@@ -3004,21 +3025,18 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	/* ENHANCED TIMING: More detailed logging */
 	elapsed = ktime_us_delta(ktime_get(), kstart);
 	
-	// printk(KERN_ALERT "MDT_TIMING_DEBUG: About to log operation %s (%d)\n", op_name, op);
-	// printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
-
-	// if (op == REINT_OPEN) {
-	// 	printk(KERN_ALERT "MDT_TIMING_DEBUG: This is an OPEN operation!\n");
-	// 	printk(KERN_ALERT "MDT_TIMING: Operation %s_FILE_OP (%d) took %lu microseconds\n", op_name, op, elapsed);
-	// } else {
-	// 	printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
-	// }
-
+	/* Log the operation time */
 	if (op == REINT_OPEN) {
 		printk(KERN_ALERT "MDT_TIMING: Operation %s_FILE_OP (%d) took %lu microseconds\n", op_name, op, elapsed);
 	} else {
 		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
 	}
+
+	/* Get MDT identification information */
+	const char *mdt_name = mdt_obd_name(info->mti_mdt);
+	u32 mdt_node_id = mdt_seq_site(info->mti_mdt)->ss_node_id;
+	printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation %s (%d) took %lu microseconds\n", mdt_name, mdt_node_id, op_name, op, elapsed);
+
 	
 	EXIT;
 out_ucred:
