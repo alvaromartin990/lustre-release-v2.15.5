@@ -580,8 +580,7 @@ static int mdt_statfs(struct tgt_session_info *tsi)
 		mdt_counter_incr(req, LPROC_MDT_STATFS,
 				 ktime_us_delta(ktime_get(), kstart));
 
-		printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation in STATFS took %lu microseconds\n",
-           mdt_name, mdt_node_id, elapsed);}
+		// printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation in STATFS took %lu microseconds\n", mdt_name, mdt_node_id, elapsed);}
 out:
 	mdt_thread_info_fini(info);
 	RETURN(rc);
@@ -1695,8 +1694,7 @@ static int mdt_getattr(struct tgt_session_info *tsi)
         const char *mdt_name = mdt_obd_name(info->mti_mdt);
         u32 mdt_node_id = mdt_seq_site(info->mti_mdt)->ss_node_id;
         
-        printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation in GETATTR took %lu microseconds\n",
-               mdt_name, mdt_node_id, elapsed);
+        // printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation in GETATTR took %lu microseconds\n", mdt_name, mdt_node_id, elapsed);
     }
 
 	EXIT;
