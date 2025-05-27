@@ -3026,19 +3026,30 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 
 	/* ENHANCED TIMING: More detailed logging */
 	elapsed = ktime_us_delta(ktime_get(), kstart);
+
+	mdt_name = mdt_obd_name(info->mti_mdt);
+	mdt_node_id = mdt_seq_site(info->mti_mdt)->ss_node_id;
 	
-	/* Log the operation time */
+	/* Log the operation time 
 	if (op == REINT_OPEN) {
 		printk(KERN_ALERT "MDT_TIMING: Operation %s_FILE_OP (%d) took %lu microseconds\n", op_name, op, elapsed);
 	} else {
 		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
 	}
-
-	mdt_name = mdt_obd_name(info->mti_mdt);
-	mdt_node_id = mdt_seq_site(info->mti_mdt)->ss_node_id;
+	*/
 
 	/* Get MDT identification information */
-	printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation %s (%d) took %lu microseconds\n", mdt_name, mdt_node_id, op_name, op, elapsed);
+	// printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation %s (%d) took %lu microseconds\n", mdt_name, mdt_node_id, op_name, op, elapsed);
+
+	// This fixes double logging issue
+	/* Log the operation time with MDT information */
+	if (op == REINT_OPEN) {
+		printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation %s_FILE_OP (%d) took %lu microseconds\n",
+			mdt_name, mdt_node_id, op_name, op, elapsed);
+	} else {
+		printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation %s (%d) took %lu microseconds\n",
+			mdt_name, mdt_node_id, op_name, op, elapsed);
+	}
 
 	
 	EXIT;
