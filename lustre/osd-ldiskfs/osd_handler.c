@@ -4287,9 +4287,20 @@ static int osd_create(const struct lu_env *env, struct dt_object *dt,
 	struct osd_thread_info *info = osd_oti_get(env);
 	int result, on_ost = 0;
 
-	ktime_t kstart_total = ktime_get(); // Add total timing
+	ktime_t kstart_total;
+    unsigned long elapsed_create = 0;
+    unsigned long elapsed_fid = 0;
+    unsigned long elapsed_oi = 0;
+    unsigned long elapsed_idc = 0;
+    unsigned long elapsed_total = 0;
+
+	struct inode *inode;
+    struct osd_device *osd;
+    ktime_t kstart_create, kstart_fid, kstart_oi, kstart_idc;
 
 	ENTRY;
+
+	kstart_total = ktime_get(); // Add total timing
 
 	if (dt_object_exists(dt))
 		RETURN(-EEXIST);
@@ -4307,18 +4318,18 @@ static int osd_create(const struct lu_env *env, struct dt_object *dt,
 		RETURN(-EPERM);
 	
 	// Time the core inode creation
-    ktime_t kstart_create = ktime_get();
+    kstart_create = ktime_get();
 	
 	// this is the important part of the code
 	result = __osd_create(info, obj, attr, hint, dof, th);
 	
-	unsigned long elapsed_create = ktime_us_delta(ktime_get(), kstart_create);
+	elapsed_create = ktime_us_delta(ktime_get(), kstart_create);
     printk(KERN_ALERT "OSD_TIMING: __osd_create (inode creation) took %lu microseconds\n", elapsed_create);
 
 	
 	if (result == 0) {
 		// Time the FID setting operation
-        ktime_t kstart_fid = ktime_get();
+        kstart_fid = ktime_get();
 		
 		if (fid_is_idif(fid) &&
 		    !osd_dev(dt->do_lu.lo_dev)->od_index_in_idif) {
@@ -4338,7 +4349,7 @@ static int osd_create(const struct lu_env *env, struct dt_object *dt,
 						0);
 		}
 
-		unsigned long elapsed_fid = ktime_us_delta(ktime_get(), kstart_fid);
+		elapsed_fid = ktime_us_delta(ktime_get(), kstart_fid);
         printk(KERN_ALERT "OSD_TIMING: osd_ea_fid_set took %lu microseconds\n", elapsed_fid);
 
 		if (obj->oo_dt.do_body_ops == &osd_body_ops_new)
@@ -4346,14 +4357,14 @@ static int osd_create(const struct lu_env *env, struct dt_object *dt,
 	}
 
 	if (!result && !CFS_FAIL_CHECK(OBD_FAIL_OSD_NO_OI_ENTRY)) {
-		struct inode *inode = obj->oo_inode;
+		inode = obj->oo_inode;
 
 		// Time the Object Index insertion
-        ktime_t kstart_oi = ktime_get();
+        kstart_oi = ktime_get();
 
 		result = __osd_oi_insert(env, obj, fid, th);
 
-		unsigned long elapsed_oi = ktime_us_delta(ktime_get(), kstart_oi);
+		elapsed_oi = ktime_us_delta(ktime_get(), kstart_oi);
         printk(KERN_ALERT "OSD_TIMING: __osd_oi_insert took %lu microseconds\n", elapsed_oi);
         
 		if (result && inode) {
@@ -4378,21 +4389,21 @@ static int osd_create(const struct lu_env *env, struct dt_object *dt,
 	 * OST objects
 	 */
 	if (result == 0 && on_ost == 0) {
-		struct osd_device *osd = osd_dev(dt->do_lu.lo_dev);
+		osd = osd_dev(dt->do_lu.lo_dev);
 
 		// Time the IDC initialization
-        ktime_t kstart_idc = ktime_get();
+        kstart_idc = ktime_get();
 
 		result = osd_idc_find_and_init(env, osd, obj);
 
-		unsigned long elapsed_idc = ktime_us_delta(ktime_get(), kstart_idc);
+		elapsed_idc = ktime_us_delta(ktime_get(), kstart_idc);
         printk(KERN_ALERT "OSD_TIMING: osd_idc_find_and_init took %lu microseconds\n", elapsed_idc);
         
 		LASSERT(result == 0);
 	}
 
 	// Print total time for the entire OSD create operation
-    unsigned long elapsed_total = ktime_us_delta(ktime_get(), kstart_total);
+    elapsed_total = ktime_us_delta(ktime_get(), kstart_total);
     printk(KERN_ALERT "OSD_TIMING: Total osd_create took %lu microseconds (result=%d)\n", elapsed_total, result);
 
 
