@@ -3022,7 +3022,20 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
     printk(KERN_ALERT "MDT_DEBUG: This is an OPEN operation!\n");
 	}	
 
-	rc = mdt_reint_rec(info, lhc);
+	// Before calling mdt_reint_rec
+	if (op == REINT_CREATE) {
+		ktime_t kstart_reint_rec = ktime_get();
+		CDEBUG(D_INFO, "MDT_TIMING_DEBUG: Starting CREATE reint_rec\n");
+		
+		rc = mdt_reint_rec(info, lhc);
+		
+		unsigned long elapsed_reint_rec = ktime_us_delta(ktime_get(), kstart_reint_rec);
+		printk(KERN_ALERT "MDT_TIMING: [MDT] mdt_reint_rec CREATE took %lu microseconds\n", elapsed_reint_rec);
+		
+		CDEBUG(D_INFO, "MDT_TIMING_DEBUG: Finished CREATE reint_rec, rc=%d\n", rc);
+	} else {
+		rc = mdt_reint_rec(info, lhc);
+	}
 
 	/* ENHANCED TIMING: More detailed logging */
 	elapsed = ktime_us_delta(ktime_get(), kstart);
