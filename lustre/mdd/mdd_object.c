@@ -615,13 +615,17 @@ int mdd_attr_set_internal(const struct lu_env *env, struct mdd_object *obj,
 {
 	int rc;
 	
-	ktime_t kstart = ktime_get(); // Add timing
+	// declare kstart and elapsed_attr_set before the ENTRY macro
+	ktime_t kstart;
+	unsigned long elapsed_attr_set;
 	
 	ENTRY;
 
+	kstart = ktime_get();
+
 	rc = mdo_attr_set(env, obj, attr, handle);
 
-	unsigned long elapsed_attr_set = ktime_us_delta(ktime_get(), kstart);
+	elapsed_attr_set = ktime_us_delta(ktime_get(), kstart);
     printk(KERN_ALERT "MDD_TIMING: mdo_attr_set took %lu microseconds\n", elapsed_attr_set);
 
 #ifdef CONFIG_LUSTRE_FS_POSIX_ACL
