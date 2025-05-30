@@ -3587,13 +3587,27 @@ static int __osd_create(struct osd_thread_info *info, struct osd_object *obj,
 	int result;
 	__u32 umask;
 
+	// bug fix
 	ktime_t kstart_total = ktime_get(); // Total timing for __osd_create
+	ktime_t kstart_trans_exec;
+	ktime_t kstart_fs_create;
+	ktime_t kstart_unlock;
+	ktime_t kstart_attr_init;
+	ktime_t kstart_obj_init;
+	ktime_t kstart_trans_check;
 
-	// Time transaction execution operation
-    ktime_t kstart_trans_exec = ktime_get();
+	unsigned long elapsed_trans_exec;
+	unsigned long elapsed_fs_create;
+	unsigned long elapsed_unlock;
+	unsigned long elapsed_attr_init;
+	unsigned long elapsed_obj_init;
+	unsigned long elapsed_trans_check;
+	unsigned long elapsed_total;
+
+	kstart_trans_exec = ktime_get();
 	osd_trans_exec_op(info->oti_env, th, OSD_OT_CREATE);
 
-	unsigned long elapsed_trans_exec = ktime_us_delta(ktime_get(), kstart_trans_exec);
+	elapsed_trans_exec = ktime_us_delta(ktime_get(), kstart_trans_exec);
     printk(KERN_ALERT "OSD_TIMING: osd_trans_exec_op took %lu microseconds\n", elapsed_trans_exec);
 
 	/* we drop umask so that permissions we pass are not affected */
@@ -3601,12 +3615,12 @@ static int __osd_create(struct osd_thread_info *info, struct osd_object *obj,
 	current->fs->umask = 0;
 
 	// Time the actual filesystem object creation - THIS IS THE KEY OPERATION
-    ktime_t kstart_fs_create = ktime_get();
+    kstart_fs_create = ktime_get();
 
 	result = osd_create_type_f(dof->dof_type)(info, obj, attr, hint, dof,
 						  th);
 
-	unsigned long elapsed_fs_create = ktime_us_delta(ktime_get(), kstart_fs_create);
+	elapsed_fs_create = ktime_us_delta(ktime_get(), kstart_fs_create);
     printk(KERN_ALERT "OSD_TIMING: osd_create_type_f (filesystem object creation) took %lu microseconds, type=%d\n", elapsed_fs_create, dof->dof_type);
 
 	if (likely(obj->oo_inode != NULL)) {
@@ -3616,29 +3630,29 @@ static int __osd_create(struct osd_thread_info *info, struct osd_object *obj,
 		 * Unlock the inode before attr initialization to avoid
 		 * unnecessary dqget operations. LU-6378
 		 */
-		ktime_t kstart_unlock = ktime_get();
+		kstart_unlock = ktime_get();
 
 		unlock_new_inode(obj->oo_inode);
 
-		unsigned long elapsed_unlock = ktime_us_delta(ktime_get(), kstart_unlock);
+		elapsed_unlock = ktime_us_delta(ktime_get(), kstart_unlock);
         printk(KERN_ALERT "OSD_TIMING: unlock_new_inode took %lu microseconds\n", elapsed_unlock);
 	}
 
 	if (likely(result == 0)) {
 		// Time attribute initialization
-        ktime_t kstart_attr_init = ktime_get();
+        kstart_attr_init = ktime_get();
 
 		osd_attr_init(info, obj, attr, dof, th);
 
-		unsigned long elapsed_attr_init = ktime_us_delta(ktime_get(), kstart_attr_init);
+		elapsed_attr_init = ktime_us_delta(ktime_get(), kstart_attr_init);
         printk(KERN_ALERT "OSD_TIMING: osd_attr_init took %lu microseconds\n", elapsed_attr_init);
 
 		// Time object initialization
-        ktime_t kstart_obj_init = ktime_get();
+        kstart_obj_init = ktime_get();
 
 		osd_object_init0(obj);
 
-		unsigned long elapsed_obj_init = ktime_us_delta(ktime_get(), kstart_obj_init);
+		elapsed_obj_init = ktime_us_delta(ktime_get(), kstart_obj_init);
         printk(KERN_ALERT "OSD_TIMING: osd_object_init0 took %lu microseconds\n", elapsed_obj_init);
 	}
 
@@ -3646,15 +3660,15 @@ static int __osd_create(struct osd_thread_info *info, struct osd_object *obj,
 	current->fs->umask = umask;
 
 	// Time transaction execution check
-    ktime_t kstart_trans_check = ktime_get();
+    kstart_trans_check = ktime_get();
 
 	osd_trans_exec_check(info->oti_env, th, OSD_OT_CREATE);
 
-	unsigned long elapsed_trans_check = ktime_us_delta(ktime_get(), kstart_trans_check);
+	elapsed_trans_check = ktime_us_delta(ktime_get(), kstart_trans_check);
     printk(KERN_ALERT "OSD_TIMING: osd_trans_exec_check took %lu microseconds\n", elapsed_trans_check);
 
     // Print total time and result
-    unsigned long elapsed_total = ktime_us_delta(ktime_get(), kstart_total);
+	elapsed_total = ktime_us_delta(ktime_get(), kstart_total);
     printk(KERN_ALERT "OSD_TIMING: __osd_create total took %lu microseconds (result=%d, type=%d)\n", 
            elapsed_total, result, dof->dof_type);
 
