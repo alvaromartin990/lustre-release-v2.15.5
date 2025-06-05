@@ -579,8 +579,6 @@ static int mdt_statfs(struct tgt_session_info *tsi)
 
 		mdt_counter_incr(req, LPROC_MDT_STATFS,
 				 ktime_us_delta(ktime_get(), kstart));
-
-		// printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation in STATFS took %lu microseconds\n", mdt_name, mdt_node_id, elapsed);
 		}
 out:
 	mdt_thread_info_fini(info);
@@ -1689,16 +1687,6 @@ static int mdt_getattr(struct tgt_session_info *tsi)
 
 	rc = mdt_pack_encctx_in_reply(info, obj);
 	
-	// New piece of code for MDT identification and timing
-	/*
-		if (rc == 0) {
-        unsigned long elapsed = ktime_us_delta(ktime_get(), kstart);
-        const char *mdt_name = mdt_obd_name(info->mti_mdt);
-        u32 mdt_node_id = mdt_seq_site(info->mti_mdt)->ss_node_id;
-        
-        printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation in GETATTR took %lu microseconds\n", mdt_name, mdt_node_id, elapsed);
-    }
-	*/
 
 	EXIT;
 out_shrink:
@@ -2950,6 +2938,7 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
     }
 
 	rc = mdt_reint_unpack(info, op);
+	
 	if (rc != 0) {
 		CERROR("Can't unpack reint, rc %d\n", rc);
 		RETURN(err_serious(rc));
@@ -3001,14 +2990,17 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 			req_capsule_set_size(pill, &RMF_MDT_MD, RCL_SERVER, 0);
 
 	rc = mdt_init_ucred_reint(info);
+	
 	if (rc)
 		GOTO(out_shrink, rc);
 
 	rc = mdt_fix_attr_ucred(info, op);
+	
 	if (rc != 0)
 		GOTO(out_ucred, rc = err_serious(rc));
 
 	rc = mdt_check_resent(info, mdt_reconstruct, lhc);
+	
 	if (rc < 0) {
 		GOTO(out_ucred, rc);
 	} else if (rc == 1) {
@@ -3019,7 +3011,7 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 
 	/* DEBUG: Always log when we enter OPEN processing */
 	if (op == REINT_OPEN) {
-    printk(KERN_ALERT "MDT_DEBUG: This is an OPEN operation!\n");
+    	printk(KERN_ALERT "MDT_DEBUG: This is an OPEN operation!\n");
 	}	
 
 	// Before calling mdt_reint_rec
@@ -3035,6 +3027,18 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 		printk(KERN_ALERT "MDT_TIMING: [MDT] mdt_reint_rec CREATE took %lu microseconds\n", elapsed_reint_rec);
 		
 		CDEBUG(D_INFO, "MDT_TIMING_DEBUG: Finished CREATE reint_rec, rc=%d\n", rc);
+	} else if (op == REINT_OPEN) {
+		ktime_t kstart_reint_rec = ktime_get();
+		unsigned long elapsed_reint_rec;
+
+		CDEBUG(D_INFO, "MDT_TIMING_DEBUG: Starting OPEN reint_rec\n");
+		
+		rc = mdt_reint_rec(info, lhc);
+		
+		elapsed_reint_rec = ktime_us_delta(ktime_get(), kstart_reint_rec);
+		printk(KERN_ALERT "MDT_TIMING: [MDT] mdt_reint_rec OPEN took %lu microseconds\n", elapsed_reint_rec);
+		
+		CDEBUG(D_INFO, "MDT_TIMING_DEBUG: Finished OPEN reint_rec, rc=%d\n", rc);
 	} else {
 		rc = mdt_reint_rec(info, lhc);
 	}
@@ -3045,16 +3049,6 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	mdt_name = mdt_obd_name(info->mti_mdt);
 	mdt_node_id = mdt_seq_site(info->mti_mdt)->ss_node_id;
 	
-	/* Log the operation time 
-	if (op == REINT_OPEN) {
-		printk(KERN_ALERT "MDT_TIMING: Operation %s_FILE_OP (%d) took %lu microseconds\n", op_name, op, elapsed);
-	} else {
-		printk(KERN_ALERT "MDT_TIMING: Operation %s (%d) took %lu microseconds\n", op_name, op, elapsed);
-	}
-	*/
-
-	/* Get MDT identification information */
-	// printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation %s (%d) took %lu microseconds\n", mdt_name, mdt_node_id, op_name, op, elapsed);
 
 	// This fixes double logging issue
 	/* Log the operation time with MDT information */
