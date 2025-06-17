@@ -839,6 +839,8 @@ int osd_oi_update(struct osd_thread_info *info, struct osd_device *osd,
 	struct osd_inode_id *oi_id  = &info->oti_id2;
 	int		     rc     = 0;
 
+	printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_update\n");
+
 	if (unlikely(fid_is_last_id(fid)))
 		return osd_obj_spec_update(info, osd, fid, id, th);
 

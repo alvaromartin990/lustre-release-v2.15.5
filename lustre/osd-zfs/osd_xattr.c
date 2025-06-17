@@ -706,6 +706,8 @@ __osd_xattr_set(const struct lu_env *env, struct osd_object *obj,
 
 	LASSERT(obj->oo_sa_hdl);
 
+	printk(KERN_ALERT "Stage 4: Setting xattr on object to storage at __osd_xattr_set\n");
+
 	if (obj->oo_xattr == ZFS_NO_OBJECT) {
 		struct lu_attr *la = &osd_oti_get(env)->oti_la;
 

@@ -3635,6 +3635,7 @@ static int __osd_create(struct osd_thread_info *info, struct osd_object *obj,
 		unlock_new_inode(obj->oo_inode);
 
 		elapsed_unlock = ktime_us_delta(ktime_get(), kstart_unlock);
+		printk(KERN_ALERT "Stage 3: Inode Creation at __osd_create\n");
         printk(KERN_ALERT "OSD_TIMING: unlock_new_inode took %lu microseconds\n", elapsed_unlock);
 	}
 
@@ -3948,6 +3949,8 @@ int osd_ea_fid_set(struct osd_thread_info *info, struct inode *inode,
 	int rc;
 
 	ENTRY;
+
+	printk(KERN_ALERT "Stage 2: FID Allocation at osd_ea_fid_set\n");
 
 	if (OBD_FAIL_CHECK(OBD_FAIL_FID_INLMA))
 		RETURN(0);

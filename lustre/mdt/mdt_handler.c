@@ -3028,6 +3028,7 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 		
 		CDEBUG(D_INFO, "MDT_TIMING_DEBUG: Finished CREATE reint_rec, rc=%d\n", rc);
 	} else if (op == REINT_OPEN) {
+		printk(KERN_ALERT "Stage 1: File being created at mdt_reint_internal\n");
 		ktime_t kstart_reint_rec = ktime_get();
 		unsigned long elapsed_reint_rec;
 
