@@ -6937,8 +6937,11 @@ struct osd_it_ea *osd_it_dir_init(const struct lu_env *env,
 	else
 		file->f_mode |= FMODE_32BITHASH;
 	ihold(inode);
-
+	
+	printk(KERN_ALERT "Within osd_it_ea, about to call OBD_SLAB_ALLOC_PTR\n");
 	OBD_SLAB_ALLOC_PTR(oie, osd_itea_cachep);
+	printk(KERN_ALERT "Within osd_it_ea, just called OBD_SLAB_ALLOC_PTR\n");
+
 	if (!oie)
 		goto out_fput;
 
