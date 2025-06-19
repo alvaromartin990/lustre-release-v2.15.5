@@ -105,7 +105,7 @@ static int osd_oi_index_create_one(struct osd_thread_info *info,
 	handle_t			*jh;
 	int				 rc;
 
-	printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_index_create_one\n");
+	// printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_index_create_one\n");
 
 	dentry = osd_child_dentry_by_inode(env, dir, name, strlen(name));
 	bh = osd_ldiskfs_find_entry(dir, &dentry->d_name, &de, NULL, NULL);
@@ -162,7 +162,7 @@ static struct inode *osd_oi_index_open(struct osd_thread_info *info,
 	struct inode  *inode;
 	int rc;
 
-	printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_index_open\n");
+	// printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_index_open\n");
 
 	dentry = osd_lookup_one_len_unlocked(osd, name, osd_sb(osd)->s_root,
 					     strlen(name));
@@ -223,7 +223,7 @@ static int osd_oi_open(struct osd_thread_info *info, struct osd_device *osd,
 
 	ENTRY;
 
-	printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_open\n");
+	// printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_open\n");
 
 	oi_feat.dif_keysize_min = sizeof(struct lu_fid);
 	oi_feat.dif_keysize_max = sizeof(struct lu_fid);
@@ -305,7 +305,7 @@ osd_oi_table_open(struct osd_thread_info *info, struct osd_device *osd,
 	 */
 	LASSERT(oi_count <= OSD_OI_FID_NR_MAX);
 
-	printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_table_open\n");
+	// printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_table_open\n");
 
 	for (i = 0; i < (oi_count != 0 ? oi_count : OSD_OI_FID_NR_MAX); i++) {
 		char name[sizeof(OSD_OI_NAME_BASE) + 3 * sizeof(i) + 1];
@@ -405,7 +405,7 @@ int osd_oi_init(struct osd_thread_info *info, struct osd_device *osd,
 	int rc;
 	ENTRY;
 
-	printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_init\n");
+	// printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_init\n");
 
 	if (unlikely((sf->sf_oi_count & (sf->sf_oi_count - 1)) != 0 ||
 		     sf->sf_oi_count > OSD_OI_FID_NR_MAX)) {
@@ -851,7 +851,7 @@ int osd_oi_update(struct osd_thread_info *info, struct osd_device *osd,
 	struct osd_inode_id *oi_id  = &info->oti_id2;
 	int		     rc     = 0;
 
-	printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_update\n");
+	// printk(KERN_ALERT "Stage 5: OI Mapping Update at osd_oi_update\n");
 
 	if (unlikely(fid_is_last_id(fid)))
 		return osd_obj_spec_update(info, osd, fid, id, th);
