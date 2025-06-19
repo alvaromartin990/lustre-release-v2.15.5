@@ -412,7 +412,10 @@ int osd_oi_init(struct osd_thread_info *info, struct osd_device *osd,
 			RETURN(rc);
 	}
 
+	printk(KERN_ALERT "Within osd_oi_init, about to call OBD_ALLOC_PTR_ARRAY\n");
 	OBD_ALLOC_PTR_ARRAY(oi, OSD_OI_FID_NR_MAX);
+	printk(KERN_ALERT "Within osd_oi_init, just called OBD_ALLOC_PTR_ARRAY\n");
+	
 	if (oi == NULL)
 		RETURN(-ENOMEM);
 
@@ -494,7 +497,9 @@ create:
 
 out:
 	if (rc < 0) {
+		printk(KERN_ALERT "Within osd_oi_init, rc is greater than 0, about to call OBD_FREE_PTR_ARRAY\n");
 		OBD_FREE_PTR_ARRAY(oi, OSD_OI_FID_NR_MAX);
+		printk(KERN_ALERT "Within osd_oi_init, just called OBD_FREE_PTR_ARRAY\n");
 	} else {
 		LASSERTF((rc & (rc - 1)) == 0, "Invalid OI count %d\n", rc);
 
@@ -505,7 +510,9 @@ out:
 			rc = scrub_file_store(info->oti_env, scrub);
 			if (rc < 0) {
 				osd_oi_table_put(info, oi, count);
+				printk(KERN_ALERT "Within osd_oi_init, rc is not greater than 0, about to call OBD_FREE_PTR_ARRAY\n");
 				OBD_FREE_PTR_ARRAY(oi, OSD_OI_FID_NR_MAX);
+				printk(KERN_ALERT "Within osd_oi_init, just called OBD_FREE_PTR_ARRAY\n");
 			}
 		} else {
 			rc = 0;
@@ -522,6 +529,8 @@ void osd_oi_fini(struct osd_thread_info *info, struct osd_device *osd)
 
 	osd_oi_table_put(info, osd->od_oi_table, osd->od_oi_count);
 
+	// free the oi_table pointer
+	printk(KERN_ALERT "Within osd_oi_init, free the oi_table pointer, about to call OBD_FREE_PTR_ARRAY\n");
 	OBD_FREE_PTR_ARRAY(osd->od_oi_table, OSD_OI_FID_NR_MAX);
 	osd->od_oi_table = NULL;
 }
