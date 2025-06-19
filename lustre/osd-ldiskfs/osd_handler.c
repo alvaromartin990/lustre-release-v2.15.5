@@ -4968,7 +4968,7 @@ static int osd_xattr_set(const struct lu_env *env, struct dt_object *dt,
 
 	ENTRY;
 
-	printk(KERN_ALERT "Stage 4: Setting xattr on object to storage at osd_xattr_set\n");
+	printk(KERN_ALERT "Stage 5: Setting xattr on object to storage at osd_xattr_set\n");
 
 	LASSERT(handle);
 	LASSERT(buf);
