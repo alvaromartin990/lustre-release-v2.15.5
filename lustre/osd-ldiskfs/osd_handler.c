@@ -214,7 +214,11 @@ osd_idc_add(const struct lu_env *env, struct osd_device *osd,
 		i = oti->oti_ins_cache_size * 2;
 		if (i == 0)
 			i = OSD_INS_CACHE_SIZE;
+		
+		printk(KERN_ALERT "Within osd_idc_add, about to call OBD_ALLOC_PTR_ARRAY_LARGE to perform OI Cache Allocation\n");
 		OBD_ALLOC_PTR_ARRAY_LARGE(idc, i);
+		printk(KERN_ALERT "Within osd_idc_add, just called OBD_ALLOC_PTR_ARRAY_LARGE to perform OI Cache Allocation\n");
+		
 		if (idc == NULL)
 			return ERR_PTR(-ENOMEM);
 		if (oti->oti_ins_cache != NULL) {

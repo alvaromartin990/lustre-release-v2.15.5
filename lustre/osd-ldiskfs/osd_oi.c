@@ -717,6 +717,9 @@ int osd_oi_insert(struct osd_thread_info *info, struct osd_device *osd,
 
 	printk(KERN_ALERT "Stage 4: OI Mapping Update at osd_oi_insert\n");
 
+	// we need to print out the oi_check_flags
+	printk(KERN_ALERT "Within osd_oi_insert, oi_check_flags - mem instruction - is %d\n", flags);
+
 	if (unlikely(fid_is_last_id(fid)))
 		return osd_obj_spec_insert(info, osd, fid, id, th);
 
