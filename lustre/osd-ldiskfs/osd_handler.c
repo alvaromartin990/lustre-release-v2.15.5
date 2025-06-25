@@ -209,6 +209,7 @@ osd_idc_add(const struct lu_env *env, struct osd_device *osd,
 	struct osd_thread_info *oti   = osd_oti_get(env);
 	struct osd_idmap_cache *idc;
 	int i;
+	ktime_t t0, t1;
 
 	if (unlikely(oti->oti_ins_cache_used >= oti->oti_ins_cache_size)) {
 		i = oti->oti_ins_cache_size * 2;
@@ -216,9 +217,9 @@ osd_idc_add(const struct lu_env *env, struct osd_device *osd,
 			i = OSD_INS_CACHE_SIZE;
 		
 		printk(KERN_ALERT "Within osd_idc_add, about to call OBD_ALLOC_PTR_ARRAY_LARGE to perform OI Cache Allocation\n");
-		ktime_t t0 = ktime_get_ns();
+		t0 = ktime_get_ns();
 		OBD_ALLOC_PTR_ARRAY_LARGE(idc, i);
-		ktime_t t1 = ktime_get_ns();
+		t1 = ktime_get_ns();
 		printk(KERN_ALERT "Within osd_idc_add, just called OBD_ALLOC_PTR_ARRAY_LARGE to perform OI Cache Allocation\n");
 		printk(KERN_ALERT "Lustre OI cache allocation latency = %lld ns\n", t1 - t0);
 		
