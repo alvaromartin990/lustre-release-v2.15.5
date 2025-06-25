@@ -170,6 +170,7 @@ osd_scrub_convert_ff(struct osd_thread_info *info, struct osd_device *dev,
 	handle_t *jh;
 	int size = 0;
 	int rc;
+	ktime_t t0, t1;
 	ENTRY;
 
 	if (dev->od_scrub.os_scrub.os_file.sf_param & SP_DRYRUN)
@@ -241,9 +242,9 @@ osd_scrub_convert_ff(struct osd_thread_info *info, struct osd_device *dev,
 	GOTO(stop, rc);
 
 stop:
-	ktime_t t0 = ktime_get_ns();  
+	t0 = ktime_get_ns();  
 	ldiskfs_journal_stop(jh);
-	ktime_t t1 = ktime_get_ns();  
+	t1 = ktime_get_ns();  
 
 	printk("Lustre OI commit latency = %lld ns\n", ktime_to_ns(ktime_sub(t1,t0)));  
 	if (rc < 0)
