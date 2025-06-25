@@ -395,6 +395,7 @@ int osd_oi_init(struct osd_thread_info *info, struct osd_device *osd,
 	struct osd_oi **oi;
 	int count;
 	int rc;
+	ktime_t t0, t1;
 	ENTRY;
 
 	if (unlikely((sf->sf_oi_count & (sf->sf_oi_count - 1)) != 0 ||
@@ -413,9 +414,9 @@ int osd_oi_init(struct osd_thread_info *info, struct osd_device *osd,
 	}
 
 	printk(KERN_ALERT "Within osd_oi_init, about to call OBD_ALLOC_PTR_ARRAY\n");
-	ktime_t t0 = ktime_get_ns();
+	t0 = ktime_get_ns();
 	OBD_ALLOC_PTR_ARRAY(oi, OSD_OI_FID_NR_MAX);
-	ktime_t t1 = ktime_get_ns();
+	t1 = ktime_get_ns();
 	printk(KERN_ALERT "Within osd_oi_init, just called OBD_ALLOC_PTR_ARRAY\n");
 	printk(KERN_ALERT "Within osd_oi_init, OBD_ALLOC_PTR_ARRAY took %lld ns\n",
 	       ktime_to_ns(ktime_sub(t1, t0)));
