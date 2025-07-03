@@ -170,7 +170,10 @@ osd_scrub_convert_ff(struct osd_thread_info *info, struct osd_device *dev,
 	handle_t *jh;
 	int size = 0;
 	int rc;
-	ktime_t t0, t1;
+	
+	ktime_t t0, t1; // timers for ldiskfs_journal_stop latency measurement
+	ktime_t t0s, t1s; // timers for osd_journal_start_sb latency measurement
+	
 	ENTRY;
 
 	if (dev->od_scrub.os_scrub.os_file.sf_param & SP_DRYRUN)
@@ -195,8 +198,14 @@ osd_scrub_convert_ff(struct osd_thread_info *info, struct osd_device *dev,
 	 * Making the LMA to fit into the 256-byte OST inode can save time for
 	 * normal osd_check_lma() and for other OI scrub scanning in future.
 	 * So it is worth to make some slow conversion here. */
+
+	// time osd_journal_start_sb latency
+	t0s = ktime_get_ns();
 	jh = osd_journal_start_sb(osd_sb(dev), LDISKFS_HT_MISC,
 				osd_dto_credits_noquota[DTO_XATTR_SET] * 3);
+	t1s = ktime_get_ns();
+	printk("OSD_SCRUB: Lustre OI osd_journal_start_sb latency at osd_scrub_convert_ff() = %lld ns\n", ktime_to_ns(ktime_sub(t1s,t0s)));
+	
 	if (IS_ERR(jh)) {
 		rc = PTR_ERR(jh);
 		CDEBUG(D_LFSCK, "%s: fail to start trans for convert ff "
@@ -246,7 +255,7 @@ stop:
 	ldiskfs_journal_stop(jh);
 	t1 = ktime_get_ns();  
 
-	printk("Lustre OI commit latency = %lld ns\n", ktime_to_ns(ktime_sub(t1,t0)));  
+	printk("OSD_SCRUB: Lustre OI commit latency after ldiskfs_journal_stop at osd_scrub_convert_ff() = %lld ns\n", ktime_to_ns(ktime_sub(t1,t0)));  
 	if (rc < 0)
 		CDEBUG(D_LFSCK, "%s: fail to convert ff "DFID": rc = %d\n",
 		       osd_name(dev), PFID(tfid), rc);
