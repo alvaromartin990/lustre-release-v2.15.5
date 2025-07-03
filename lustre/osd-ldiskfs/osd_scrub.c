@@ -73,6 +73,10 @@ int osd_scrub_refresh_mapping(struct osd_thread_info *info,
 {
 	handle_t *th;
 	int	  rc;
+
+	ktime_t t0, t1; // timers for ldiskfs_journal_stop latency measurement
+	ktime_t t0s, t1s; // timers for osd_journal_start
+	
 	ENTRY;
 
 	if (dev->od_scrub.os_scrub.os_file.sf_param & SP_DRYRUN && !force)
@@ -80,8 +84,13 @@ int osd_scrub_refresh_mapping(struct osd_thread_info *info,
 
 	/* DTO_INDEX_INSERT is enough for other two ops:
 	 * delete/update, but save stack. */
+	t0 = ktime_get_ns(); 
 	th = osd_journal_start_sb(osd_sb(dev), LDISKFS_HT_MISC,
 				osd_dto_credits_noquota[DTO_INDEX_INSERT]);
+	t1 = ktime_get_ns();
+	printk(KERN_ALERT "OSD_SCRUB: osd_journal_start_sb at osd_scrub_refresh_mapping took %lld ns\n",
+	       ktime_to_ns(ktime_sub(t1, t0)));
+
 	if (IS_ERR(th)) {
 		rc = PTR_ERR(th);
 		CDEBUG(D_LFSCK, "%s: fail to start trans for scrub op %d "
@@ -149,7 +158,12 @@ int osd_scrub_refresh_mapping(struct osd_thread_info *info,
 		break;
 	}
 
+	t0s = ktime_get_ns();
 	ldiskfs_journal_stop(th);
+	t1s = ktime_get_ns();
+	printk(KERN_ALERT "OSD_SCRUB: ldiskfs_journal_stop at osd_scrub_refresh_mapping took %lld ns\n",
+	       ktime_to_ns(ktime_sub(t1s, t0s)));
+	
 	if (rc < 0)
 		CDEBUG(D_LFSCK, "%s: fail to refresh OI map for scrub op %d "
 		       DFID" => %u/%u: rc = %d\n", osd_name(dev), ops,
@@ -204,7 +218,7 @@ osd_scrub_convert_ff(struct osd_thread_info *info, struct osd_device *dev,
 	jh = osd_journal_start_sb(osd_sb(dev), LDISKFS_HT_MISC,
 				osd_dto_credits_noquota[DTO_XATTR_SET] * 3);
 	t1s = ktime_get_ns();
-	printk("OSD_SCRUB: Lustre OI osd_journal_start_sb latency at osd_scrub_convert_ff() = %lld ns\n", ktime_to_ns(ktime_sub(t1s,t0s)));
+	printk(KERN_ALERT "OSD_SCRUB: Lustre OI osd_journal_start_sb latency at osd_scrub_convert_ff() = %lld ns\n", ktime_to_ns(ktime_sub(t1s,t0s)));
 	
 	if (IS_ERR(jh)) {
 		rc = PTR_ERR(jh);
@@ -255,7 +269,8 @@ stop:
 	ldiskfs_journal_stop(jh);
 	t1 = ktime_get_ns();  
 
-	printk("OSD_SCRUB: Lustre OI commit latency after ldiskfs_journal_stop at osd_scrub_convert_ff() = %lld ns\n", ktime_to_ns(ktime_sub(t1,t0)));  
+	printk(KERN_ALERT "OSD_SCRUB: Lustre OI commit latency after ldiskfs_journal_stop at osd_scrub_convert_ff() = %lld ns\n", ktime_to_ns(ktime_sub(t1,t0)));  
+	
 	if (rc < 0)
 		CDEBUG(D_LFSCK, "%s: fail to convert ff "DFID": rc = %d\n",
 		       osd_name(dev), PFID(tfid), rc);
@@ -3100,14 +3115,22 @@ static int osd_remove_ml_file(struct osd_thread_info *info,
 	struct dentry dentry;
 	int rc;
 
+	ktime_t t0_osd, t1_osd;
+	ktime_t t0_jnl, t1_jnl;
+
 	ENTRY;
 
 	if (scrub->os_file.sf_param & SP_DRYRUN)
 		RETURN(0);
-
+	
+	t0_osd = ktime_get_ns();
 	th = osd_journal_start_sb(osd_sb(dev), LDISKFS_HT_MISC,
 				  osd_dto_credits_noquota[DTO_INDEX_DELETE] +
 				  osd_dto_credits_noquota[DTO_ATTR_SET_BASE]);
+	t1_osd = ktime_get_ns();
+	printk(KERN_ALERT "OSD_SCRUB: osd_journal_start_sb at osd_remove_ml_file took %lld ns\n",
+	       ktime_to_ns(ktime_sub(t1_osd, t0_osd)));
+	
 	if (IS_ERR(th))
 		RETURN(PTR_ERR(th));
 
@@ -3118,7 +3141,11 @@ static int osd_remove_ml_file(struct osd_thread_info *info,
 			       oie->oie_dirent->oied_namelen, th);
 	drop_nlink(inode);
 	mark_inode_dirty(inode);
+	t0_jnl = ktime_get_ns();
 	ldiskfs_journal_stop(th);
+	t1_jnl = ktime_get_ns();
+	printk(KERN_ALERT "OSD_SCRUB: ldiskfs_journal_stop at osd_remove_ml_file took %lld ns\n",
+	       ktime_to_ns(ktime_sub(t1_jnl, t0_jnl)));
 	RETURN(rc);
 }
 
