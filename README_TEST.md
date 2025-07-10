@@ -35,11 +35,13 @@ The `test_obd_alloc_idmap_cache.c` module is a complete test integrated with Lus
 ### Quick Start (Simple Test)
 
 1. **Build the simple test module:**
+
    ```bash
    make -f Makefile.simple
    ```
 
 2. **Run the test:**
+
    ```bash
    make -f Makefile.simple test
    ```
@@ -52,16 +54,19 @@ The `test_obd_alloc_idmap_cache.c` module is a complete test integrated with Lus
 ### Manual Testing
 
 1. **Build:**
+
    ```bash
    make -f Makefile.simple modules
    ```
 
 2. **Install:**
+
    ```bash
    sudo insmod simple_obd_alloc_test.ko
    ```
 
 3. **Check results:**
+
    ```bash
    dmesg | grep "simple_test" | tail -20
    ```
@@ -74,12 +79,14 @@ The `test_obd_alloc_idmap_cache.c` module is a complete test integrated with Lus
 ### Full Lustre Test
 
 1. **Set up environment:**
+
    ```bash
    # Make sure you're in the Lustre source directory
    cd /path/to/lustre-release-v2.15.5
    ```
 
 2. **Build:**
+
    ```bash
    make -f Makefile.test
    ```
@@ -119,21 +126,25 @@ simple_test: All tests completed successfully!
 The test modules cover:
 
 1. **Basic Allocation/Deallocation**
+
    - Small arrays (kmalloc path)
    - Large arrays (vmalloc path)
    - Timing measurements
 
 2. **Edge Cases**
+
    - Single entry allocation
    - Zero-size allocation
    - Very large allocations
 
 3. **Data Integrity**
+
    - Random data initialization
    - Structure member verification
    - Memory pattern validation
 
 4. **Stress Testing**
+
    - Multiple allocation/deallocation cycles
    - Random sizes
    - Performance under load
@@ -157,11 +168,13 @@ The tests measure:
 ### Common Issues
 
 1. **Module fails to load:**
+
    - Check kernel log: `dmesg | tail -20`
    - Ensure you have root privileges
    - Verify kernel headers are installed
 
 2. **Compilation errors:**
+
    - Install kernel development packages
    - Check kernel version compatibility
 

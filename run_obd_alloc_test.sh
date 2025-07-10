@@ -80,12 +80,35 @@ cleanup_modules() {
 build_simple_module() {
     print_status "Building simple test module..."
     
+    # Ensure we're in the right directory
+    print_status "Current directory: $(pwd)"
+    
     if ! make -f Makefile.simple clean > /dev/null 2>&1; then
         print_warning "Clean failed (may be normal)"
     fi
     
+    print_status "Building module..."
     if make -f Makefile.simple modules; then
         print_success "Simple module built successfully"
+        
+        # Verify the module file was created
+        if [[ -f "${SIMPLE_MODULE}.ko" ]]; then
+            print_success "Module file created: ${SIMPLE_MODULE}.ko"
+            ls -la "${SIMPLE_MODULE}.ko"
+            
+            # Check if module is valid
+            if modinfo "${SIMPLE_MODULE}.ko" > /dev/null 2>&1; then
+                print_success "Module file is valid"
+            else
+                print_warning "Module file may be corrupted"
+            fi
+        else
+            print_error "Module file ${SIMPLE_MODULE}.ko was not created"
+            print_status "Checking for any .ko files:"
+            ls -la *.ko 2>/dev/null || print_status "No .ko files found"
+            return 1
+        fi
+        
         return 0
     else
         print_error "Failed to build simple module"
@@ -97,8 +120,20 @@ build_simple_module() {
 test_simple_module() {
     print_status "Testing simple module..."
     
-    # Load the module
-    if insmod "${SIMPLE_MODULE}.ko"; then
+    # Check if module file exists
+    if [[ ! -f "${SIMPLE_MODULE}.ko" ]]; then
+        print_error "Module file ${SIMPLE_MODULE}.ko not found in current directory"
+        print_status "Current directory: $(pwd)"
+        print_status "Looking for module files:"
+        ls -la *.ko 2>/dev/null || print_status "No .ko files found"
+        return 1
+    fi
+    
+    # Show module file info
+    print_status "Module file: ${SIMPLE_MODULE}.ko ($(ls -lh ${SIMPLE_MODULE}.ko | awk '{print $5}'))"
+    
+    # Load the module with full path
+    if insmod "$(pwd)/${SIMPLE_MODULE}.ko"; then
         print_success "Simple module loaded successfully"
         
         # Wait for tests to complete
@@ -159,15 +194,63 @@ show_system_info() {
     echo "Memory: $(free -h | head -2 | tail -1)"
     echo "GCC Version: $(gcc --version | head -1)"
     echo "Date: $(date)"
+    echo "Current Directory: $(pwd)"
+    echo "Available .ko files:"
+    ls -la *.ko 2>/dev/null || echo "  No .ko files found"
     echo ""
+}
+
+# Function to debug build issues
+debug_build_environment() {
+    print_status "Debugging build environment..."
+    
+    # Check if source files exist
+    if [[ -f "simple_obd_alloc_test.c" ]]; then
+        print_success "Source file found: simple_obd_alloc_test.c"
+    else
+        print_error "Source file not found: simple_obd_alloc_test.c"
+        return 1
+    fi
+    
+    if [[ -f "Makefile.simple" ]]; then
+        print_success "Makefile found: Makefile.simple"
+    else
+        print_error "Makefile not found: Makefile.simple"
+        return 1
+    fi
+    
+    # Check kernel build directory
+    local kernel_build="/lib/modules/$(uname -r)/build"
+    if [[ -d "$kernel_build" ]]; then
+        print_success "Kernel build directory: $kernel_build"
+    else
+        print_error "Kernel build directory not found: $kernel_build"
+        return 1
+    fi
+    
+    # Check make command
+    if command -v make > /dev/null 2>&1; then
+        print_success "Make command available: $(which make)"
+    else
+        print_error "Make command not found"
+        return 1
+    fi
+    
+    return 0
 }
 
 # Function to run performance test
 run_performance_test() {
     print_status "Running performance analysis..."
     
+    # Check if module file exists
+    if [[ ! -f "${SIMPLE_MODULE}.ko" ]]; then
+        print_warning "Module file not found for performance test"
+        return 1
+    fi
+    
     # Load module and capture detailed timing
-    if insmod "${SIMPLE_MODULE}.ko"; then
+    if insmod "$(pwd)/${SIMPLE_MODULE}.ko"; then
         sleep 3
         
         # Extract timing information
@@ -199,6 +282,7 @@ main() {
     show_system_info
     check_root
     check_kernel_headers
+    debug_build_environment
     cleanup_modules
     
     # Test simple module
@@ -240,6 +324,7 @@ show_help() {
     echo "  -c, --clean    Clean build artifacts and exit"
     echo "  -b, --build    Build modules only (no testing)"
     echo "  -t, --test     Run tests only (assume modules are built)"
+    echo "  -d, --debug    Debug build environment and exit"
     echo "  -v, --verbose  Enable verbose output"
     echo ""
     echo "This script tests the OBD_ALLOC_PTR_ARRAY_LARGE macro implementation"
@@ -271,6 +356,12 @@ case "${1:-}" in
         check_root
         cleanup_modules
         test_simple_module
+        exit 0
+        ;;
+    -d|--debug)
+        print_status "Debugging build environment..."
+        show_system_info
+        debug_build_environment
         exit 0
         ;;
     -v|--verbose)
