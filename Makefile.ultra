@@ -1,0 +1,25 @@
+# Makefile for the ultra-simplified test module
+obj-m += ultra_simple_test.o
+
+KERNEL_DIR := /lib/modules/$(shell uname -r)/build
+
+all:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
+
+clean:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
+
+install:
+	sudo insmod ultra_simple_test.ko
+
+uninstall:
+	sudo rmmod ultra_simple_test || true
+
+test: install
+	@echo "Waiting for tests to complete..."
+	@sleep 2
+	@echo "Test results:"
+	dmesg | grep "ultra_test" | tail -20
+	$(MAKE) uninstall
+
+.PHONY: all clean install uninstall test
