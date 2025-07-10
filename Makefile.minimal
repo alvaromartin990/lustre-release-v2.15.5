@@ -1,0 +1,17 @@
+# Minimal test Makefile for kernel module
+obj-m += simple_obd_alloc_test.o
+
+# Use default kernel build directory
+KERNEL_DIR := /lib/modules/$(shell uname -r)/build
+
+all:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
+
+clean:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
+	rm -f modules.order Module.symvers
+
+install:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules_install
+
+.PHONY: all clean install
