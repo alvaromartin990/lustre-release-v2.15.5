@@ -1,0 +1,25 @@
+# Makefile for the simplified fixed test module
+obj-m += simple_fixed_test.o
+
+KERNEL_DIR := /lib/modules/$(shell uname -r)/build
+
+all:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
+
+clean:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
+
+install:
+	sudo insmod simple_fixed_test.ko
+
+uninstall:
+	sudo rmmod simple_fixed_test || true
+
+test: install
+	@echo "Waiting for tests to complete..."
+	@sleep 2
+	@echo "Test results:"
+	dmesg | grep "simple_test" | tail -20
+	$(MAKE) uninstall
+
+.PHONY: all clean install uninstall test
