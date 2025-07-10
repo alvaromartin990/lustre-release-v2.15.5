@@ -1,0 +1,64 @@
+# Simple Makefile for the OBD allocation test module
+
+MODULE_NAME = simple_obd_alloc_test
+obj-m += $(MODULE_NAME).o
+
+# Kernel build directory
+KERNEL_BUILD := /lib/modules/$(shell uname -r)/build
+
+# Default target
+all: modules
+
+# Build the module
+modules:
+	@echo "Building $(MODULE_NAME) kernel module..."
+	$(MAKE) -C $(KERNEL_BUILD) M=$(PWD) modules
+
+# Clean build artifacts
+clean:
+	@echo "Cleaning build artifacts..."
+	$(MAKE) -C $(KERNEL_BUILD) M=$(PWD) clean
+	rm -f Module.symvers modules.order
+
+# Install the module (requires root privileges)
+install: modules
+	@echo "Installing $(MODULE_NAME) module..."
+	sudo insmod $(MODULE_NAME).ko
+
+# Remove the module (requires root privileges)
+uninstall:
+	@echo "Removing $(MODULE_NAME) module..."
+	sudo rmmod $(MODULE_NAME) || true
+
+# Test the module (install, check dmesg, then uninstall)
+test: install
+	@echo "Testing $(MODULE_NAME) module..."
+	@echo "Waiting for tests to complete..."
+	@sleep 2
+	@echo "Recent kernel messages:"
+	dmesg | grep "simple_test" | tail -30
+	@echo "Uninstalling module..."
+	$(MAKE) uninstall
+
+# Show module info
+info:
+	@echo "Module: $(MODULE_NAME)"
+	@echo "Kernel Build: $(KERNEL_BUILD)"
+	@if [ -f $(MODULE_NAME).ko ]; then \
+		echo "Module file size: $$(ls -lh $(MODULE_NAME).ko | awk '{print $$5}')"; \
+		modinfo $(MODULE_NAME).ko; \
+	fi
+
+# Help target
+help:
+	@echo "Available targets:"
+	@echo "  all       - Build the kernel module (default)"
+	@echo "  modules   - Build the kernel module"
+	@echo "  clean     - Clean build artifacts"
+	@echo "  install   - Install the module (requires root)"
+	@echo "  uninstall - Remove the module (requires root)"
+	@echo "  test      - Install, test, and uninstall the module"
+	@echo "  info      - Show module information"
+	@echo "  help      - Show this help message"
+
+.PHONY: all modules clean install uninstall test info help

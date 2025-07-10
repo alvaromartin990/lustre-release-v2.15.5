@@ -1,0 +1,86 @@
+# Makefile for test_obd_alloc_idmap_cache kernel module
+#
+# This Makefile builds a test module for testing OBD_ALLOC_PTR_ARRAY_LARGE
+# with osd_idmap_cache structures in the Lustre environment.
+
+# Module name
+MODULE_NAME = test_obd_alloc_idmap_cache
+
+# Object files
+obj-m += $(MODULE_NAME).o
+
+# Lustre source directory - adjust this path as needed
+LUSTRE_SRC := $(PWD)
+
+# Kernel build directory - adjust this path as needed
+KERNEL_BUILD := /lib/modules/$(shell uname -r)/build
+
+# Lustre include paths
+LUSTRE_INCLUDES := \
+	-I$(LUSTRE_SRC)/lustre/include \
+	-I$(LUSTRE_SRC)/lustre/include/uapi \
+	-I$(LUSTRE_SRC)/lustre/include/uapi/linux \
+	-I$(LUSTRE_SRC)/lustre/include/uapi/linux/lustre \
+	-I$(LUSTRE_SRC)/lustre/osd-ldiskfs \
+	-I$(LUSTRE_SRC)/lnet/include \
+	-I$(LUSTRE_SRC)/lnet/include/uapi \
+	-I$(LUSTRE_SRC)/libcfs/include \
+	-I$(LUSTRE_SRC)/libcfs/include/uapi
+
+# Compiler flags
+EXTRA_CFLAGS := $(LUSTRE_INCLUDES) -DCONFIG_LUSTRE_FS=1 -DHAVE_LDISKFS_INFO=1
+
+# Default target
+all: modules
+
+# Build the module
+modules:
+	@echo "Building $(MODULE_NAME) kernel module..."
+	@echo "LUSTRE_SRC=$(LUSTRE_SRC)"
+	@echo "KERNEL_BUILD=$(KERNEL_BUILD)"
+	$(MAKE) -C $(KERNEL_BUILD) M=$(PWD) modules
+
+# Clean build artifacts
+clean:
+	@echo "Cleaning build artifacts..."
+	$(MAKE) -C $(KERNEL_BUILD) M=$(PWD) clean
+	rm -f Module.symvers modules.order
+
+# Install the module (requires root privileges)
+install: modules
+	@echo "Installing $(MODULE_NAME) module..."
+	sudo insmod $(MODULE_NAME).ko
+
+# Remove the module (requires root privileges)
+uninstall:
+	@echo "Removing $(MODULE_NAME) module..."
+	sudo rmmod $(MODULE_NAME) || true
+
+# Test the module (install, check dmesg, then uninstall)
+test: install
+	@echo "Testing $(MODULE_NAME) module..."
+	@echo "Check dmesg output:"
+	dmesg | grep "test_obd_alloc" | tail -20
+	@echo "Uninstalling module..."
+	$(MAKE) uninstall
+
+# Show module info
+info:
+	@echo "Module: $(MODULE_NAME)"
+	@echo "Lustre Source: $(LUSTRE_SRC)"
+	@echo "Kernel Build: $(KERNEL_BUILD)"
+	@echo "Includes: $(LUSTRE_INCLUDES)"
+
+# Help target
+help:
+	@echo "Available targets:"
+	@echo "  all       - Build the kernel module (default)"
+	@echo "  modules   - Build the kernel module"
+	@echo "  clean     - Clean build artifacts"
+	@echo "  install   - Install the module (requires root)"
+	@echo "  uninstall - Remove the module (requires root)"
+	@echo "  test      - Install, test, and uninstall the module"
+	@echo "  info      - Show module information"
+	@echo "  help      - Show this help message"
+
+.PHONY: all modules clean install uninstall test info help
