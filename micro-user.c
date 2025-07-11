@@ -23,15 +23,16 @@
 #define KMALLOC_MAX_SIZE (1024 * 1024)  /* 1MB threshold */
 
 #define SIMPLE_ALLOC_GFP(ptr, size, gfp_mask)                      \
-do {                                                                \
-    (ptr) = kmalloc(size, gfp_mask);                               \
+do {                                                               \
+    (void)(gfp_mask);                                              \
+    (ptr) = malloc(size);                                          \
     if (ptr)                                                       \
         memset(ptr, 0, size);                                      \
 } while (0)
 
 #define SIMPLE_VMALLOC(ptr, size)                                  \
 do {                                                               \
-    (ptr) = vmalloc(size);                                         \
+    (ptr) = malloc(size);                                          \
     if (ptr)                                                       \
         memset(ptr, 0, size);                                      \
 } while (0)
@@ -41,7 +42,7 @@ do {                                                               \
     if ((size) > KMALLOC_MAX_SIZE)                                 \
         ptr = NULL;                                                \
     else                                                           \
-        SIMPLE_ALLOC_GFP(ptr, size, GFP_KERNEL | __GFP_NOWARN);   \
+        SIMPLE_ALLOC_GFP(ptr, size, 0);                            \
     if (ptr == NULL)                                               \
         SIMPLE_VMALLOC(ptr, size);                                 \
 } while (0)
