@@ -306,11 +306,87 @@ void perform_simple_memory_operations(int array_size) {
     for (int i = 0; i < 10; i++) {
         free(temp_ptrs[i]);
     }
-
 }
+
+void write_idmap_cache_to_file(const char *filename, struct osd_idmap_cache *array, int count) {
+    FILE *fp = fopen(filename, "wb");
+    struct timespec start, end;
+
+    if (!fp) {
+        perror("fopen");
+        return;
+    }
+
+    uint64_t flush_start = rdtsc_start();
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
+    fwrite(array, sizeof(struct osd_idmap_cache), count, fp);
+    fclose(fp);
+
+    uint64_t flush_end = rdtsc_end();
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    long flush_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    printf("Data written to %s in %ld ns\n", filename, flush_time_ns);
+    printf("File write completed in %lu cycles.\n", flush_end - flush_start);
+    printf("Wrote %d entries to %s\n", count, filename);
+}
+
+int read_idmap_cache_from_file(const char *filename, struct osd_idmap_cache **array_out) {
+    FILE *fp = fopen(filename, "rb");
+    struct timespec start, end;
+    
+    if (!fp) {
+        perror("fopen");
+        return -1;
+    }
+
+    uint64_t flush_start = rdtsc_start();
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
+    fseek(fp, 0, SEEK_END);
+    long size = ftell(fp);
+    rewind(fp);
+
+    int count = size / sizeof(struct osd_idmap_cache);
+    *array_out = malloc(size);
+    if (!*array_out) {
+        perror("malloc");
+        fclose(fp);
+        return -1;
+    }
+
+    fread(*array_out, sizeof(struct osd_idmap_cache), count, fp);
+    fclose(fp);
+
+    uint64_t flush_end = rdtsc_end();
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    long flush_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    printf("Data read from %s in %ld ns\n", filename, flush_time_ns);
+    printf("File read completed in %lu cycles.\n", flush_end - flush_start);
+
+    printf("Read %d entries from %s\n", count, filename);
+    return count;
+}
+
+
+
 int main() {
     srand(time(NULL));
     test_obd_alloc_idmap_cache(10);
     perform_simple_memory_operations(10);
+
+    int array_size = 10;
+    struct osd_idmap_cache *idc_array = NULL;
+
+    // Test writing and reading idmap cache to/from file
+    write_idmap_cache_to_file("idmap_cache.bin", idc_array, array_size);
+    
+    struct osd_idmap_cache *loaded_array = NULL;
+    int loaded_count = read_idmap_cache_from_file("idmap_cache.bin", &loaded_array);
+    if (loaded_count > 0) {
+        // Optionally print or verify loaded_array
+        free(loaded_array);
+    }
+
     return 0;
 }
