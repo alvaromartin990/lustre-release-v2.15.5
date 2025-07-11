@@ -324,7 +324,7 @@ void write_idmap_cache_to_file(const char *filename, struct osd_idmap_cache *arr
     uint64_t flush_start = rdtsc_start();
     clock_gettime(CLOCK_MONOTONIC, &start);
 
-    printf("About to write");
+    printf("About to write\n");
 
     fwrite(array, sizeof(struct osd_idmap_cache), count, fp);
     fclose(fp);
@@ -374,8 +374,6 @@ int read_idmap_cache_from_file(const char *filename, struct osd_idmap_cache **ar
     return count;
 }
 
-
-
 int main() {
     srand(time(NULL));
     test_obd_alloc_idmap_cache(10);
@@ -387,6 +385,18 @@ int main() {
 
     printf("Creating idmap cache array of size %d\n", array_size);
     struct osd_idmap_cache *idc_array = NULL;
+    
+    // Allocate memory for the array
+    SIMPLE_ALLOC_PTR_ARRAY_LARGE(idc_array, array_size);
+    if (!idc_array) {
+        fprintf(stderr, "Failed to allocate memory for idmap cache array\n");
+        return 1;
+    }
+    
+    // Initialize the array with random data
+    for (int i = 0; i < array_size; i++) {
+        init_random_idmap_cache_entry(&idc_array[i], i);
+    }
 
     // Test writing and reading idmap cache to/from file
     printf("Writing idmap cache to file...\n");
@@ -397,6 +407,11 @@ int main() {
     if (loaded_count > 0) {
         // Optionally print or verify loaded_array
         free(loaded_array);
+    }
+    
+    // Clean up the original array
+    if (idc_array) {
+        free(idc_array);
     }
 
     return 0;
