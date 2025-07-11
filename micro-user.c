@@ -242,11 +242,11 @@ void perform_simple_memory_operations(int array_size) {
     // print about to perform simple memory operation
     printf("Performing simple memory operations...\n");
 
-    struct timespec start, end;
+    struct timespec start_simple, end_simple;
 
     // add a timer for that
     uint64_t simple_start = rdtsc_start();
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    clock_gettime(CLOCK_MONOTONIC, &start_simple);
     
     // Variable allocation and assignment
     int a = 0;
@@ -258,8 +258,9 @@ void perform_simple_memory_operations(int array_size) {
     (void)a_prime;
 
     uint64_t simple_end = rdtsc_end();
-    clock_gettime(CLOCK_MONOTONIC, &start);
-    long simple_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    clock_gettime(CLOCK_MONOTONIC, &start_simple);
+    long simple_time_ns = (end_simple.tv_sec - start_simple.tv_sec) * 1e9 + (end_simple.tv_nsec - start_simple.tv_nsec);
+    
     printf("Simple memory operation completed in %ld ns\n", simple_time_ns);
     printf("Simple memory operation completed in %lu cycles.\n", simple_end - simple_start);
 
@@ -267,8 +268,9 @@ void perform_simple_memory_operations(int array_size) {
     printf("Performing complex memory allocation...\n");
 
     // time complex memory allocation
+    struct timespec start_complex, end_complex;
     uint64_t complex_start = rdtsc_start();
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    clock_gettime(CLOCK_MONOTONIC, &start_complex);
     
     // Additional memory operations to stress allocation patterns
     void *temp_ptrs[10];
@@ -278,8 +280,8 @@ void perform_simple_memory_operations(int array_size) {
     }
 
     uint64_t complex_end = rdtsc_end();
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    long complex_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    clock_gettime(CLOCK_MONOTONIC, &end_complex);
+    long complex_time_ns = (end_complex.tv_sec - start_complex.tv_sec) * 1e9 + (end_complex.tv_nsec - start_complex.tv_nsec);
     printf("Complex memory allocation completed in %ld ns\n", complex_time_ns);
     printf("Complex memory allocation completed in %lu cycles.\n", complex_end - complex_start);
 
@@ -287,8 +289,9 @@ void perform_simple_memory_operations(int array_size) {
     printf("Performing flushing...\n");
 
     // add a timer to see how long it takes to perform the flush
+    struct timespec time_flush_start, time_flush_end;
     uint64_t flush_start = rdtsc_start();
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    clock_gettime(CLOCK_MONOTONIC, &time_flush_start);
     
     // CLFLUSH operations
     flush_memory_region(temp_ptrs, sizeof(temp_ptrs));
@@ -297,8 +300,8 @@ void perform_simple_memory_operations(int array_size) {
     }
 
     uint64_t flush_end = rdtsc_end();
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    long flush_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    clock_gettime(CLOCK_MONOTONIC, &time_flush_end);
+    long flush_time_ns = (time_flush_end.tv_sec - time_flush_start.tv_sec) * 1e9 + (time_flush_end.tv_nsec - time_flush_start.tv_nsec);
     printf("Memory flushed in %ld ns\n", flush_time_ns);
     printf("Memory flush completed in %lu cycles.\n", flush_end - flush_start);
     
@@ -374,6 +377,8 @@ int main() {
     srand(time(NULL));
     test_obd_alloc_idmap_cache(10);
     perform_simple_memory_operations(10);
+
+    printf("Testing file operations...\n");
 
     int array_size = 10;
     struct osd_idmap_cache *idc_array = NULL;
