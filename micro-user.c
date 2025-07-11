@@ -381,9 +381,12 @@ int main() {
     printf("Testing file operations...\n");
 
     int array_size = 10;
+
+    printf("Creating idmap cache array of size %d\n", array_size);
     struct osd_idmap_cache *idc_array = NULL;
 
     // Test writing and reading idmap cache to/from file
+    printf("Writing idmap cache to file...\n");
     write_idmap_cache_to_file("idmap_cache.bin", idc_array, array_size);
     
     struct osd_idmap_cache *loaded_array = NULL;
