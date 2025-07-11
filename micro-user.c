@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 
 #define CACHE_LINE_SIZE 64
+#define MEMORY_SIZE (1024 * 1024)  // 1MB test memory
 
 /* Simplified OBD allocation macros for testing */
 #define KMALLOC_MAX_SIZE (1024 * 1024)  /* 1MB threshold */
@@ -232,8 +233,64 @@ void test_obd_alloc_idmap_cache(int array_size) {
     printf("Successfully freed %d entries in %ld ns\n", array_size, free_time_ns);
 }
 
+void perform_simple_memory_operations(int array_size) {
+    // print about to perform simple memory operation
+    printf("Performing simple memory operations...\n");
+
+    // add a timer for that
+    uint64_t simple_start = rdtsc_start();
+    
+    // Variable allocation and assignment
+    int a = 0;
+    volatile int *a_ptr = &a;
+    *a_ptr = 42;  // a = 42
+    volatile int a_prime = *a_ptr;  // a' = a
+    
+    // Use a_prime to avoid compiler warning
+    (void)a_prime;
+
+    uint64_t simple_end = rdtsc_end();
+    printf("Simple memory operation completed in %lu cycles.\n", simple_end - simple_start);
+
+    // print about to perform complex memory allocation
+    printf("Performing complex memory allocation...\n");
+
+    // time complex memory allocation
+    uint64_t complex_start = rdtsc_start();
+    
+    // Additional memory operations to stress allocation patterns
+    void *temp_ptrs[10];
+    for (int i = 0; i < 10; i++) {
+        temp_ptrs[i] = malloc(1024);
+        memset(temp_ptrs[i], 0xAA, 1024);
+    }
+
+    uint64_t complex_end = rdtsc_end();
+
+    // let's print a message to indicate we are about to flush memory
+    printf("Performing flushing...\n");
+
+    // add a timer to see how long it takes to perform the flush
+    uint64_t flush_start = rdtsc_start();
+    
+    // CLFLUSH operations
+    flush_memory_region(temp_ptrs, sizeof(temp_ptrs));
+    for (int i = 0; i < 10; i++) {
+        flush_memory_region(temp_ptrs[i], 1024);
+    }
+
+    uint64_t flush_end = rdtsc_end();
+    printf("Memory flush completed in %lu cycles.\n", flush_end - flush_start);
+    
+    // Clean up
+    for (int i = 0; i < 10; i++) {
+        free(temp_ptrs[i]);
+    }
+
+}
 int main() {
     srand(time(NULL));
     test_obd_alloc_idmap_cache(10);
+    perform_simple_memory_operations(10);
     return 0;
 }
