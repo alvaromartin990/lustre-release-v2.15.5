@@ -136,13 +136,13 @@ void generate_random_inode_id(struct osd_inode_id *id) {
 }
 
 void init_random_idmap_cache_entry(struct osd_idmap_cache *idc, int index) {
-    """
+    /**
     This function initializes a single osd_idmap_cache entry with random data.
 
     Args:
         idc (struct osd_idmap_cache*): Pointer to the cache entry to initialize.
         index (int): Index of the entry for logging purposes.
-    """
+    **/
     generate_random_fid(&idc->oic_fid);
     generate_random_inode_id(&idc->oic_lid);
     idc->oic_remote = rand() % 2;
@@ -158,7 +158,8 @@ void init_random_idmap_cache_entry(struct osd_idmap_cache *idc, int index) {
 }
 
 void test_obd_alloc_idmap_cache(int array_size) {
-    """This function tests the allocation of an array of osd_idmap_cache entries,
+    /*** 
+    This function tests the allocation of an array of osd_idmap_cache entries,
     initializes them with random data, and measures the time taken for allocation,
     initialization, and deallocation.
 
@@ -166,7 +167,7 @@ void test_obd_alloc_idmap_cache(int array_size) {
     to allocate a large array of osd_idmap_cache structures, similar to what is done
     in the Lustre OSD handler code. However, this is intended to work in a user-space context
     for testing purposes.
-    """
+    ***/
     printf("\nTesting allocation of %d osd_idmap_cache entries\n", array_size);
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
