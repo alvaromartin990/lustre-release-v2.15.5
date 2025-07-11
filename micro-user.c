@@ -316,6 +316,7 @@ void write_idmap_cache_to_file(const char *filename, struct osd_idmap_cache *arr
     struct timespec start, end;
 
     if (!fp) {
+        printf("Segmentation fault: fopen failed\n");
         perror("fopen");
         return;
     }
