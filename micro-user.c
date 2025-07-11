@@ -323,6 +323,8 @@ void write_idmap_cache_to_file(const char *filename, struct osd_idmap_cache *arr
     uint64_t flush_start = rdtsc_start();
     clock_gettime(CLOCK_MONOTONIC, &start);
 
+    printf("About to write");
+
     fwrite(array, sizeof(struct osd_idmap_cache), count, fp);
     fclose(fp);
 
