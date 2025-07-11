@@ -1,7 +1,67 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
 #include <time.h>
+#include <errno.h>
+#include <sys/xattr.h>
+#include <x86intrin.h>
+#include <emmintrin.h>
+#include <limits.h>
+
+#define _GNU_SOURCE
+#include <sys/stat.h>
+
+#define CACHE_LINE_SIZE 64
+
+/* Simplified OBD allocation macros for testing */
+#define KMALLOC_MAX_SIZE (1024 * 1024)  /* 1MB threshold */
+
+#define SIMPLE_ALLOC_GFP(ptr, size, gfp_mask)                      \
+do {                                                                \
+    (ptr) = kmalloc(size, gfp_mask);                               \
+    if (ptr)                                                       \
+        memset(ptr, 0, size);                                      \
+} while (0)
+
+#define SIMPLE_VMALLOC(ptr, size)                                  \
+do {                                                               \
+    (ptr) = vmalloc(size);                                         \
+    if (ptr)                                                       \
+        memset(ptr, 0, size);                                      \
+} while (0)
+
+#define SIMPLE_ALLOC_LARGE(ptr, size)                              \
+do {                                                               \
+    if ((size) > KMALLOC_MAX_SIZE)                                 \
+        ptr = NULL;                                                \
+    else                                                           \
+        SIMPLE_ALLOC_GFP(ptr, size, GFP_KERNEL | __GFP_NOWARN);   \
+    if (ptr == NULL)                                               \
+        SIMPLE_VMALLOC(ptr, size);                                 \
+} while (0)
+
+#define SIMPLE_ALLOC_PTR_ARRAY_LARGE(ptr, n)                      \
+    SIMPLE_ALLOC_LARGE(ptr, (n) * sizeof(*(ptr)))
+
+#define SIMPLE_FREE_LARGE(ptr, size)                              \
+do {                                                               \
+    if (ptr) {                                                     \
+        if (is_vmalloc_addr(ptr))                                  \
+            vfree(ptr);                                            \
+        else                                                       \
+            kfree(ptr);                                            \
+        ptr = NULL;                                                \
+    }                                                              \
+} while (0)
+
+#define SIMPLE_FREE_PTR_ARRAY_LARGE(ptr, n)                       \
+    SIMPLE_FREE_LARGE(ptr, (n) * sizeof(*(ptr)))
 
 struct lu_fid {
     uint64_t f_seq;
@@ -20,6 +80,50 @@ struct osd_idmap_cache {
     int oic_remote;
 };
 
+// High-resolution timing functions
+static inline uint64_t rdtsc_start(void) {
+    uint32_t hi, lo;
+    __asm__ volatile(
+        "cpuid\n\t"
+        "rdtsc\n\t"
+        "mov %%edx, %0\n\t"
+        "mov %%eax, %1\n\t"
+        : "=r"(hi), "=r"(lo)
+        :: "%rax", "%rbx", "%rcx", "%rdx"
+    );
+    return ((uint64_t)hi << 32) | lo;
+}
+
+static inline uint64_t rdtsc_end(void) {
+    uint32_t hi, lo;
+    __asm__ volatile(
+        "rdtscp\n\t"
+        "mov %%edx, %0\n\t"
+        "mov %%eax, %1\n\t"
+        "cpuid\n\t"
+        : "=r"(hi), "=r"(lo)
+        :: "%rax", "%rbx", "%rcx", "%rdx"
+    );
+    return ((uint64_t)hi << 32) | lo;
+}
+
+// CLFLUSH implementation
+static inline void clflush_memory(void *addr) {
+    _mm_clflush(addr);
+}
+
+static void flush_memory_region(void *ptr, size_t size) {
+    char *addr = (char*)ptr;
+    for (size_t i = 0; i < size; i += CACHE_LINE_SIZE) {
+        clflush_memory(addr + i);
+    }
+    // Flush last byte to ensure complete coverage
+    clflush_memory(addr + size - 1);
+    // Memory fence to ensure flush completion
+    _mm_sfence();
+}
+
+
 void generate_random_fid(struct lu_fid *fid) {
     fid->f_seq = rand() % 0xFFFFFFFFFFULL;
     fid->f_oid = rand() % 0x100000;
@@ -32,6 +136,13 @@ void generate_random_inode_id(struct osd_inode_id *id) {
 }
 
 void init_random_idmap_cache_entry(struct osd_idmap_cache *idc, int index) {
+    """
+    This function initializes a single osd_idmap_cache entry with random data.
+
+    Args:
+        idc (struct osd_idmap_cache*): Pointer to the cache entry to initialize.
+        index (int): Index of the entry for logging purposes.
+    """
     generate_random_fid(&idc->oic_fid);
     generate_random_inode_id(&idc->oic_lid);
     idc->oic_remote = rand() % 2;
@@ -47,19 +158,44 @@ void init_random_idmap_cache_entry(struct osd_idmap_cache *idc, int index) {
 }
 
 void test_obd_alloc_idmap_cache(int array_size) {
+    """This function tests the allocation of an array of osd_idmap_cache entries,
+    initializes them with random data, and measures the time taken for allocation,
+    initialization, and deallocation.
+
+    This function simulates the usage of the OBD_ALLOC_PTR_ARRAY_LARGE macro
+    to allocate a large array of osd_idmap_cache structures, similar to what is done
+    in the Lustre OSD handler code. However, this is intended to work in a user-space context
+    for testing purposes.
+    """
     printf("\nTesting allocation of %d osd_idmap_cache entries\n", array_size);
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
 
-    struct osd_idmap_cache *idc_array = malloc(array_size * sizeof(struct osd_idmap_cache));
+    // let's also use rdtsc_start and rdtsc_end for high-resolution timing
+    uint64_t start_cycles = rdtsc_start();
+
+    //struct osd_idmap_cache *idc_array = malloc(array_size * sizeof(struct osd_idmap_cache));
+    // using our simplified allocation macro SIMPLE_FREE_PTR_ARRAY_LARGE
+    struct osd_idmap_cache *idc_array = NULL;
+    SIMPLE_ALLOC_PTR_ARRAY_LARGE(idc_array, array_size);
+    
     if (!idc_array) {
         fprintf(stderr, "Allocation failed!\n");
         return;
     }
 
+    printf("Allocated osd_idmap_cache array of size %d at %p\n", array_size, idc_array);
+    uint64_t end_cycles = rdtsc_end();
+    printf("Allocation took %lu cycles\n", end_cycles - start_cycles);
+
+    // Initialize entries with random data
+    printf("Initializing entries with random data...\n");
+
     for (int i = 0; i < array_size; i++) {
         init_random_idmap_cache_entry(&idc_array[i], i);
     }
+
+    printf("Initialization complete.\n");
 
     clock_gettime(CLOCK_MONOTONIC, &end);
     long alloc_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
@@ -78,6 +214,15 @@ void test_obd_alloc_idmap_cache(int array_size) {
                entry->oic_remote);
     }
 
+    // Now, let's flush the memory region
+    printf("Flushing memory region...\n");
+    start_cycles = rdtsc_start();
+    
+    flush_memory_region(idc_array, array_size * sizeof(struct osd_idmap_cache));
+    end_cycles = rdtsc_end();
+    printf("Memory flush completed in %lu cycles.\n", end_cycles - start_cycles);
+
+    printf("Proceeding to free the allocated memory...\n");
     clock_gettime(CLOCK_MONOTONIC, &start);
     free(idc_array);
     clock_gettime(CLOCK_MONOTONIC, &end);
