@@ -6,9 +6,9 @@
 set -euo pipefail
 
 # Configuration
-BENCHMARK_SOURCE="micro-user-enhanced.c"
-BENCHMARK_BINARY="micro-user-enhanced"
-ANALYSIS_SCRIPT="analyze_benchmark.py"
+BENCHMARK_SOURCE="micro-user-v2.c"
+BENCHMARK_BINARY="micro-user-v2"
+ANALYSIS_SCRIPT="micro-analysis.py"
 OUTPUT_DIR="benchmark_results_$(date +%Y%m%d_%H%M%S)"
 LOG_MARKER="LUSTRE_BENCHMARK_$(date +%s)"
 
