@@ -412,11 +412,11 @@ class BenchmarkAnalyzer:
         # Compile and run the benchmark
         try:
             # Compile
-            compile_cmd = ["gcc", "-o", "micro-user-enhanced", "micro-user-enhanced.c", "-lm", "-lpthread"]
+            compile_cmd = ["gcc", "-o", "micro-user-v2", "micro-user-v2.c", "-lm", "-lpthread"]
             subprocess.run(compile_cmd, check=True)
             
             # Run and capture output
-            run_cmd = ["./micro-user-enhanced"]
+            run_cmd = ["./micro-user-v2"]
             result = subprocess.run(run_cmd, capture_output=True, text=True, timeout=300)
             
             # Parse the output
