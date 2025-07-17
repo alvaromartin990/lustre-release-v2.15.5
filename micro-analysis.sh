@@ -296,8 +296,9 @@ EOF
     fi
     
     # Run analysis
-    python3 "$ANALYSIS_SCRIPT" "$OUTPUT_DIR/benchmark_output.txt"
-    
+    # python3 "$ANALYSIS_SCRIPT" --log-file "$OUTPUT_DIR/benchmark_output.txt" --output-dir "$OUTPUT_DIR"
+    python3 "$ANALYSIS_SCRIPT" --log-file "$OUTPUT_DIR/benchmark_output.txt" --kernel-log "$OUTPUT_DIR/kernel_log_benchmark.txt" --output-dir "$OUTPUT_DIR"
+
     # Generate CSV summary
     log_info "Generating CSV summary..."
     
