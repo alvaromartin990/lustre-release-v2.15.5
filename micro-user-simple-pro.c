@@ -19,8 +19,6 @@
 
 #define CACHE_LINE_SIZE 64
 #define MEMORY_SIZE (1024 * 1024)  // 1MB test memory
-#define MAX_ARRAY_SIZES 10
-#define RUNS_PER_SIZE 5
 
 /* Simplified OBD allocation macros for testing */
 #define KMALLOC_MAX_SIZE (1024 * 1024)  /* 1MB threshold */
@@ -53,6 +51,17 @@ do {                                                               \
 #define SIMPLE_ALLOC_PTR_ARRAY_LARGE(ptr, n)                      \
     SIMPLE_ALLOC_LARGE(ptr, (n) * sizeof(*(ptr)))
 
+#define SIMPLE_FREE_LARGE(ptr, size)                              \
+do {                                                               \
+    if (ptr) {                                                     \
+        free(ptr);                                                 \
+        ptr = NULL;                                                \
+    }                                                              \
+} while (0)
+
+#define SIMPLE_FREE_PTR_ARRAY_LARGE(ptr, n)                       \
+    SIMPLE_FREE_LARGE(ptr, (n) * sizeof(*(ptr)))
+
 struct lu_fid {
     uint64_t f_seq;
     uint32_t f_oid;
@@ -70,24 +79,27 @@ struct osd_idmap_cache {
     int oic_remote;
 };
 
-typedef enum {
-    PATTERN_SEQUENTIAL,
-    PATTERN_STRIDED,
-    PATTERN_RANDOM
-} access_pattern_t;
-
-typedef struct {
+// Results structure for storing benchmark data
+struct benchmark_result {
     int array_size;
-    access_pattern_t pattern;
-    uint64_t alloc_cycles;
-    uint64_t access_cycles;
-    uint64_t flush_cycles;
-    uint64_t free_cycles;
+    char pattern[32];
+    char allocation_type[32];
     long alloc_time_ns;
-    long access_time_ns;
     long flush_time_ns;
     long free_time_ns;
-} benchmark_result_t;
+    uint64_t alloc_cycles;
+    uint64_t flush_cycles;
+    uint64_t free_cycles;
+};
+
+// Global results array
+#define MAX_RESULTS 1000
+struct benchmark_result results[MAX_RESULTS];
+int result_count = 0;
+
+// Test sizes array
+int test_sizes[] = {1, 5, 10, 50, 100, 500, 1000, 2000, 5000, 10000};
+int num_test_sizes = sizeof(test_sizes) / sizeof(test_sizes[0]);
 
 // High-resolution timing functions
 static inline uint64_t rdtsc_start(void) {
@@ -126,7 +138,9 @@ static void flush_memory_region(void *ptr, size_t size) {
     for (size_t i = 0; i < size; i += CACHE_LINE_SIZE) {
         clflush_memory(addr + i);
     }
-    clflush_memory(addr + size - 1);
+    if (size > 0) {
+        clflush_memory(addr + size - 1);
+    }
     _mm_sfence();
 }
 
@@ -147,47 +161,30 @@ void init_random_idmap_cache_entry(struct osd_idmap_cache *idc) {
     idc->oic_remote = rand() % 2;
 }
 
-void access_memory_pattern(struct osd_idmap_cache *array, int size, access_pattern_t pattern) {
-    volatile uint64_t dummy = 0;
-    
-    switch (pattern) {
-        case PATTERN_SEQUENTIAL:
-            for (int i = 0; i < size; i++) {
-                dummy += array[i].oic_fid.f_seq;
-            }
-            break;
-            
-        case PATTERN_STRIDED:
-            // Access every 8th element, then wrap around
-            for (int stride = 0; stride < 8 && stride < size; stride++) {
-                for (int i = stride; i < size; i += 8) {
-                    dummy += array[i].oic_fid.f_seq;
-                }
-            }
-            break;
-            
-        case PATTERN_RANDOM:
-            // Pseudo-random access pattern
-            for (int i = 0; i < size; i++) {
-                int idx = (i * 17 + 23) % size;  // Simple pseudo-random
-                dummy += array[idx].oic_fid.f_seq;
-            }
-            break;
+void save_result(int array_size, const char* pattern, const char* alloc_type,
+                long alloc_time_ns, long flush_time_ns, long free_time_ns,
+                uint64_t alloc_cycles, uint64_t flush_cycles, uint64_t free_cycles) {
+    if (result_count < MAX_RESULTS) {
+        struct benchmark_result *r = &results[result_count++];
+        r->array_size = array_size;
+        strncpy(r->pattern, pattern, sizeof(r->pattern) - 1);
+        strncpy(r->allocation_type, alloc_type, sizeof(r->allocation_type) - 1);
+        r->alloc_time_ns = alloc_time_ns;
+        r->flush_time_ns = flush_time_ns;
+        r->free_time_ns = free_time_ns;
+        r->alloc_cycles = alloc_cycles;
+        r->flush_cycles = flush_cycles;
+        r->free_cycles = free_cycles;
     }
-    
-    // Prevent compiler optimization
-    (void)dummy;
 }
 
-benchmark_result_t run_benchmark(int array_size, access_pattern_t pattern) {
-    benchmark_result_t result = {0};
-    result.array_size = array_size;
-    result.pattern = pattern;
+void test_lustre_allocation(int array_size, const char* pattern) {
+    printf("Testing Lustre allocation - Size: %d, Pattern: %s\n", array_size, pattern);
     
     struct timespec start, end;
     uint64_t start_cycles, end_cycles;
     
-    // Allocation phase
+    // Allocation
     clock_gettime(CLOCK_MONOTONIC, &start);
     start_cycles = rdtsc_start();
     
@@ -196,33 +193,20 @@ benchmark_result_t run_benchmark(int array_size, access_pattern_t pattern) {
     
     end_cycles = rdtsc_end();
     clock_gettime(CLOCK_MONOTONIC, &end);
+    long alloc_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    uint64_t alloc_cycles = end_cycles - start_cycles;
     
     if (!idc_array) {
-        fprintf(stderr, "Allocation failed for size %d!\n", array_size);
-        return result;
+        printf("Allocation failed for size %d\n", array_size);
+        return;
     }
     
-    result.alloc_cycles = end_cycles - start_cycles;
-    result.alloc_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
-    
-    // Initialize array
+    // Initialize with random data
     for (int i = 0; i < array_size; i++) {
         init_random_idmap_cache_entry(&idc_array[i]);
     }
     
-    // Access phase
-    clock_gettime(CLOCK_MONOTONIC, &start);
-    start_cycles = rdtsc_start();
-    
-    access_memory_pattern(idc_array, array_size, pattern);
-    
-    end_cycles = rdtsc_end();
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    
-    result.access_cycles = end_cycles - start_cycles;
-    result.access_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
-    
-    // Flush phase
+    // Flush
     clock_gettime(CLOCK_MONOTONIC, &start);
     start_cycles = rdtsc_start();
     
@@ -230,11 +214,10 @@ benchmark_result_t run_benchmark(int array_size, access_pattern_t pattern) {
     
     end_cycles = rdtsc_end();
     clock_gettime(CLOCK_MONOTONIC, &end);
+    long flush_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    uint64_t flush_cycles = end_cycles - start_cycles;
     
-    result.flush_cycles = end_cycles - start_cycles;
-    result.flush_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
-    
-    // Free phase
+    // Free
     clock_gettime(CLOCK_MONOTONIC, &start);
     start_cycles = rdtsc_start();
     
@@ -242,96 +225,145 @@ benchmark_result_t run_benchmark(int array_size, access_pattern_t pattern) {
     
     end_cycles = rdtsc_end();
     clock_gettime(CLOCK_MONOTONIC, &end);
+    long free_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    uint64_t free_cycles = end_cycles - start_cycles;
     
-    result.free_cycles = end_cycles - start_cycles;
-    result.free_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
-    
-    return result;
+    save_result(array_size, pattern, "lustre", alloc_time_ns, flush_time_ns, free_time_ns,
+                alloc_cycles, flush_cycles, free_cycles);
 }
 
-const char* pattern_name(access_pattern_t pattern) {
-    switch (pattern) {
-        case PATTERN_SEQUENTIAL: return "sequential";
-        case PATTERN_STRIDED: return "strided";
-        case PATTERN_RANDOM: return "random";
-        default: return "unknown";
-    }
-}
-
-void save_results_csv(benchmark_result_t *results, int num_results, const char *filename) {
-    FILE *fp = fopen(filename, "w");
-    if (!fp) {
-        fprintf(stderr, "Failed to open %s for writing\n", filename);
+void test_regular_allocation(int array_size, const char* pattern) {
+    printf("Testing Regular allocation - Size: %d, Pattern: %s\n", array_size, pattern);
+    
+    struct timespec start, end;
+    uint64_t start_cycles, end_cycles;
+    
+    // Allocation
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    start_cycles = rdtsc_start();
+    
+    void **temp_ptrs = malloc(array_size * sizeof(void*));
+    if (!temp_ptrs) {
+        printf("Allocation failed for size %d\n", array_size);
         return;
     }
     
-    // Write CSV header
-    fprintf(fp, "array_size,pattern,alloc_cycles,access_cycles,flush_cycles,free_cycles,"
-               "alloc_time_ns,access_time_ns,flush_time_ns,free_time_ns\n");
+    for (int i = 0; i < array_size; i++) {
+        temp_ptrs[i] = malloc(sizeof(struct osd_idmap_cache));
+        if (temp_ptrs[i]) {
+            memset(temp_ptrs[i], 0xAA, sizeof(struct osd_idmap_cache));
+        }
+    }
     
-    // Write data
-    for (int i = 0; i < num_results; i++) {
-        benchmark_result_t *r = &results[i];
-        fprintf(fp, "%d,%s,%lu,%lu,%lu,%lu,%ld,%ld,%ld,%ld\n",
-                r->array_size, pattern_name(r->pattern),
-                r->alloc_cycles, r->access_cycles, r->flush_cycles, r->free_cycles,
-                r->alloc_time_ns, r->access_time_ns, r->flush_time_ns, r->free_time_ns);
+    end_cycles = rdtsc_end();
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    long alloc_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    uint64_t alloc_cycles = end_cycles - start_cycles;
+    
+    // Flush
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    start_cycles = rdtsc_start();
+    
+    for (int i = 0; i < array_size; i++) {
+        if (temp_ptrs[i]) {
+            flush_memory_region(temp_ptrs[i], sizeof(struct osd_idmap_cache));
+        }
+    }
+    
+    end_cycles = rdtsc_end();
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    long flush_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    uint64_t flush_cycles = end_cycles - start_cycles;
+    
+    // Free
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    start_cycles = rdtsc_start();
+    
+    for (int i = 0; i < array_size; i++) {
+        if (temp_ptrs[i]) {
+            free(temp_ptrs[i]);
+        }
+    }
+    free(temp_ptrs);
+    
+    end_cycles = rdtsc_end();
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    long free_time_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+    uint64_t free_cycles = end_cycles - start_cycles;
+    
+    save_result(array_size, pattern, "regular", alloc_time_ns, flush_time_ns, free_time_ns,
+                alloc_cycles, flush_cycles, free_cycles);
+}
+
+void run_sequential_pattern() {
+    printf("\n=== Running Sequential Pattern ===\n");
+    for (int i = 0; i < num_test_sizes; i++) {
+        test_lustre_allocation(test_sizes[i], "sequential");
+        test_regular_allocation(test_sizes[i], "sequential");
+    }
+}
+
+void run_reverse_pattern() {
+    printf("\n=== Running Reverse Pattern ===\n");
+    for (int i = num_test_sizes - 1; i >= 0; i--) {
+        test_lustre_allocation(test_sizes[i], "reverse");
+        test_regular_allocation(test_sizes[i], "reverse");
+    }
+}
+
+void run_strided_pattern() {
+    printf("\n=== Running Strided Pattern ===\n");
+    // Alternate between small and large allocations
+    for (int i = 0; i < num_test_sizes; i += 2) {
+        test_lustre_allocation(test_sizes[i], "strided");
+        test_regular_allocation(test_sizes[i], "strided");
+        if (i + 1 < num_test_sizes) {
+            test_lustre_allocation(test_sizes[num_test_sizes - 1 - i/2], "strided");
+            test_regular_allocation(test_sizes[num_test_sizes - 1 - i/2], "strided");
+        }
+    }
+}
+
+void save_results_to_csv() {
+    FILE *fp = fopen("benchmark_results.csv", "w");
+    if (!fp) {
+        printf("Error: Could not open results file for writing\n");
+        return;
+    }
+    
+    fprintf(fp, "array_size,pattern,allocation_type,alloc_time_ns,flush_time_ns,free_time_ns,alloc_cycles,flush_cycles,free_cycles\n");
+    
+    for (int i = 0; i < result_count; i++) {
+        struct benchmark_result *r = &results[i];
+        fprintf(fp, "%d,%s,%s,%ld,%ld,%ld,%lu,%lu,%lu\n",
+                r->array_size, r->pattern, r->allocation_type,
+                r->alloc_time_ns, r->flush_time_ns, r->free_time_ns,
+                r->alloc_cycles, r->flush_cycles, r->free_cycles);
     }
     
     fclose(fp);
-    printf("Results saved to %s\n", filename);
+    printf("Results saved to benchmark_results.csv\n");
 }
 
 int main() {
     srand(time(NULL));
     
-    // Array sizes to test: 1, 10, 100, 1000, 10000
-    int array_sizes[] = {1, 10, 50, 100, 500, 1000, 5000, 10000};
-    int num_sizes = sizeof(array_sizes) / sizeof(array_sizes[0]);
-    
-    access_pattern_t patterns[] = {PATTERN_SEQUENTIAL, PATTERN_STRIDED, PATTERN_RANDOM};
-    int num_patterns = sizeof(patterns) / sizeof(patterns[0]);
-    
-    // Calculate total number of benchmark runs
-    int total_results = num_sizes * num_patterns * RUNS_PER_SIZE;
-    benchmark_result_t *results = malloc(total_results * sizeof(benchmark_result_t));
-    
-    if (!results) {
-        fprintf(stderr, "Failed to allocate results array\n");
-        return 1;
+    printf("Starting Memory Allocation Benchmark\n");
+    printf("Testing allocation sizes: ");
+    for (int i = 0; i < num_test_sizes; i++) {
+        printf("%d ", test_sizes[i]);
     }
+    printf("\n");
     
-    int result_index = 0;
+    // Run different allocation patterns
+    run_sequential_pattern();
+    run_reverse_pattern();
+    run_strided_pattern();
     
-    printf("Starting micro-benchmark with %d array sizes, %d patterns, %d runs per configuration\n",
-           num_sizes, num_patterns, RUNS_PER_SIZE);
+    // Save results to CSV
+    save_results_to_csv();
     
-    for (int s = 0; s < num_sizes; s++) {
-        for (int p = 0; p < num_patterns; p++) {
-            printf("\nTesting array size %d with %s pattern:\n", 
-                   array_sizes[s], pattern_name(patterns[p]));
-            
-            for (int run = 0; run < RUNS_PER_SIZE; run++) {
-                printf("  Run %d/%d... ", run + 1, RUNS_PER_SIZE);
-                fflush(stdout);
-                
-                benchmark_result_t result = run_benchmark(array_sizes[s], patterns[p]);
-                results[result_index++] = result;
-                
-                printf("Done (alloc: %lu cycles, access: %lu cycles)\n", 
-                       result.alloc_cycles, result.access_cycles);
-            }
-        }
-    }
+    printf("\nBenchmark completed. Total results: %d\n", result_count);
     
-    // Save results
-    save_results_csv(results, total_results, "benchmark_results.csv");
-    
-    // Print summary
-    printf("\nBenchmark completed successfully!\n");
-    printf("Total runs: %d\n", total_results);
-    printf("Results saved to benchmark_results.csv\n");
-    
-    free(results);
     return 0;
 }

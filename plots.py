@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Memory Allocation Benchmark Results Visualization
+Plots performance comparison between Lustre and Regular allocation methods
+"""
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,265 +10,361 @@ import seaborn as sns
 import numpy as np
 from pathlib import Path
 
-def load_and_process_data(filename='benchmark_results.csv'):
-    """Load benchmark results and compute averages across runs."""
+# Set style for better-looking plots
+plt.style.use('seaborn-v0_8')
+sns.set_palette("husl")
+
+def load_data(filename='benchmark_results.csv'):
+    """Load benchmark results from CSV file"""
     try:
         df = pd.read_csv(filename)
-        print(f"Loaded {len(df)} benchmark results")
-        
-        # Group by array_size and pattern, then compute mean and std
-        grouped = df.groupby(['array_size', 'pattern']).agg({
-            'alloc_cycles': ['mean', 'std'],
-            'access_cycles': ['mean', 'std'], 
-            'flush_cycles': ['mean', 'std'],
-            'free_cycles': ['mean', 'std'],
-            'alloc_time_ns': ['mean', 'std'],
-            'access_time_ns': ['mean', 'std'],
-            'flush_time_ns': ['mean', 'std'],
-            'free_time_ns': ['mean', 'std']
-        }).reset_index()
-        
-        # Flatten column names
-        grouped.columns = ['_'.join(col).strip() if col[1] else col[0] for col in grouped.columns.values]
-        grouped = grouped.rename(columns={'array_size_': 'array_size', 'pattern_': 'pattern'})
-        
-        return df, grouped
-        
+        print(f"Loaded {len(df)} results from {filename}")
+        return df
     except FileNotFoundError:
         print(f"Error: {filename} not found. Please run the C benchmark first.")
-        return None, None
+        return None
 
-def plot_cycles_by_phase(grouped_df):
-    """Plot CPU cycles for each phase vs array size."""
+def plot_allocation_comparison(df):
+    """Compare allocation times between Lustre and Regular methods"""
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-    fig.suptitle('CPU Cycles by Phase and Access Pattern', fontsize=16)
+    fig.suptitle('Allocation Performance Comparison: Lustre vs Regular', fontsize=16, fontweight='bold')
     
-    phases = ['alloc', 'access', 'flush', 'free']
-    colors = ['blue', 'red', 'green']
-    patterns = grouped_df['pattern'].unique()
+    patterns = df['pattern'].unique()
     
-    for i, phase in enumerate(phases):
-        ax = axes[i//2, i%2]
-        
-        for j, pattern in enumerate(patterns):
-            pattern_data = grouped_df[grouped_df['pattern'] == pattern]
+    for idx, pattern in enumerate(patterns[:3]):  # Limit to first 3 patterns
+        if idx >= 3:
+            break
             
-            mean_col = f'{phase}_cycles_mean'
-            std_col = f'{phase}_cycles_std'
-            
-            ax.errorbar(pattern_data['array_size'], pattern_data[mean_col], 
-                       yerr=pattern_data[std_col], label=pattern, 
-                       marker='o', color=colors[j], alpha=0.7)
+        pattern_data = df[df['pattern'] == pattern]
         
-        ax.set_xlabel('Array Size')
-        ax.set_ylabel('CPU Cycles')
-        ax.set_title(f'{phase.capitalize()} Phase')
-        ax.set_xscale('log')
-        ax.set_yscale('log')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
+        # Plot time comparison
+        ax1 = axes[idx // 2, idx % 2] if idx < 2 else axes[1, 0]
+        
+        for alloc_type in ['lustre', 'regular']:
+            data = pattern_data[pattern_data['allocation_type'] == alloc_type]
+            ax1.plot(data['array_size'], data['alloc_time_ns'] / 1000, 
+                    marker='o', label=f'{alloc_type.capitalize()}', linewidth=2, markersize=6)
+        
+        ax1.set_xlabel('Array Size')
+        ax1.set_ylabel('Allocation Time (μs)')
+        ax1.set_title(f'Allocation Time - {pattern.capitalize()} Pattern')
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+        ax1.set_xscale('log')
+        ax1.set_yscale('log')
+    
+    # Summary comparison across all patterns
+    ax_summary = axes[1, 1]
+    summary_data = df.groupby(['array_size', 'allocation_type'])['alloc_time_ns'].mean().reset_index()
+    
+    for alloc_type in ['lustre', 'regular']:
+        data = summary_data[summary_data['allocation_type'] == alloc_type]
+        ax_summary.plot(data['array_size'], data['alloc_time_ns'] / 1000, 
+                       marker='s', label=f'{alloc_type.capitalize()} (Average)', 
+                       linewidth=2, markersize=6)
+    
+    ax_summary.set_xlabel('Array Size')
+    ax_summary.set_ylabel('Average Allocation Time (μs)')
+    ax_summary.set_title('Average Allocation Time Across All Patterns')
+    ax_summary.legend()
+    ax_summary.grid(True, alpha=0.3)
+    ax_summary.set_xscale('log')
+    ax_summary.set_yscale('log')
     
     plt.tight_layout()
-    plt.savefig('cycles_by_phase.png', dpi=300, bbox_inches='tight')
+    plt.savefig('allocation_comparison.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-def plot_time_by_phase(grouped_df):
-    """Plot execution time for each phase vs array size."""
+def plot_operation_phases(df):
+    """Plot all three phases: allocation, flush, free"""
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-    fig.suptitle('Execution Time by Phase and Access Pattern', fontsize=16)
+    fig.suptitle('Memory Operation Phases Performance', fontsize=16, fontweight='bold')
     
-    phases = ['alloc', 'access', 'flush', 'free']
-    colors = ['blue', 'red', 'green']
-    patterns = grouped_df['pattern'].unique()
+    # Average across all patterns for cleaner visualization
+    avg_data = df.groupby(['array_size', 'allocation_type']).agg({
+        'alloc_time_ns': 'mean',
+        'flush_time_ns': 'mean', 
+        'free_time_ns': 'mean'
+    }).reset_index()
     
-    for i, phase in enumerate(phases):
-        ax = axes[i//2, i%2]
-        
-        for j, pattern in enumerate(patterns):
-            pattern_data = grouped_df[grouped_df['pattern'] == pattern]
-            
-            mean_col = f'{phase}_time_ns_mean'
-            std_col = f'{phase}_time_ns_std'
-            
-            # Convert to microseconds for better readability
-            mean_us = pattern_data[mean_col] / 1000
-            std_us = pattern_data[std_col] / 1000
-            
-            ax.errorbar(pattern_data['array_size'], mean_us, 
-                       yerr=std_us, label=pattern, 
-                       marker='o', color=colors[j], alpha=0.7)
+    phases = [
+        ('alloc_time_ns', 'Allocation Time', axes[0, 0]),
+        ('flush_time_ns', 'Memory Flush Time', axes[0, 1]),
+        ('free_time_ns', 'Deallocation Time', axes[1, 0])
+    ]
+    
+    for phase_col, title, ax in phases:
+        for alloc_type in ['lustre', 'regular']:
+            data = avg_data[avg_data['allocation_type'] == alloc_type]
+            ax.plot(data['array_size'], data[phase_col] / 1000, 
+                   marker='o', label=f'{alloc_type.capitalize()}', linewidth=2, markersize=6)
         
         ax.set_xlabel('Array Size')
-        ax.set_ylabel('Time (microseconds)')
-        ax.set_title(f'{phase.capitalize()} Phase')
-        ax.set_xscale('log')
-        ax.set_yscale('log')
+        ax.set_ylabel('Time (μs)')
+        ax.set_title(title)
         ax.legend()
         ax.grid(True, alpha=0.3)
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+    
+    # Combined view
+    ax_combined = axes[1, 1]
+    width = 0.35
+    x = np.arange(len(avg_data[avg_data['allocation_type'] == 'lustre']))
+    
+    lustre_data = avg_data[avg_data['allocation_type'] == 'lustre']
+    regular_data = avg_data[avg_data['allocation_type'] == 'regular']
+    
+    ax_combined.bar(x - width/2, lustre_data['alloc_time_ns'] / 1000, 
+                   width, label='Lustre', alpha=0.8)
+    ax_combined.bar(x + width/2, regular_data['alloc_time_ns'] / 1000, 
+                   width, label='Regular', alpha=0.8)
+    
+    ax_combined.set_xlabel('Array Size')
+    ax_combined.set_ylabel('Allocation Time (μs)')
+    ax_combined.set_title('Allocation Time Comparison (Bar Chart)')
+    ax_combined.set_xticks(x)
+    ax_combined.set_xticklabels(lustre_data['array_size'])
+    ax_combined.legend()
+    ax_combined.set_yscale('log')
     
     plt.tight_layout()
-    plt.savefig('time_by_phase.png', dpi=300, bbox_inches='tight')
+    plt.savefig('operation_phases.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-def plot_pattern_comparison(grouped_df):
-    """Compare access patterns for the access phase."""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+def plot_pattern_analysis(df):
+    """Analyze performance across different allocation patterns"""
+    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+    fig.suptitle('Allocation Pattern Analysis', fontsize=16, fontweight='bold')
     
-    patterns = grouped_df['pattern'].unique()
-    colors = ['blue', 'red', 'green']
-    
-    # CPU Cycles comparison
-    for i, pattern in enumerate(patterns):
-        pattern_data = grouped_df[grouped_df['pattern'] == pattern]
-        ax1.errorbar(pattern_data['array_size'], pattern_data['access_cycles_mean'],
-                    yerr=pattern_data['access_cycles_std'], 
-                    label=pattern, marker='o', color=colors[i], alpha=0.7)
+    # Pattern comparison for Lustre
+    ax1 = axes[0, 0]
+    lustre_data = df[df['allocation_type'] == 'lustre']
+    for pattern in lustre_data['pattern'].unique():
+        data = lustre_data[lustre_data['pattern'] == pattern]
+        ax1.plot(data['array_size'], data['alloc_time_ns'] / 1000, 
+                marker='o', label=f'{pattern.capitalize()}', linewidth=2, markersize=4)
     
     ax1.set_xlabel('Array Size')
-    ax1.set_ylabel('CPU Cycles')
-    ax1.set_title('Access Phase - CPU Cycles by Pattern')
-    ax1.set_xscale('log')
-    ax1.set_yscale('log')
+    ax1.set_ylabel('Allocation Time (μs)')
+    ax1.set_title('Lustre Allocation - Pattern Comparison')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
+    ax1.set_xscale('log')
+    ax1.set_yscale('log')
     
-    # Time comparison
-    for i, pattern in enumerate(patterns):
-        pattern_data = grouped_df[grouped_df['pattern'] == pattern]
-        mean_us = pattern_data['access_time_ns_mean'] / 1000
-        std_us = pattern_data['access_time_ns_std'] / 1000
-        ax2.errorbar(pattern_data['array_size'], mean_us,
-                    yerr=std_us, 
-                    label=pattern, marker='o', color=colors[i], alpha=0.7)
+    # Pattern comparison for Regular
+    ax2 = axes[0, 1]
+    regular_data = df[df['allocation_type'] == 'regular']
+    for pattern in regular_data['pattern'].unique():
+        data = regular_data[regular_data['pattern'] == pattern]
+        ax2.plot(data['array_size'], data['alloc_time_ns'] / 1000, 
+                marker='s', label=f'{pattern.capitalize()}', linewidth=2, markersize=4)
     
     ax2.set_xlabel('Array Size')
-    ax2.set_ylabel('Time (microseconds)')
-    ax2.set_title('Access Phase - Time by Pattern')
-    ax2.set_xscale('log')
-    ax2.set_yscale('log')
+    ax2.set_ylabel('Allocation Time (μs)')
+    ax2.set_title('Regular Allocation - Pattern Comparison')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
+    ax2.set_xscale('log')
+    ax2.set_yscale('log')
+    
+    # Performance ratio (Lustre vs Regular)
+    ax3 = axes[1, 0]
+    for pattern in df['pattern'].unique():
+        pattern_data = df[df['pattern'] == pattern]
+        lustre = pattern_data[pattern_data['allocation_type'] == 'lustre']
+        regular = pattern_data[pattern_data['allocation_type'] == 'regular']
+        
+        # Merge on array_size to calculate ratio
+        merged = pd.merge(lustre, regular, on='array_size', suffixes=('_lustre', '_regular'))
+        merged['ratio'] = merged['alloc_time_ns_lustre'] / merged['alloc_time_ns_regular']
+        
+        ax3.plot(merged['array_size'], merged['ratio'], 
+                marker='d', label=f'{pattern.capitalize()}', linewidth=2, markersize=4)
+    
+    ax3.set_xlabel('Array Size')
+    ax3.set_ylabel('Time Ratio (Lustre/Regular)')
+    ax3.set_title('Performance Ratio: Lustre vs Regular')
+    ax3.axhline(y=1, color='black', linestyle='--', alpha=0.5, label='Equal Performance')
+    ax3.legend()
+    ax3.grid(True, alpha=0.3)
+    ax3.set_xscale('log')
+    
+    # CPU Cycles comparison
+    ax4 = axes[1, 1]
+    avg_cycles = df.groupby(['array_size', 'allocation_type'])['alloc_cycles'].mean().reset_index()
+    
+    for alloc_type in ['lustre', 'regular']:
+        data = avg_cycles[avg_cycles['allocation_type'] == alloc_type]
+        ax4.plot(data['array_size'], data['alloc_cycles'], 
+                marker='o', label=f'{alloc_type.capitalize()}', linewidth=2, markersize=6)
+    
+    ax4.set_xlabel('Array Size')
+    ax4.set_ylabel('CPU Cycles')
+    ax4.set_title('CPU Cycles Comparison')
+    ax4.legend()
+    ax4.grid(True, alpha=0.3)
+    ax4.set_xscale('log')
+    ax4.set_yscale('log')
     
     plt.tight_layout()
-    plt.savefig('pattern_comparison.png', dpi=300, bbox_inches='tight')
+    plt.savefig('pattern_analysis.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-def plot_heatmap(df):
-    """Create a heatmap showing performance across different configurations."""
-    # Prepare data for heatmap
-    pivot_data = df.groupby(['array_size', 'pattern'])['access_cycles'].mean().unstack()
-    
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(pivot_data, annot=True, fmt='.0f', cmap='viridis', 
-                cbar_kws={'label': 'Average CPU Cycles'})
-    plt.title('Access Phase Performance Heatmap\n(CPU Cycles by Array Size and Pattern)')
-    plt.xlabel('Access Pattern')
-    plt.ylabel('Array Size')
-    plt.tight_layout()
-    plt.savefig('performance_heatmap.png', dpi=300, bbox_inches='tight')
-    plt.show()
-
-def plot_scaling_analysis(grouped_df):
-    """Analyze how performance scales with array size."""
+def plot_efficiency_analysis(df):
+    """Analyze efficiency metrics"""
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-    fig.suptitle('Performance Scaling Analysis', fontsize=16)
+    fig.suptitle('Memory Allocation Efficiency Analysis', fontsize=16, fontweight='bold')
     
-    patterns = grouped_df['pattern'].unique()
-    colors = ['blue', 'red', 'green']
+    # Calculate efficiency metrics
+    df['bytes_allocated'] = df['array_size'] * 32  # sizeof(struct osd_idmap_cache) ≈ 32 bytes
+    df['alloc_throughput'] = df['bytes_allocated'] / (df['alloc_time_ns'] / 1e9)  # bytes per second
+    df['cycles_per_byte'] = df['alloc_cycles'] / df['bytes_allocated']
     
-    # For each pattern, plot cycles per element
-    for i, pattern in enumerate(patterns):
-        pattern_data = grouped_df[grouped_df['pattern'] == pattern]
-        
-        # Allocation cycles per element
-        cycles_per_elem = pattern_data['alloc_cycles_mean'] / pattern_data['array_size']
-        axes[0,0].plot(pattern_data['array_size'], cycles_per_elem, 
-                      label=pattern, marker='o', color=colors[i])
-        
-        # Access cycles per element  
-        cycles_per_elem = pattern_data['access_cycles_mean'] / pattern_data['array_size']
-        axes[0,1].plot(pattern_data['array_size'], cycles_per_elem,
-                      label=pattern, marker='o', color=colors[i])
-        
-        # Flush cycles per element
-        cycles_per_elem = pattern_data['flush_cycles_mean'] / pattern_data['array_size']
-        axes[1,0].plot(pattern_data['array_size'], cycles_per_elem,
-                      label=pattern, marker='o', color=colors[i])
-        
-        # Total cycles
-        total_cycles = (pattern_data['alloc_cycles_mean'] + 
-                       pattern_data['access_cycles_mean'] + 
-                       pattern_data['flush_cycles_mean'] + 
-                       pattern_data['free_cycles_mean'])
-        axes[1,1].plot(pattern_data['array_size'], total_cycles,
-                      label=pattern, marker='o', color=colors[i])
+    # Throughput comparison
+    ax1 = axes[0, 0]
+    avg_throughput = df.groupby(['array_size', 'allocation_type'])['alloc_throughput'].mean().reset_index()
     
-    titles = ['Allocation Cycles per Element', 'Access Cycles per Element', 
-              'Flush Cycles per Element', 'Total Cycles']
+    for alloc_type in ['lustre', 'regular']:
+        data = avg_throughput[avg_throughput['allocation_type'] == alloc_type]
+        ax1.plot(data['array_size'], data['alloc_throughput'] / 1e6, 
+                marker='o', label=f'{alloc_type.capitalize()}', linewidth=2, markersize=6)
     
-    for i, (ax, title) in enumerate(zip(axes.flat, titles)):
-        ax.set_xlabel('Array Size')
-        ax.set_ylabel('Cycles' if i == 3 else 'Cycles per Element')
-        ax.set_title(title)
-        ax.set_xscale('log')
-        if i != 3:  # Don't use log scale for total cycles
-            ax.set_yscale('log')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
+    ax1.set_xlabel('Array Size')
+    ax1.set_ylabel('Throughput (MB/s)')
+    ax1.set_title('Allocation Throughput')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+    ax1.set_xscale('log')
+    
+    # Cycles per byte
+    ax2 = axes[0, 1]
+    avg_cycles_per_byte = df.groupby(['array_size', 'allocation_type'])['cycles_per_byte'].mean().reset_index()
+    
+    for alloc_type in ['lustre', 'regular']:
+        data = avg_cycles_per_byte[avg_cycles_per_byte['allocation_type'] == alloc_type]
+        ax2.plot(data['array_size'], data['cycles_per_byte'], 
+                marker='s', label=f'{alloc_type.capitalize()}', linewidth=2, markersize=6)
+    
+    ax2.set_xlabel('Array Size')
+    ax2.set_ylabel('CPU Cycles per Byte')
+    ax2.set_title('CPU Efficiency (Lower is Better)')
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+    ax2.set_xscale('log')
+    ax2.set_yscale('log')
+    
+    # Memory footprint analysis
+    ax3 = axes[1, 0]
+    ax3.plot(df['array_size'].unique(), 
+             [size * 32 / 1024 for size in df['array_size'].unique()], 
+             marker='o', linewidth=2, markersize=6, color='purple')
+    
+    ax3.set_xlabel('Array Size')
+    ax3.set_ylabel('Memory Footprint (KB)')
+    ax3.set_title('Memory Footprint')
+    ax3.grid(True, alpha=0.3)
+    ax3.set_xscale('log')
+    ax3.set_yscale('log')
+    
+    # Summary statistics
+    ax4 = axes[1, 1]
+    summary_stats = df.groupby('allocation_type').agg({
+        'alloc_time_ns': ['mean', 'std'],
+        'alloc_throughput': ['mean', 'std']
+    }).round(2)
+    
+    ax4.axis('tight')
+    ax4.axis('off')
+    table_data = []
+    for alloc_type in ['lustre', 'regular']:
+        mean_time = summary_stats.loc[alloc_type, ('alloc_time_ns', 'mean')] / 1000
+        std_time = summary_stats.loc[alloc_type, ('alloc_time_ns', 'std')] / 1000
+        mean_throughput = summary_stats.loc[alloc_type, ('alloc_throughput', 'mean')] / 1e6
+        std_throughput = summary_stats.loc[alloc_type, ('alloc_throughput', 'std')] / 1e6
+        
+        table_data.append([
+            alloc_type.capitalize(),
+            f"{mean_time:.2f} ± {std_time:.2f}",
+            f"{mean_throughput:.2f} ± {std_throughput:.2f}"
+        ])
+    
+    table = ax4.table(cellText=table_data,
+                     colLabels=['Allocation Type', 'Avg Time (μs)', 'Avg Throughput (MB/s)'],
+                     cellLoc='center',
+                     loc='center')
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1.2, 1.5)
+    ax4.set_title('Summary Statistics')
     
     plt.tight_layout()
-    plt.savefig('scaling_analysis.png', dpi=300, bbox_inches='tight')
+    plt.savefig('efficiency_analysis.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-def print_summary_stats(df, grouped_df):
-    """Print summary statistics."""
+def generate_report(df):
+    """Generate a summary report"""
     print("\n" + "="*60)
-    print("BENCHMARK SUMMARY STATISTICS")
+    print("MEMORY ALLOCATION BENCHMARK REPORT")
     print("="*60)
     
-    print(f"\nTotal benchmark runs: {len(df)}")
+    print(f"\nTotal test runs: {len(df)}")
     print(f"Array sizes tested: {sorted(df['array_size'].unique())}")
-    print(f"Access patterns tested: {list(df['pattern'].unique())}")
+    print(f"Allocation patterns: {list(df['pattern'].unique())}")
+    print(f"Allocation types: {list(df['allocation_type'].unique())}")
     
-    print("\nMean performance across all configurations:")
-    for phase in ['alloc', 'access', 'flush', 'free']:
-        cycles_col = f'{phase}_cycles_mean'
-        time_col = f'{phase}_time_ns_mean'
+    print("\n--- Performance Summary ---")
+    for alloc_type in ['lustre', 'regular']:
+        data = df[df['allocation_type'] == alloc_type]
+        avg_time = data['alloc_time_ns'].mean() / 1000
+        min_time = data['alloc_time_ns'].min() / 1000
+        max_time = data['alloc_time_ns'].max() / 1000
         
-        mean_cycles = grouped_df[cycles_col].mean()
-        mean_time_us = grouped_df[time_col].mean() / 1000
-        
-        print(f"  {phase.capitalize()}: {mean_cycles:.0f} cycles, {mean_time_us:.2f} μs")
+        print(f"\n{alloc_type.upper()} Allocation:")
+        print(f"  Average allocation time: {avg_time:.2f} μs")
+        print(f"  Range: {min_time:.2f} - {max_time:.2f} μs")
+        print(f"  Average throughput: {data['bytes_allocated'].sum() / (data['alloc_time_ns'].sum() / 1e9) / 1e6:.2f} MB/s")
     
-    print("\nPerformance by pattern (access phase):")
-    for pattern in grouped_df['pattern'].unique():
-        pattern_data = grouped_df[grouped_df['pattern'] == pattern]
-        mean_cycles = pattern_data['access_cycles_mean'].mean()
-        mean_time_us = pattern_data['access_time_ns_mean'].mean() / 1000
-        print(f"  {pattern}: {mean_cycles:.0f} cycles, {mean_time_us:.2f} μs")
+    # Find best performing configurations
+    best_lustre = df[df['allocation_type'] == 'lustre'].loc[df[df['allocation_type'] == 'lustre']['alloc_time_ns'].idxmin()]
+    best_regular = df[df['allocation_type'] == 'regular'].loc[df[df['allocation_type'] == 'regular']['alloc_time_ns'].idxmin()]
+    
+    print(f"\n--- Best Performance ---")
+    print(f"Best Lustre: {best_lustre['alloc_time_ns']/1000:.2f} μs (size={best_lustre['array_size']}, pattern={best_lustre['pattern']})")
+    print(f"Best Regular: {best_regular['alloc_time_ns']/1000:.2f} μs (size={best_regular['array_size']}, pattern={best_regular['pattern']})")
 
 def main():
-    """Main function to run all analyses."""
-    print("Loading benchmark results...")
+    """Main function to run all analyses"""
+    print("Memory Allocation Benchmark Analysis")
+    print("====================================")
     
     # Load data
-    df, grouped_df = load_and_process_data()
+    df = load_data()
     if df is None:
         return
     
-    # Print summary
-    print_summary_stats(df, grouped_df)
+    # Generate all plots
+    print("\nGenerating allocation comparison plots...")
+    plot_allocation_comparison(df)
     
-    # Generate plots
-    print("\nGenerating plots...")
+    print("Generating operation phases plots...")
+    plot_operation_phases(df)
     
-    plot_cycles_by_phase(grouped_df)
-    plot_time_by_phase(grouped_df)
-    plot_pattern_comparison(grouped_df)
-    plot_heatmap(df)
-    plot_scaling_analysis(grouped_df)
+    print("Generating pattern analysis plots...")
+    plot_pattern_analysis(df)
     
-    print("\nAnalysis complete! Check the generated PNG files for visualizations.")
+    print("Generating efficiency analysis plots...")
+    plot_efficiency_analysis(df)
+    
+    # Generate summary report
+    generate_report(df)
+    
+    print(f"\nAnalysis complete! Generated plots:")
+    print("  - allocation_comparison.png")
+    print("  - operation_phases.png") 
+    print("  - pattern_analysis.png")
+    print("  - efficiency_analysis.png")
 
 if __name__ == "__main__":
     main()
