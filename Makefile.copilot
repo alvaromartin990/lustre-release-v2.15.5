@@ -1,0 +1,11 @@
+obj-m += test_obd_alloc_idmap_cache.o
+
+LUSTRE_INC := /usr/include/lustre/
+
+ccflags-y := -I$(LUSTRE_INC) -I$(LUSTRE_INC)/uapi
+
+all:
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+clean:
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean

@@ -1,0 +1,8 @@
+obj-m += ultra_minimal.o
+KERNEL_DIR := /lib/modules/$(shell uname -r)/build
+
+all:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules V=1
+
+clean:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean

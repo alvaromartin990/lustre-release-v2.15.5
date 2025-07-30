@@ -1,0 +1,21 @@
+{
+  "total_tests": 164,
+  "successful_tests": 164,
+  "test_types": [
+    "lustre_alloc_pattern_1",
+    "regular_alloc_pattern_1",
+    "lustre_alloc_pattern_0",
+    "regular_alloc_pattern_2",
+    "stress",
+    "lustre_alloc_pattern_2",
+    "regular_alloc_pattern_0"
+  ],
+  "comparison_stats": {
+    "avg_ratio": 0.9783333333333334,
+    "min_ratio": 0.01,
+    "max_ratio": 2.9,
+    "std_ratio": 0.711960587945624,
+    "lustre_better_count": 6,
+    "regular_better_count": 3
+  }
+}

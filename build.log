@@ -1,0 +1,6 @@
+Building simple_obd_alloc_test kernel module...
+make -C /lib/modules/4.18.0-513.el8_lustre.x86_64/build M=/home/cc/lustre-release-v2.15.5 modules
+make[1]: Entering directory '/usr/src/kernels/4.18.0-513.el8_lustre.x86_64'
+  Building modules, stage 2.
+  MODPOST 29 modules
+make[1]: Leaving directory '/usr/src/kernels/4.18.0-513.el8_lustre.x86_64'
