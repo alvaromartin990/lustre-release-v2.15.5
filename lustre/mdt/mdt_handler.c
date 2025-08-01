@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
+// ALVAROS CODE UPDATE
 
 /*
  * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
@@ -25,6 +26,7 @@
 
 #include <linux/module.h>
 #include <linux/pagemap.h>
+#include <linux/ktime.h> 
 
 #include <dt_object.h>
 #include <lustre_acl.h>
@@ -3198,7 +3200,28 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 	struct mdt_body		*repbody;
 	int			 rc = 0, rc2;
 
+	ktime_t kstart = ktime_get(); /* Add timing start */
+	const char *op_name = NULL; /* Add operation name */
+	unsigned long elapsed;
+	const char *mdt_name;
+	u32 mdt_node_id;
+
 	ENTRY;
+
+	/* Get operation name for logging */
+    switch (op) {
+    case REINT_SETATTR:  op_name = "SETATTR"; break;
+    case REINT_CREATE:   op_name = "CREATE"; break;
+    case REINT_LINK:     op_name = "LINK"; break;
+    case REINT_UNLINK:   op_name = "UNLINK"; break;
+    case REINT_RENAME:   op_name = "RENAME"; break;
+    case REINT_OPEN:     op_name = "OPEN"; break;
+    case REINT_SETXATTR: op_name = "SETXATTR"; break;
+    case REINT_RMENTRY:  op_name = "RMENTRY"; break;
+    case REINT_MIGRATE:  op_name = "MIGRATE"; break;
+    case REINT_RESYNC:   op_name = "RESYNC"; break;
+    default:             op_name = "UNKNOWN"; break;
+    }
 
 	rc = mdt_reint_unpack(info, op);
 	if (rc != 0) {
@@ -3269,7 +3292,60 @@ static int mdt_reint_internal(struct mdt_thread_info *info,
 		rc = lustre_msg_get_status(mdt_info_req(info)->rq_repmsg);
 		GOTO(out_ucred, rc);
 	}
-	rc = mdt_reint_rec(info, lhc);
+
+	/* DEBUG: Always log when we enter OPEN processing */
+	if (op == REINT_OPEN) {
+    	printk(KERN_ALERT "MDT_DEBUG: This is an OPEN operation!\n");
+	}	
+
+	// Before calling mdt_reint_rec
+	if (op == REINT_CREATE) {
+		ktime_t kstart_reint_rec = ktime_get();
+		unsigned long elapsed_reint_rec;
+
+		CDEBUG(D_INFO, "MDT_TIMING_DEBUG: Starting CREATE reint_rec\n");
+		
+		rc = mdt_reint_rec(info, lhc);
+		
+		elapsed_reint_rec = ktime_us_delta(ktime_get(), kstart_reint_rec);
+		printk(KERN_ALERT "MDT_TIMING: [MDT] mdt_reint_rec CREATE took %lu microseconds\n", elapsed_reint_rec);
+		
+		CDEBUG(D_INFO, "MDT_TIMING_DEBUG: Finished CREATE reint_rec, rc=%d\n", rc);
+	} else if (op == REINT_OPEN) {
+		ktime_t kstart_reint_rec = ktime_get();
+		unsigned long elapsed_reint_rec;
+
+		printk(KERN_ALERT "Stage 1: File being created at mdt_reint_internal\n");
+
+		CDEBUG(D_INFO, "MDT_TIMING_DEBUG: Starting OPEN reint_rec\n");
+		
+		rc = mdt_reint_rec(info, lhc);
+		
+		elapsed_reint_rec = ktime_us_delta(ktime_get(), kstart_reint_rec);
+		printk(KERN_ALERT "MDT_TIMING: [MDT] mdt_reint_rec OPEN took %lu microseconds\n", elapsed_reint_rec);
+		
+		CDEBUG(D_INFO, "MDT_TIMING_DEBUG: Finished OPEN reint_rec, rc=%d\n", rc);
+	} else {
+		rc = mdt_reint_rec(info, lhc);
+	}
+
+	/* ENHANCED TIMING: More detailed logging */
+	elapsed = ktime_us_delta(ktime_get(), kstart);
+
+	mdt_name = mdt_obd_name(info->mti_mdt);
+	mdt_node_id = mdt_seq_site(info->mti_mdt)->ss_node_id;
+
+	/ This fixes double logging issue
+	/* Log the operation time with MDT information */
+	if (op == REINT_OPEN) {
+		printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation %s_FILE_OP (%d) took %lu microseconds\n",
+			mdt_name, mdt_node_id, op_name, op, elapsed);
+	} else {
+		printk(KERN_ALERT "MDT_TIMING: [MDT:%s Node:%u] Operation %s (%d) took %lu microseconds\n",
+			mdt_name, mdt_node_id, op_name, op, elapsed);
+	}
+
+	
 	EXIT;
 out_ucred:
 	mdt_exit_ucred(info);
