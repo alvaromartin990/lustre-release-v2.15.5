@@ -577,11 +577,28 @@ int mdd_create_object_internal(const struct lu_env *env, struct mdd_object *p,
 	struct dt_object_format *dof = &mdd_env_info(env)->mdi_dof;
 	int rc;
 
+	// update
+	ktime_t kstart;
+	ktime_t kstart_create;
+	unsigned long elapsed_create;
+	unsigned long elapsed_total;
+
 	ENTRY;
+
+	kstart = ktime_get();
 
 	LASSERT(!mdd_object_exists(c));
 
+	// time the object creation
+	kstart_create = ktime_get();
+
 	rc = mdo_create_object(env, c, attr, hint, dof, handle);
+
+	elapsed_create = ktime_us_delta(ktime_get(), kstart_create);
+    printk(KERN_ALERT "MDD_TIMING: mdo_create_object took %lu microseconds\n", elapsed_create);
+
+	elapsed_total = ktime_us_delta(ktime_get(), kstart);
+    printk(KERN_ALERT "MDD_TIMING: mdd_create_object_internal total took %lu microseconds\n", elapsed_total);
 
 	RETURN(rc);
 }
@@ -592,9 +609,20 @@ int mdd_attr_set_internal(const struct lu_env *env, struct mdd_object *obj,
 {
 	int rc;
 
+	// update
+	// declare kstart and elapsed_attr_set before the ENTRY macro
+	ktime_t kstart;
+	unsigned long elapsed_attr_set;
+
 	ENTRY;
 
+	kstart = ktime_get();
+
 	rc = mdo_attr_set(env, obj, attr, handle);
+
+	elapsed_attr_set = ktime_us_delta(ktime_get(), kstart);
+    printk(KERN_ALERT "MDD_TIMING: mdo_attr_set took %lu microseconds\n", elapsed_attr_set);
+
 #ifdef CONFIG_LUSTRE_FS_POSIX_ACL
 	if (!rc && (attr->la_valid & LA_MODE) && needacl)
 		rc = mdd_acl_chmod(env, obj, attr->la_mode, handle);

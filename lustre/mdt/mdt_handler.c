@@ -564,9 +564,10 @@ static int mdt_statfs(struct tgt_session_info *tsi)
 		osfs->os_bavail <<= current_blockbits - COMPAT_BSIZE_SHIFT;
 		osfs->os_bsize = 1 << COMPAT_BSIZE_SHIFT;
 	}
-	if (rc == 0)
+	if (rc == 0) {
 		mdt_counter_incr(req, LPROC_MDT_STATFS,
 				 ktime_us_delta(ktime_get(), kstart));
+	}
 out:
 	mdt_thread_info_fini(info);
 	RETURN(rc);
