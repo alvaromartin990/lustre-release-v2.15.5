@@ -273,12 +273,13 @@ osd_oi_find_or_create(const struct lu_env *env, struct osd_device *o,
 	struct osd_oi oi;
 	int rc;
 
+	printk(KERN_ALERT "Stage 4: OI Mapping Update at osd_oi_insert\n");
+
 	rc = osd_oi_lookup(env, o, parent, name, &oi);
 	if (rc == 0)
 		*child = oi.oi_zapid;
 	else if (rc == -ENOENT)
 		rc = osd_obj_create(env, o, parent, name, child, NULL, true);
-
 	return rc;
 }
 

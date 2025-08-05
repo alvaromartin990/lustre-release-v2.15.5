@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
 
+// ALVAROS CODE UPDATE FOR ZFS
+
+
 /*
  * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
@@ -119,6 +122,9 @@ static void osd_trans_commit_cb(void *cb_data, int error)
 	struct dt_txn_commit_cb *dcb, *tmp;
 
 	ENTRY;
+
+	// 
+
 	if (error) {
 		if (error == ECANCELED)
 			CWARN("%s: transaction @0x%p was aborted\n",
@@ -330,7 +336,7 @@ static struct thandle *osd_trans_create(const struct lu_env *env,
 	struct osd_device *osd = osd_dt_dev(dt);
 	struct osd_thandle *oh;
 	struct thandle *th;
-	dmu_tx_t *tx;
+	dmu_tx_t *tx; // DMU transaction
 	int rc;
 
 	ENTRY;
@@ -341,7 +347,6 @@ static struct thandle *osd_trans_create(const struct lu_env *env,
 		dump_stack();
 		RETURN(ERR_PTR(rc));
 	}
-
 	tx = dmu_tx_create(osd->od_os);
 	if (tx == NULL) {
 		rc = -ENOMEM;
@@ -352,6 +357,7 @@ static struct thandle *osd_trans_create(const struct lu_env *env,
 
 	/* alloc callback data */
 	OBD_ALLOC_PTR(oh);
+	
 	if (oh == NULL) {
 		rc = -ENOMEM;
 		dmu_tx_abort(tx);
@@ -1521,6 +1527,7 @@ static int osd_prepare(const struct lu_env *env, struct lu_device *pdev,
 	int rc = 0;
 
 	ENTRY;
+
 	if (osd->od_quota_slave_md != NULL) {
 		/* set up quota slave objects */
 		rc = qsd_prepare(env, osd->od_quota_slave_md);

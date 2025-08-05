@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 
+// ALVAROS CODE UPDATE FOR LDISKFS
+
 /*
  * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
@@ -201,11 +203,23 @@ osd_idc_add(const struct lu_env *env, struct osd_device *osd,
 	struct osd_idmap_cache *idc;
 	int i;
 
+	// UPDATE
+	ktime_t t0, t1;
+	
 	if (unlikely(oti->oti_ins_cache_used >= oti->oti_ins_cache_size)) {
 		i = oti->oti_ins_cache_size * 2;
 		if (i == 0)
 			i = OSD_INS_CACHE_SIZE;
+		
+		printk(KERN_ALERT "Within osd_idc_add, about to call OBD_ALLOC_PTR_ARRAY_LARGE to perform OI Cache Allocation\n");
+		t0 = ktime_get_ns();
+		
 		OBD_ALLOC_PTR_ARRAY_LARGE(idc, i);
+
+		t1 = ktime_get_ns();
+		printk(KERN_ALERT "Within osd_idc_add, just called OBD_ALLOC_PTR_ARRAY_LARGE to perform OI Cache Allocation\n");
+		printk(KERN_ALERT "Lustre OI cache allocation latency = %lld ns\n", t1 - t0);
+
 		if (idc == NULL)
 			return ERR_PTR(-ENOMEM);
 		if (oti->oti_ins_cache != NULL) {
@@ -3702,14 +3716,42 @@ static int __osd_create(struct osd_thread_info *info, struct osd_object *obj,
 	int result;
 	__u32 umask;
 
+	// update
+	ktime_t kstart_total = ktime_get(); // Total timing for __osd_create
+	ktime_t kstart_trans_exec;
+	ktime_t kstart_fs_create;
+	ktime_t kstart_unlock;
+	ktime_t kstart_attr_init;
+	ktime_t kstart_obj_init;
+	ktime_t kstart_trans_check;
+
+	unsigned long elapsed_trans_exec;
+	unsigned long elapsed_fs_create;
+	unsigned long elapsed_unlock;
+	unsigned long elapsed_attr_init;
+	unsigned long elapsed_obj_init;
+	unsigned long elapsed_trans_check;
+	unsigned long elapsed_total;
+
+	kstart_trans_exec = ktime_get();
+
 	osd_trans_exec_op(info->oti_env, th, OSD_OT_CREATE);
+
+	elapsed_trans_exec = ktime_us_delta(ktime_get(), kstart_trans_exec);
+    printk(KERN_ALERT "OSD_TIMING: osd_trans_exec_op took %lu microseconds\n", elapsed_trans_exec);
 
 	/* we drop umask so that permissions we pass are not affected */
 	umask = current->fs->umask;
 	current->fs->umask = 0;
 
-	result = osd_create_type_f(dof->dof_type)(info, obj, attr, hint, dof,
-						  th);
+	// Time the actual filesystem object creation - THIS IS THE KEY OPERATION
+    kstart_fs_create = ktime_get();
+
+	result = osd_create_type_f(dof->dof_type)(info, obj, attr, hint, dof, th);
+
+	elapsed_fs_create = ktime_us_delta(ktime_get(), kstart_fs_create);
+    printk(KERN_ALERT "OSD_TIMING: osd_create_type_f (filesystem object creation) took %lu microseconds, type=%d\n", elapsed_fs_create, dof->dof_type);
+
 	if (likely(obj->oo_inode != NULL)) {
 		LASSERT(obj->oo_inode->i_state & I_NEW);
 
@@ -3717,18 +3759,47 @@ static int __osd_create(struct osd_thread_info *info, struct osd_object *obj,
 		 * Unlock the inode before attr initialization to avoid
 		 * unnecessary dqget operations. LU-6378
 		 */
+		
+		kstart_unlock = ktime_get();
 		unlock_new_inode(obj->oo_inode);
+
+		elapsed_unlock = ktime_us_delta(ktime_get(), kstart_unlock);
+        printk(KERN_ALERT "OSD_TIMING: unlock_new_inode took %lu microseconds\n", elapsed_unlock);
+
 	}
 
 	if (likely(result == 0)) {
+		// Time attribute initialization
+        kstart_attr_init = ktime_get();
 		osd_attr_init(info, obj, attr, dof, th);
+		
+		elapsed_attr_init = ktime_us_delta(ktime_get(), kstart_attr_init);
+        printk(KERN_ALERT "OSD_TIMING: osd_attr_init took %lu microseconds\n", elapsed_attr_init);
+
+		// Time object initialization
+        kstart_obj_init = ktime_get();
+		
 		osd_object_init0(obj);
+
+		elapsed_obj_init = ktime_us_delta(ktime_get(), kstart_obj_init);
+        printk(KERN_ALERT "OSD_TIMING: osd_object_init0 took %lu microseconds\n", elapsed_obj_init);
 	}
 
 	/* restore previous umask value */
 	current->fs->umask = umask;
 
+	// Time transaction execution check
+    kstart_trans_check = ktime_get();
+
 	osd_trans_exec_check(info->oti_env, th, OSD_OT_CREATE);
+
+	elapsed_trans_check = ktime_us_delta(ktime_get(), kstart_trans_check);
+    printk(KERN_ALERT "OSD_TIMING: osd_trans_exec_check took %lu microseconds\n", elapsed_trans_check);
+
+    // Print total time and result
+	elapsed_total = ktime_us_delta(ktime_get(), kstart_total);
+    printk(KERN_ALERT "OSD_TIMING: __osd_create total took %lu microseconds (result=%d, type=%d)\n", 
+           elapsed_total, result, dof->dof_type);
 
 	return result;
 }

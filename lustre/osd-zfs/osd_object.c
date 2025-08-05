@@ -1698,6 +1698,9 @@ int __osd_object_create(const struct lu_env *env, struct osd_device *osd,
 	uint64_t oid;
 	int size;
 
+	ktime_t obj_create_time;
+	unsigned long elapsed_create = 0;
+
 	/* Use DMU_OTN_UINT8_METADATA for local objects so their data blocks
 	 * would get an additional ditto copy
 	 */
@@ -1710,8 +1713,15 @@ int __osd_object_create(const struct lu_env *env, struct osd_device *osd,
 		size = obj->oo_ea_in_bonus;
 	else
 		size = OSD_BASE_EA_IN_BONUS;
-	oid = osd_dmu_object_alloc(osd->od_os, type, 0,
+		// record the time of transaction creation
+		printk(KERN_ALERT "Stage 2: Inode Creation at __osd_object_create\n");
+		obj_create_time = ktime_get();
+
+		oid = osd_dmu_object_alloc(osd->od_os, type, 0,
 				   osd_find_dnsize(osd, size), tx);
+
+		elapsed_create = ktime_us_delta(ktime_get(), obj_create_time);
+    	printk(KERN_ALERT "OSD_TIMING: __osd_object_create (DMU creation) took %lu microseconds\n", elapsed_create);
 
 	LASSERT(la->la_valid & LA_MODE);
 	la->la_size = 0;
@@ -1976,6 +1986,7 @@ static int osd_create(const struct lu_env *env, struct dt_object *dt,
 		zde->zde_dnode++;
 
 	rc = osd_zap_add(osd, zapid, zdn, buf, 8, 1, zde, oh->ot_tx);
+	
 	if (rc)
 		GOTO(out, rc);
 
@@ -1994,6 +2005,7 @@ skip_add:
 	if (fid_is_idif(fid) || (fid_is_norm(fid) && osd->od_is_ost))
 		compat |= LMAC_FID_ON_OST;
 	lustre_lma_init(lma, fid, compat, 0);
+	printk(KERN_ALERT "Stage 3: FID Allocation at osd_create\n");
 	lustre_lma_swab(lma);
 	rc = -nvlist_add_byte_array(obj->oo_sa_xattr, XATTR_NAME_LMA,
 				    (uchar_t *)lma, sizeof(*lma));

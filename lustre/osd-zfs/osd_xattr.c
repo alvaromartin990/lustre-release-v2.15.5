@@ -455,6 +455,8 @@ int __osd_sa_attr_init(const struct lu_env *env, struct osd_object *obj,
 	size_t size;
 	int rc, cnt;
 
+	printk(KERN_ALERT "Stage 5: Setting xattr on object to storage at __osd_sa_attr_init\n");
+
 	obj->oo_late_xattr = 0;
 	obj->oo_late_attr_set = 0;
 
