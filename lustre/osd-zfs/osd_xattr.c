@@ -455,7 +455,12 @@ int __osd_sa_attr_init(const struct lu_env *env, struct osd_object *obj,
 	size_t size;
 	int rc, cnt;
 
+	ktime_t xattr_time;
+	unsigned long elapsed_xattr_time = 0;
+
 	printk(KERN_ALERT "Stage 5: Setting xattr on object to storage at __osd_sa_attr_init\n");
+	
+	xattr_time = ktime_get();
 
 	obj->oo_late_xattr = 0;
 	obj->oo_late_attr_set = 0;
@@ -530,6 +535,9 @@ int __osd_sa_attr_init(const struct lu_env *env, struct osd_object *obj,
 	SA_ADD_BULK_ATTR(bulk, cnt, SA_ZPL_DXATTR(osd), NULL, lb->lb_buf, size);
 
 	rc = -sa_replace_all_by_template(obj->oo_sa_hdl, bulk, cnt, oh->ot_tx);
+
+	elapsed_xattr_time = ktime_us_delta(ktime_get(), xattr_time);
+    printk(KERN_ALERT "OSD_TIMING: __osd_sa_attr_init (LMA Xattr Setting) took %lu microseconds\n", elapsed_xattr_time);
 
 	return rc;
 }

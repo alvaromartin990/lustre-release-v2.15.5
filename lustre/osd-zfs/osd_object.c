@@ -1922,6 +1922,10 @@ static int osd_create(const struct lu_env *env, struct dt_object *dt,
 	int			 rc;
 	__u32 compat = 0;
 
+	// time lustre_lma_init
+	ktime_t lustre_lma_init_timer;
+	unsigned long elapsed_lma_init_create = 0;
+
 	ENTRY;
 	LASSERT(!fid_is_acct(fid));
 
@@ -2004,6 +2008,10 @@ skip_add:
 	/* initialize LMA */
 	if (fid_is_idif(fid) || (fid_is_norm(fid) && osd->od_is_ost))
 		compat |= LMAC_FID_ON_OST;
+	
+	// time it
+	lustre_lma_init_timer = ktime_get();
+
 	lustre_lma_init(lma, fid, compat, 0);
 	printk(KERN_ALERT "Stage 3: FID Allocation at osd_create\n");
 	lustre_lma_swab(lma);
@@ -2026,6 +2034,9 @@ skip_add:
 		obj->oo_dt.do_body_ops = &osd_body_ops;
 
 	osd_idc_find_and_init(env, osd, obj);
+
+	elapsed_lma_init_create = ktime_us_delta(ktime_get(), lustre_lma_init_timer);
+	printk(KERN_ALERT "OSD_TIMING: osd_create (FID Allocation) took %lu microseconds\n", elapsed_lma_init_create);
 
 out:
 	if (unlikely(rc && dn)) {
