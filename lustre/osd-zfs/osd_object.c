@@ -1722,7 +1722,7 @@ int __osd_object_create(const struct lu_env *env, struct osd_device *osd,
 		oid = osd_dmu_object_alloc(osd->od_os, type, 0, osd_find_dnsize(osd, size), tx);
 
 		elapsed_create = (ktime_get_real_ns() - obj_create_time) / 1000;
-    	printk(KERN_ALERT "OSD_TIMING: __osd_object_create (DMU creation) took %lu microseconds\n", elapsed_create);
+    	printk(KERN_ALERT "OSD_TIMING: __osd_object_create (DMU creation) took %llu microseconds\n", elapsed_create);
 	}
 
 	LASSERT(la->la_valid & LA_MODE);
