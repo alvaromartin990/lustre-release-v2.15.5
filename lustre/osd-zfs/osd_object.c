@@ -1700,10 +1700,8 @@ int __osd_object_create(const struct lu_env *env, struct osd_device *osd,
 	uint64_t oid;
 	int size;
 
-	ktime_t obj_create_time;
-	unsigned long elapsed_create = 0;
-
-	ENTRY;
+	u64 obj_create_time;
+	u64 elapsed_create;
 
 	/* Use DMU_OTN_UINT8_METADATA for local objects so their data blocks
 	 * would get an additional ditto copy
@@ -1723,7 +1721,7 @@ int __osd_object_create(const struct lu_env *env, struct osd_device *osd,
 
 		oid = osd_dmu_object_alloc(osd->od_os, type, 0, osd_find_dnsize(osd, size), tx);
 
-		elapsed_create = ktime_us_delta(ktime_get_real_ns(), obj_create_time);
+		elapsed_create = (ktime_get_real_ns() - obj_create_time) / 1000;
     	printk(KERN_ALERT "OSD_TIMING: __osd_object_create (DMU creation) took %lu microseconds\n", elapsed_create);
 	}
 
