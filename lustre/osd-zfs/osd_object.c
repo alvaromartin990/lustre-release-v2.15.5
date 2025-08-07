@@ -1717,11 +1717,11 @@ int __osd_object_create(const struct lu_env *env, struct osd_device *osd,
 		size = OSD_BASE_EA_IN_BONUS;
 		// record the time of transaction creation
 		printk(KERN_ALERT "Stage 2: Inode Creation at __osd_object_create\n");
-		obj_create_time = ktime_get();
+		obj_create_time = ktime_get_real_ns();
 
 		oid = osd_dmu_object_alloc(osd->od_os, type, 0, osd_find_dnsize(osd, size), tx);
 
-		elapsed_create = ktime_us_delta(ktime_get(), obj_create_time);
+		elapsed_create = ktime_us_delta(ktime_get_real_ns(), obj_create_time);
     	printk(KERN_ALERT "OSD_TIMING: __osd_object_create (DMU creation) took %lu microseconds\n", elapsed_create);
 	}
 
@@ -2012,7 +2012,7 @@ skip_add:
 		compat |= LMAC_FID_ON_OST;
 	
 	// time it
-	lustre_lma_init_timer = ktime_get();
+	lustre_lma_init_timer = ktime_get_real_ns();
 
 	lustre_lma_init(lma, fid, compat, 0);
 	printk(KERN_ALERT "Stage 3: FID Allocation at osd_create\n");
@@ -2037,7 +2037,7 @@ skip_add:
 
 	osd_idc_find_and_init(env, osd, obj);
 
-	elapsed_lma_init_create = ktime_us_delta(ktime_get(), lustre_lma_init_timer);
+	elapsed_lma_init_create = ktime_us_delta(ktime_get_real_ns(), lustre_lma_init_timer);
 	printk(KERN_ALERT "OSD_TIMING: osd_create (FID Allocation) took %lu microseconds\n", elapsed_lma_init_create);
 
 out:
