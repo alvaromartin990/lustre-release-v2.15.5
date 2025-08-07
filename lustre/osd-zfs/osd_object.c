@@ -1709,19 +1709,19 @@ int __osd_object_create(const struct lu_env *env, struct osd_device *osd,
 		type = DMU_OTN_UINT8_METADATA;
 
 	/* Create a new DMU object using the default dnode size. */
-	if (obj)
+	if (obj) {
 		size = obj->oo_ea_in_bonus;
-	else
+	} else {
 		size = OSD_BASE_EA_IN_BONUS;
 		// record the time of transaction creation
 		printk(KERN_ALERT "Stage 2: Inode Creation at __osd_object_create\n");
 		obj_create_time = ktime_get();
 
-		oid = osd_dmu_object_alloc(osd->od_os, type, 0,
-				   osd_find_dnsize(osd, size), tx);
+		oid = osd_dmu_object_alloc(osd->od_os, type, 0, osd_find_dnsize(osd, size), tx);
 
 		elapsed_create = ktime_us_delta(ktime_get(), obj_create_time);
     	printk(KERN_ALERT "OSD_TIMING: __osd_object_create (DMU creation) took %lu microseconds\n", elapsed_create);
+	}
 
 	LASSERT(la->la_valid & LA_MODE);
 	la->la_size = 0;
