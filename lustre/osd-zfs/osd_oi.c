@@ -43,6 +43,8 @@
 #include <sys/txg.h>
 #include <lustre_scrub.h>
 
+#include <linux/ktime.h>
+
 #define OSD_OI_FID_NR         (1UL << 7)
 unsigned int osd_oi_count = OSD_OI_FID_NR;
 

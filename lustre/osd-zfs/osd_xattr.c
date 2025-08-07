@@ -45,6 +45,8 @@
 #include <linux/posix_acl_xattr.h>
 #include <lustre_scrub.h>
 
+#include <linux/ktime.h>
+
 int __osd_xattr_load(struct osd_device *osd, sa_handle_t *hdl, nvlist_t **sa)
 {
 	char *buf;

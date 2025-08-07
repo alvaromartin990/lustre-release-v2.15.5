@@ -47,6 +47,8 @@
 #include <sys/sa_impl.h>
 #include <sys/txg.h>
 
+#include <linux/ktime.h>
+
 struct lu_context_key	osd_key;
 
 static int osd_txg_sync_delay_us = -1;

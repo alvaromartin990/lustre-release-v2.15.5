@@ -32,6 +32,8 @@
 #include <sys/zap.h>
 #include <sys/zap_leaf.h>
 
+#include <linux/ktime.h>
+
 #include "osd_internal.h"
 
 #define OSD_OTABLE_MAX_HASH		((1ULL << 48) - 1)

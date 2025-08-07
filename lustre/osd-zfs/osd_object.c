@@ -40,6 +40,8 @@
 #include <sys/sa_impl.h>
 #include <sys/txg.h>
 
+#include <linux/ktime.h>
+
 char *osd_obj_tag = "osd_object";
 static int osd_object_sync_delay_us = -1;
 
