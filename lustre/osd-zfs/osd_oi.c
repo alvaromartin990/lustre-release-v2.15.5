@@ -268,8 +268,7 @@ out:
 
 static int
 osd_oi_find_or_create(const struct lu_env *env, struct osd_device *o,
-		      uint64_t parent, const char *name, uint64_t *child)
-{
+		      uint64_t parent, const char *name, uint64_t *child) {
 	struct osd_oi oi;
 	int rc;
 
@@ -290,6 +289,7 @@ osd_oi_find_or_create(const struct lu_env *env, struct osd_device *o,
     	printk(KERN_ALERT "OSD_TIMING: osd_oi_find_or_create (OI Mapping Update) took %lu microseconds\n", elapsed_osd_oi_find_or_create);
 	}	
 	return rc;
+}
 
 int osd_obj_find_or_create(const struct lu_env *env, struct osd_device *o,
 			   uint64_t parent, const char *name, uint64_t *child,
