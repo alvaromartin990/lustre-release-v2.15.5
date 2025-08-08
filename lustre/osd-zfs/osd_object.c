@@ -1929,8 +1929,8 @@ static int osd_create(const struct lu_env *env, struct dt_object *dt,
 	__u32 compat = 0;
 
 	// time lustre_lma_init
-	ktime_t lustre_lma_init_timer;
-	unsigned long elapsed_lma_init_create = 0;
+	unsigned long long lustre_lma_init_timer;
+	unsigned long long elapsed_lma_init_create = 0;
 
 	ENTRY;
 	LASSERT(!fid_is_acct(fid));
@@ -2016,7 +2016,7 @@ skip_add:
 		compat |= LMAC_FID_ON_OST;
 	
 	// time it
-	lustre_lma_init_timer = ktime_get_real_ns();
+	lustre_lma_init_timer = osd_ktime_get();
 
 	lustre_lma_init(lma, fid, compat, 0);
 	
@@ -2043,7 +2043,7 @@ skip_add:
 
 	osd_idc_find_and_init(env, osd, obj);
 
-	elapsed_lma_init_create = (ktime_get_real_ns() - lustre_lma_init_timer) / 1000;
+	elapsed_lma_init_create = (osd_ktime_get() - lustre_lma_init_timer) / 1000;
 	printk(KERN_ALERT "OSD_TIMING: osd_create (FID Allocation) took %llu microseconds\n", elapsed_lma_init_create);
 
 out:
