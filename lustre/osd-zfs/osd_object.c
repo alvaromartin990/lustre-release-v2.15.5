@@ -41,6 +41,7 @@
 #include <sys/txg.h>
 
 #include <linux/ktime.h>
+#include <linux/timekeeping.h>
 
 char *osd_obj_tag = "osd_object";
 static int osd_object_sync_delay_us = -1;
@@ -48,6 +49,13 @@ static int osd_object_sync_delay_us = -1;
 static const struct dt_object_operations osd_obj_ops;
 static const struct lu_object_operations osd_lu_obj_ops;
 static const struct dt_object_operations osd_obj_otable_it_ops;
+
+static inline u64 ktime_real_ns_safe(void)
+{
+    struct timespec64 ts;
+    ktime_get_real_ts64(&ts);  // Exported API
+    return timespec64_to_ns(&ts);
+}
 
 static void
 osd_object_sa_fini(struct osd_object *obj)
@@ -1717,11 +1725,11 @@ int __osd_object_create(const struct lu_env *env, struct osd_device *osd,
 		size = OSD_BASE_EA_IN_BONUS;
 		// record the time of transaction creation
 		printk(KERN_ALERT "Stage 2: Inode Creation at __osd_object_create\n");
-		obj_create_time = ktime_get_real_ns();
+		obj_create_time = ktime_real_ns_safe();
 
 		oid = osd_dmu_object_alloc(osd->od_os, type, 0, osd_find_dnsize(osd, size), tx);
 
-		elapsed_create = (ktime_get_real_ns() - obj_create_time) / 1000;
+		elapsed_create = (ktime_real_ns_safe() - obj_create_time) / 1000;
     	printk(KERN_ALERT "OSD_TIMING: __osd_object_create (DMU creation) took %llu microseconds\n", elapsed_create);
 	}
 
