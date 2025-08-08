@@ -61,13 +61,6 @@ struct named_oid {
 	char		*name;
 };
 
-// static inline u64 ktime_real_ns_safe(void)
-// {
-//     struct timespec64 ts;
-//     ktime_get_real_ts64(&ts);  // Exported API
-//     return timespec64_to_ns(&ts);
-// }
-
 static const struct named_oid oids[] = {
 	{ .oid = LAST_RECV_OID,	       .name = LAST_RCVD },
 	{ .oid = OFD_LAST_GROUP_OID,   .name = "LAST_GROUP" },

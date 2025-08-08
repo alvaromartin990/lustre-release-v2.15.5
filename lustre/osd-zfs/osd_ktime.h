@@ -4,19 +4,14 @@
 #include <linux/ktime.h>
 #include <linux/time64.h>
 
-/*
- * Compatibility shims for kernels that don't export
- * ktime_get() or ktime_get_with_offset().
- */
-#ifndef HAVE_KTIME_GET
-static inline ktime_t ktime_get(void)
+/* Replacement for ktime_get() that is module-safe */
+static inline ktime_t osd_ktime_get(void)
 {
     return ktime_get_real();
 }
-#endif
 
-#ifndef HAVE_KTIME_GET_WITH_OFFSET
-static inline ktime_t ktime_get_with_offset(enum tk_offsets offs)
+/* Replacement for ktime_get_with_offset() that is module-safe */
+static inline ktime_t osd_ktime_get_with_offset(enum tk_offsets offs)
 {
     switch (offs) {
     case TK_OFFS_REAL:
@@ -27,6 +22,5 @@ static inline ktime_t ktime_get_with_offset(enum tk_offsets offs)
         return ktime_get_real();
     }
 }
-#endif
 
 #endif /* _OSD_KTIME_H */

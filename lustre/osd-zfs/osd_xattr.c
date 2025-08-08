@@ -49,12 +49,6 @@
 #include <linux/timekeeping.h>
 #include "osd_ktime.h"
 
-// static inline u64 ktime_real_ns_safe(void)
-// {
-//     struct timespec64 ts;
-//     ktime_get_real_ts64(&ts);  // Exported API
-//     return timespec64_to_ns(&ts);
-// }
 
 int __osd_xattr_load(struct osd_device *osd, sa_handle_t *hdl, nvlist_t **sa)
 {
