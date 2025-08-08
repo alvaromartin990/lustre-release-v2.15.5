@@ -1,5 +1,5 @@
-#ifndef _OSD_KTIME_H
-#define _OSD_KTIME_H
+#ifndef _OSD_KTIME_H_
+#define _OSD_KTIME_H_
 
 #include <linux/ktime.h>
 #include <linux/time64.h>
@@ -23,4 +23,4 @@ static inline ktime_t osd_ktime_get_with_offset(enum tk_offsets offs)
     }
 }
 
-#endif /* _OSD_KTIME_H */
+#endif /* _OSD_KTIME_H_ */
