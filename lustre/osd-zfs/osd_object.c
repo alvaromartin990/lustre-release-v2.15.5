@@ -42,6 +42,7 @@
 
 #include <linux/ktime.h>
 #include <linux/timekeeping.h>
+#include "osd_ktime.h"
 
 char *osd_obj_tag = "osd_object";
 static int osd_object_sync_delay_us = -1;
@@ -50,12 +51,12 @@ static const struct dt_object_operations osd_obj_ops;
 static const struct lu_object_operations osd_lu_obj_ops;
 static const struct dt_object_operations osd_obj_otable_it_ops;
 
-static inline u64 ktime_real_ns_safe(void)
-{
-    struct timespec64 ts;
-    ktime_get_real_ts64(&ts);  // Exported API
-    return timespec64_to_ns(&ts);
-}
+// static inline u64 ktime_real_ns_safe(void)
+// {
+//     struct timespec64 ts;
+//     ktime_get_real_ts64(&ts);  // Exported API
+//     return timespec64_to_ns(&ts);
+// }
 
 static void
 osd_object_sa_fini(struct osd_object *obj)

@@ -47,13 +47,14 @@
 
 #include <linux/ktime.h>
 #include <linux/timekeeping.h>
+#include "osd_ktime.h"
 
-static inline u64 ktime_real_ns_safe(void)
-{
-    struct timespec64 ts;
-    ktime_get_real_ts64(&ts);  // Exported API
-    return timespec64_to_ns(&ts);
-}
+// static inline u64 ktime_real_ns_safe(void)
+// {
+//     struct timespec64 ts;
+//     ktime_get_real_ts64(&ts);  // Exported API
+//     return timespec64_to_ns(&ts);
+// }
 
 int __osd_xattr_load(struct osd_device *osd, sa_handle_t *hdl, nvlist_t **sa)
 {
@@ -546,7 +547,7 @@ int __osd_sa_attr_init(const struct lu_env *env, struct osd_object *obj,
 
 	rc = -sa_replace_all_by_template(obj->oo_sa_hdl, bulk, cnt, oh->ot_tx);
 
-	elapsed_xattr_time = (ktime_get_real_ns_safe() - xattr_time) / 1000;
+	elapsed_xattr_time = (ktime_real_ns_safe() - xattr_time) / 1000;
     printk(KERN_ALERT "OSD_TIMING: __osd_sa_attr_init (LMA Xattr Setting) took %llu microseconds\n", elapsed_xattr_time);
 
 	return rc;

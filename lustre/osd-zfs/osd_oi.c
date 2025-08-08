@@ -45,6 +45,7 @@
 
 #include <linux/ktime.h>
 #include <linux/timekeeping.h>
+#include "osd_ktime.h"
 
 #define OSD_OI_FID_NR         (1UL << 7)
 unsigned int osd_oi_count = OSD_OI_FID_NR;
@@ -60,12 +61,12 @@ struct named_oid {
 	char		*name;
 };
 
-static inline u64 ktime_real_ns_safe(void)
-{
-    struct timespec64 ts;
-    ktime_get_real_ts64(&ts);  // Exported API
-    return timespec64_to_ns(&ts);
-}
+// static inline u64 ktime_real_ns_safe(void)
+// {
+//     struct timespec64 ts;
+//     ktime_get_real_ts64(&ts);  // Exported API
+//     return timespec64_to_ns(&ts);
+// }
 
 static const struct named_oid oids[] = {
 	{ .oid = LAST_RECV_OID,	       .name = LAST_RCVD },
@@ -291,11 +292,11 @@ osd_oi_find_or_create(const struct lu_env *env, struct osd_device *o,
 	if (rc == 0) {
 		*child = oi.oi_zapid;
 	} else if (rc == -ENOENT) {
-		osd_oi_find_or_create_time = ktime_get_real_ns_safe();
+		osd_oi_find_or_create_time = ktime_real_ns_safe();
 		
 		rc = osd_obj_create(env, o, parent, name, child, NULL, true);
 
-		elapsed_osd_oi_find_or_create = (ktime_get_real_ns_safe() - osd_oi_find_or_create_time) / 1000;
+		elapsed_osd_oi_find_or_create = (ktime_real_ns_safe() - osd_oi_find_or_create_time) / 1000;
     	printk(KERN_ALERT "OSD_TIMING: osd_oi_find_or_create (OI Mapping Update) took %llu microseconds\n", elapsed_osd_oi_find_or_create);
 	}
 	return rc;
