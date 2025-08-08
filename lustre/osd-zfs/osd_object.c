@@ -2023,7 +2023,9 @@ skip_add:
 	lustre_lma_init_timer = ktime_get_real_ns();
 
 	lustre_lma_init(lma, fid, compat, 0);
+	
 	printk(KERN_ALERT "Stage 3: FID Allocation at osd_create\n");
+	
 	lustre_lma_swab(lma);
 	rc = -nvlist_add_byte_array(obj->oo_sa_xattr, XATTR_NAME_LMA,
 				    (uchar_t *)lma, sizeof(*lma));
@@ -2045,8 +2047,8 @@ skip_add:
 
 	osd_idc_find_and_init(env, osd, obj);
 
-	elapsed_lma_init_create = ktime_us_delta(ktime_get_real_ns(), lustre_lma_init_timer);
-	printk(KERN_ALERT "OSD_TIMING: osd_create (FID Allocation) took %lu microseconds\n", elapsed_lma_init_create);
+	elapsed_lma_init_create = (ktime_get_real_ns() - lustre_lma_init_timer) / 1000;
+	printk(KERN_ALERT "OSD_TIMING: osd_create (FID Allocation) took %llu microseconds\n", elapsed_lma_init_create);
 
 out:
 	if (unlikely(rc && dn)) {
