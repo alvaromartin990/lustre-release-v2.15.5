@@ -1703,8 +1703,8 @@ int __osd_object_create(const struct lu_env *env, struct osd_device *osd,
 	uint64_t oid;
 	int size;
 
-	u64 obj_create_time;
-	u64 elapsed_create;
+	unsigned long long obj_create_time;
+	unsigned long long elapsed_create;
 
 	/* Use DMU_OTN_UINT8_METADATA for local objects so their data blocks
 	 * would get an additional ditto copy

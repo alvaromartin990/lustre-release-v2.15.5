@@ -276,8 +276,8 @@ osd_oi_find_or_create(const struct lu_env *env, struct osd_device *o,
 	struct osd_oi oi;
 	int rc;
 
-	ktime_t osd_oi_find_or_create_time;
-	unsigned long elapsed_osd_oi_find_or_create = 0;
+	unsigned long long osd_oi_find_or_create_time;
+	unsigned long long elapsed_osd_oi_find_or_create;
 
 	printk(KERN_ALERT "Stage 4: OI Mapping Update at osd_oi_find_or_create\n");
 
@@ -285,11 +285,11 @@ osd_oi_find_or_create(const struct lu_env *env, struct osd_device *o,
 	if (rc == 0) {
 		*child = oi.oi_zapid;
 	} else if (rc == -ENOENT) {
-		osd_oi_find_or_create_time = ktime_real_ns_safe();
+		osd_oi_find_or_create_time = osd_ktime_get();
 		
 		rc = osd_obj_create(env, o, parent, name, child, NULL, true);
 
-		elapsed_osd_oi_find_or_create = (ktime_real_ns_safe() - osd_oi_find_or_create_time) / 1000;
+		elapsed_osd_oi_find_or_create = (osd_ktime_get() - osd_oi_find_or_create_time) / 1000;
     	printk(KERN_ALERT "OSD_TIMING: osd_oi_find_or_create (OI Mapping Update) took %llu microseconds\n", elapsed_osd_oi_find_or_create);
 	}
 	return rc;
