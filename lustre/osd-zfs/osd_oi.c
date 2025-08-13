@@ -279,6 +279,9 @@ osd_oi_find_or_create(const struct lu_env *env, struct osd_device *o,
 	else if (rc == -ENOENT)
 		rc = osd_obj_create(env, o, parent, name, child, NULL, true);
 
+	// stage 4
+	printk(KERN_ALERT "Stage 4: osd_oi_find_or_create OI Mapping\n");
+
 	return rc;
 }
 

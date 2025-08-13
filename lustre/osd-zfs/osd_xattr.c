@@ -529,6 +529,9 @@ int __osd_sa_attr_init(const struct lu_env *env, struct osd_object *obj,
 
 	rc = -sa_replace_all_by_template(obj->oo_sa_hdl, bulk, cnt, oh->ot_tx);
 
+	// stage 4
+	printk(KERN_ALERT "Stage 5: osd_xattr_update\n");
+
 	return rc;
 }
 

@@ -1712,6 +1712,9 @@ int __osd_object_create(const struct lu_env *env, struct osd_device *osd,
 		size = OSD_BASE_EA_IN_BONUS;
 	oid = osd_dmu_object_alloc(osd->od_os, type, 0,
 				   osd_find_dnsize(osd, size), tx);
+	
+	// kernel alert stage 2
+	printk(KERN_ALERT "Stage 2: __osd_object_create (DMU create)\n");
 
 	LASSERT(la->la_valid & LA_MODE);
 	la->la_size = 0;
@@ -1994,6 +1997,8 @@ skip_add:
 	if (fid_is_idif(fid) || (fid_is_norm(fid) && osd->od_is_ost))
 		compat |= LMAC_FID_ON_OST;
 	lustre_lma_init(lma, fid, compat, 0);
+	// stage 3
+	printk(KERN_ALERT "Stage 3: FID Allocation at osd_create\n");
 	lustre_lma_swab(lma);
 	rc = -nvlist_add_byte_array(obj->oo_sa_xattr, XATTR_NAME_LMA,
 				    (uchar_t *)lma, sizeof(*lma));
