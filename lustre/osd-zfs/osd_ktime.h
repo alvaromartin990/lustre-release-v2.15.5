@@ -4,13 +4,13 @@
 #include <linux/ktime.h>
 #include <linux/time64.h>
 
-/* Replacement for ktime_get() that is module-safe */
+/* Replacement for ktime_get() */
 static inline ktime_t osd_ktime_get(void)
 {
     return ktime_get_real();
 }
 
-/* Replacement for ktime_get_with_offset() that is module-safe */
+/* Replacement for ktime_get_with_offset() */
 static inline ktime_t osd_ktime_get_with_offset(enum tk_offsets offs)
 {
     switch (offs) {
