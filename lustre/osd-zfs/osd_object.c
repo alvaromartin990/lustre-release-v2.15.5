@@ -40,6 +40,12 @@
 #include <sys/sa_impl.h>
 #include <sys/txg.h>
 
+// extra modules for timing
+#include <linux/ktime.h>
+#include <linux/kernel.h>
+#include <libcfs/libcfs.h>
+#define DEBUG_SUBSYSTEM S_OSD
+
 char *osd_obj_tag = "osd_object";
 static int osd_object_sync_delay_us = -1;
 
@@ -1915,6 +1921,17 @@ static int osd_create(const struct lu_env *env, struct dt_object *dt,
 	int			 rc;
 	__u32 compat = 0;
 
+	/*
+	env - Lustre environment context for the operation
+	dt - Data target object being created
+	attr - Object attributes (permissions, ownership, etc.)
+	hint - Allocation hints for placement optimization
+	dof - Object format specifications
+	th - Transaction handle for atomicity
+	*/
+
+	u64 start_time, end_time, elapsed_ns;
+
 	ENTRY;
 	LASSERT(!fid_is_acct(fid));
 
@@ -1994,11 +2011,18 @@ skip_add:
 		GOTO(out, rc);
 
 	/* initialize LMA */
-	if (fid_is_idif(fid) || (fid_is_norm(fid) && osd->od_is_ost))
-		compat |= LMAC_FID_ON_OST;
-	lustre_lma_init(lma, fid, compat, 0);
 	// stage 3
 	printk(KERN_ALERT "Stage 3: FID Allocation at osd_create\n");
+	
+	if (fid_is_idif(fid) || (fid_is_norm(fid) && osd->od_is_ost))
+		compat |= LMAC_FID_ON_OST;
+	
+	start_time = ktime_get_ns();
+	lustre_lma_init(lma, fid, compat, 0);
+	end_time = ktime_get_ns();
+	elapsed_ns = end_time - start_time;
+	printk(KERN_ALERT "OSD_TIMING: FID Allocation took %llu ns\n", elapsed_ns);
+
 	lustre_lma_swab(lma);
 	rc = -nvlist_add_byte_array(obj->oo_sa_xattr, XATTR_NAME_LMA,
 				    (uchar_t *)lma, sizeof(*lma));
