@@ -43,13 +43,14 @@
 // extra modules for timing
 #include <linux/module.h>
 MODULE_LICENSE("GPL v2");
-MODULE_AUTHOR("Your Name");
+MODULE_AUTHOR("Alvaro Martin Grande");
 MODULE_DESCRIPTION("Lustre OSD ZFS timing modification");
 
-#include <linux/ktime.h>
-#include <linux/kernel.h>
+#include <linux/jiffies.h>
+#include <linux/time.h>
 #include <libcfs/libcfs.h>
 #define DEBUG_SUBSYSTEM S_OSD
+
 
 char *osd_obj_tag = "osd_object";
 static int osd_object_sync_delay_us = -1;
@@ -1935,7 +1936,8 @@ static int osd_create(const struct lu_env *env, struct dt_object *dt,
 	th - Transaction handle for atomicity
 	*/
 
-	u64 start_time, end_time, elapsed_ns;
+	unsigned long start_time, end_time;
+	unsigned int elapsed_ms;
 
 	ENTRY;
 	LASSERT(!fid_is_acct(fid));
@@ -2022,11 +2024,11 @@ skip_add:
 	if (fid_is_idif(fid) || (fid_is_norm(fid) && osd->od_is_ost))
 		compat |= LMAC_FID_ON_OST;
 	
-	start_time = ktime_get();
+	start_time = jiffies;
 	lustre_lma_init(lma, fid, compat, 0);
-	end_time = ktime_get();
-	elapsed_ns = end_time - start_time;
-	printk(KERN_ALERT "OSD_TIMING: FID Allocation took %llu ns\n", elapsed_ns);
+	end_time = jiffies;
+	elapsed_ms = jiffies_to_msecs(end_time - start_time);
+	printk(KERN_ALERT "OSD_TIMING: FID Allocation took %u ms\n", elapsed_ms);
 
 	lustre_lma_swab(lma);
 	rc = -nvlist_add_byte_array(obj->oo_sa_xattr, XATTR_NAME_LMA,
