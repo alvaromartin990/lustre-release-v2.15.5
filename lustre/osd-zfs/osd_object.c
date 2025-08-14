@@ -41,6 +41,11 @@
 #include <sys/txg.h>
 
 // extra modules for timing
+#include <linux/module.h>
+MODULE_LICENSE("GPL v2");
+MODULE_AUTHOR("Your Name");
+MODULE_DESCRIPTION("Lustre OSD ZFS timing modification");
+
 #include <linux/ktime.h>
 #include <linux/kernel.h>
 #include <libcfs/libcfs.h>
