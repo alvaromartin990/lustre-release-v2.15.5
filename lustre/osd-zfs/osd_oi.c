@@ -43,6 +43,8 @@
 #include <sys/txg.h>
 #include <lustre_scrub.h>
 
+#include <linux/jiffies.h>
+
 #define OSD_OI_FID_NR         (1UL << 7)
 unsigned int osd_oi_count = OSD_OI_FID_NR;
 
@@ -273,14 +275,25 @@ osd_oi_find_or_create(const struct lu_env *env, struct osd_device *o,
 	struct osd_oi oi;
 	int rc;
 
+	// timing vars
+	unsigned long start_time_stage_4, end_time_stage_4;
+	unsigned int elapsed_ms_stage_4;
+
+	start_time_stage_4 = jiffies;
+
+	// stage 4
+	printk(KERN_ALERT "Stage 4: osd_oi_find_or_create OI Mapping\n");
+
 	rc = osd_oi_lookup(env, o, parent, name, &oi);
 	if (rc == 0)
 		*child = oi.oi_zapid;
 	else if (rc == -ENOENT)
 		rc = osd_obj_create(env, o, parent, name, child, NULL, true);
+	
+	end_time_stage_4 = jiffies;
+	elapsed_ms_stage_4 = jiffies_to_msecs(end_time_stage_4 -start_time_stage_4);
 
-	// stage 4
-	printk(KERN_ALERT "Stage 4: osd_oi_find_or_create OI Mapping\n");
+	printk(KERN_ALERT "OSD_TIMING: osd_oi_find_or_create OI Mapping took %u ms\n", elapsed_ms_stage_4);
 
 	return rc;
 }

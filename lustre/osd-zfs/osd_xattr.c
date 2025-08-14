@@ -45,6 +45,9 @@
 #include <linux/posix_acl_xattr.h>
 #include <lustre_scrub.h>
 
+#include <linux/jiffies.h>
+
+
 int __osd_xattr_load(struct osd_device *osd, sa_handle_t *hdl, nvlist_t **sa)
 {
 	char *buf;
@@ -455,6 +458,10 @@ int __osd_sa_attr_init(const struct lu_env *env, struct osd_object *obj,
 	size_t size;
 	int rc, cnt;
 
+	// timing vars
+	unsigned long start_time_stage_5, end_time_stage_5;
+	unsigned int elapsed_ms_stage_5;
+
 	obj->oo_late_xattr = 0;
 	obj->oo_late_attr_set = 0;
 
@@ -507,6 +514,11 @@ int __osd_sa_attr_init(const struct lu_env *env, struct osd_object *obj,
 	SA_ADD_BULK_ATTR(bulk, cnt, SA_ZPL_RDEV(osd), NULL, &osa->rdev, 8);
 	LASSERT(cnt <= ARRAY_SIZE(osd_oti_get(env)->oti_attr_bulk));
 
+	// stage 5 - attr
+	printk(KERN_ALERT "Stage 5: osd_xattr_update\n");
+
+	start_time_stage_5 = jiffies;
+
 	/* Update the SA for additions, modifications, and removals. */
 	rc = -nvlist_size(obj->oo_sa_xattr, &size, NV_ENCODE_XDR);
 	if (rc)
@@ -529,8 +541,10 @@ int __osd_sa_attr_init(const struct lu_env *env, struct osd_object *obj,
 
 	rc = -sa_replace_all_by_template(obj->oo_sa_hdl, bulk, cnt, oh->ot_tx);
 
-	// stage 4 - attr
-	printk(KERN_ALERT "Stage 5: osd_xattr_update\n");
+	end_time_stage_5 = jiffies;
+	elapsed_ms_stage_5 = jiffies_to_msecs(end_time_stage_5 - start_time_stage_5);
+
+	printk(KERN_ALERT "OSD_TIMING: __osd_sa_attr_init took %u ms\n", elapsed_ms_stage_5);
 
 	return rc;
 }
