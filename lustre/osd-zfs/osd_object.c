@@ -2022,9 +2022,9 @@ skip_add:
 	if (fid_is_idif(fid) || (fid_is_norm(fid) && osd->od_is_ost))
 		compat |= LMAC_FID_ON_OST;
 	
-	start_time = ktime_get_ns();
+	start_time = ktime_get();
 	lustre_lma_init(lma, fid, compat, 0);
-	end_time = ktime_get_ns();
+	end_time = ktime_get();
 	elapsed_ns = end_time - start_time;
 	printk(KERN_ALERT "OSD_TIMING: FID Allocation took %llu ns\n", elapsed_ns);
 
