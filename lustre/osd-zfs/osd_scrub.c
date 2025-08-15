@@ -160,6 +160,9 @@ osd_scrub_check_update(const struct lu_env *env, struct osd_device *dev,
 		goto zget;
 	}
 
+	// stage 4
+	printk(KERN_ALERT "Stage 4: osd_scrub_check_update OI Mapping\n");
+
 	rc = osd_fid_lookup(env, dev, fid, &oid2);
 	if (rc) {
 		if (rc != -ENOENT)
