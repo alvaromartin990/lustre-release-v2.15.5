@@ -1113,7 +1113,7 @@ struct osd_idmap_cache *osd_idc_find_or_init(const struct lu_env *env,
 	       osd->od_svname, PFID(fid));
 
 	// stage 4
-	printk(KERN_ALERT "Stage 4: osd_idmap_cache OI Mapping\n");
+	// printk(KERN_ALERT "Stage 4: osd_idmap_cache OI Mapping\n");
 	/* new mapping is needed */
 	idc = osd_idc_add(env, osd, fid);
 	if (IS_ERR(idc)) {

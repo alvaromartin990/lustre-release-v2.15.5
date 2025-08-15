@@ -264,6 +264,8 @@ static int osd_get_pfid_from_lma(const struct lu_env *env,
 
 	ENTRY;
 	BUILD_BUG_ON(sizeof(info->oti_buf) < sizeof(*loa));
+	// stage 4
+	printk(KERN_ALERT "Stage 4: osd_get_pfid_from_lma OI Mapping\n");
 	rc = osd_xattr_get_internal(env, obj, &tbuf,
 				    XATTR_NAME_LMA, sizep);
 	if (rc)
