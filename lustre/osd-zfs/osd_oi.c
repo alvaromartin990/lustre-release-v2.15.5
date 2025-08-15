@@ -658,6 +658,8 @@ int osd_fid_lookup(const struct lu_env *env, struct osd_device *dev,
 	int rc = 0;
 
 	ENTRY;
+	// stage 4
+	printk(KERN_ALERT "Stage 4: osd_fid_lookup OI Mapping\n");
 	if (CFS_FAIL_CHECK(OBD_FAIL_SRV_ENOENT))
 		RETURN(-ENOENT);
 

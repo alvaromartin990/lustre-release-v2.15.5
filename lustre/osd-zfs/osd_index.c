@@ -1084,6 +1084,8 @@ static int osd_dir_insert(const struct lu_env *env, struct dt_object *dt,
 		num = 1;
 
 	/* Insert (key,oid) into ZAP */
+	// stage 4
+	printk(KERN_ALERT "Stage 4: osd_zap_add OI Mapping\n");
 	rc = osd_zap_add(osd, parent->oo_dn->dn_object, parent->oo_dn,
 			 name, 8, num, (void *)zde, oh->ot_tx);
 	if (unlikely(rc == -EEXIST &&

@@ -64,6 +64,8 @@ int osd_scrub_refresh_mapping(const struct lu_env *env,
 	int rc;
 
 	ENTRY;
+	// stage 4
+	printk(KERN_ALERT "Stage 4: osd_scrub_refresh_mapping OI Mapping\n");
 	if (dev->od_scrub.os_file.sf_param & SP_DRYRUN && !force)
 		GOTO(log, rc = 0);
 
