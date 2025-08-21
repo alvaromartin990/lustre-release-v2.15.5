@@ -95,3 +95,4 @@ int main() {
     
     printf("\n CXL Memory Mapping Test Completed Successfully!\n");
     return 0;
+}
