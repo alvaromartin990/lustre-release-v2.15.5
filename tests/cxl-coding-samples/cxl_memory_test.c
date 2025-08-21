@@ -45,7 +45,7 @@ int main() {
     
     // 3. Test write operation
     printf("\n3. Testing write operation...\n");
-    const char* test_message = "Hello CXL S6 Instance!";
+    const char* test_message = "Hello!";
     strcpy((char *)dax_addr, test_message);
     
     // CRITICAL: Flush and fence for CXL shared memory
@@ -86,13 +86,12 @@ int main() {
     } else {
         printf("✓ Memory unmapped successfully\n");
     }
-    
+    // Close FD
     if (close(fd) == -1) {
         printf("Warning: Error closing DAX device: %s\n", strerror(errno));
     } else {
         printf("✓ DAX device closed successfully\n");
     }
     
-    printf("\n🎉 CXL Memory Mapping Test Completed Successfully!\n");
+    printf("\n CXL Memory Mapping Test Completed Successfully!\n");
     return 0;
-}
