@@ -1,6 +1,7 @@
 // ===== TEST 3: Concurrent Access Race Conditions =====
 // Save as cxl_test3_race.c
 
+#define _GNU_SOURCE
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,6 +10,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
+#include <stdint.h>
+#include <errno.h>
 
 #define CXL_DEVICE_PATH "/dev/dax0.0"
 #define CXL_TEST_SIZE (2 * 1024 * 1024)
