@@ -1,3 +1,38 @@
+/**
+ * @file cxl_test1_simultaneous.c
+ * @brief Test program for simultaneous read/write capabilities on a CXL device.
+ *
+ * This test demonstrates concurrent access to a CXL memory device by performing
+ * a series of mixed read and write operations on a shared memory region. It is
+ * designed to be run with different instances (e.g., S6, S7) to simulate
+ * multiple processes or threads interacting with the same CXL-backed memory.
+ *
+ * Key Features:
+ * - Maps a CXL device file (default: /dev/dax0.0) into user space.
+ * - Initializes a shared data structure with magic value and counters.
+ * - Performs 100 operations, each consisting of:
+ *   - Reading current state (counter, operation count).
+ *   - Writing updated values (writer ID, counter, operation count, timestamp, status).
+ *   - Flushing cache lines and enforcing memory barriers for data consistency.
+ * - Prints operation details and final results after completion.
+ *
+ * Usage:
+ *   ./cxl_test1_simultaneous <instance_id>
+ *     instance_id: 6 for S6, 7 for S7
+ *
+ * Data Structure:
+ *   cxl_test1_data_t - Contains magic value, counters, writer ID, status string,
+ *                      and timestamps for each operation.
+ *
+ * Synchronization:
+ *   Uses x86 memory barriers (mfence, lfence) and cache line flushes (clflush)
+ *   to ensure visibility and ordering of memory operations across CPUs.
+ *
+ * Dependencies:
+ *   Requires a CXL device exposed as a DAX file (e.g., /dev/dax0.0).
+ *   Tested on x86 platforms with support for required instructions.
+ *
+ */
 // ===== TEST 1: Simultaneous Read/Write Capabilities =====
 // Save as cxl_test1_simultaneous.c
 
@@ -27,6 +62,16 @@ typedef struct {
     volatile uint64_t timestamps[NUM_OPERATIONS];
 } cxl_test1_data_t;
 
+/**
+ * cxl_write_barrier - Ensures write ordering and cache coherency for a memory region.
+ * @addr: Pointer to the start of the memory region.
+ * @size: Size of the memory region in bytes.
+ *
+ * This function enforces a write memory barrier using an MFENCE instruction,
+ * flushes the cache lines covering the specified memory region using CLFLUSH,
+ * and then issues another MFENCE to ensure all writes are globally visible.
+ * Useful for persistent memory operations or when strict ordering is required.
+ */
 static inline void cxl_write_barrier(void *addr, size_t size) {
     __builtin_ia32_mfence();
     for (size_t i = 0; i < size; i += 64) {
@@ -35,6 +80,13 @@ static inline void cxl_write_barrier(void *addr, size_t size) {
     __builtin_ia32_mfence();
 }
 
+/**
+ * cxl_read_barrier - Ensures read ordering for subsequent memory operations.
+ *
+ * This function enforces a read memory barrier using an LFENCE instruction,
+ * preventing the CPU from reordering read operations before the barrier.
+ * Useful for ensuring data consistency when reading from memory-mapped devices.
+ */
 static inline void cxl_read_barrier(void) {
     __builtin_ia32_lfence();
 }

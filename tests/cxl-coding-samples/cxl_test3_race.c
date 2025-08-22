@@ -1,3 +1,37 @@
+/**
+ * @file cxl_test3_race.c
+ * @brief Test 3: Concurrent Access Race Conditions on CXL Device
+ *
+ * This test program demonstrates and detects race conditions when multiple processes
+ * concurrently access and modify shared memory mapped from a CXL (Compute Express Link) device.
+ * It is designed to be run as separate instances (e.g., S6 and S7) to simulate concurrent writers.
+ *
+ * Key Features:
+ * - Maps a CXL device file (/dev/dax0.0) into shared memory.
+ * - Uses a shared data structure (`cxl_test3_data_t`) to track operations, race detection, and counters.
+ * - Employs memory barriers and cache flushes to ensure visibility and ordering of memory operations.
+ * - Each instance increments its own operation counter and a shared race counter in a critical section.
+ * - Detects race conditions by checking if another writer is active during the critical section.
+ * - Reports the number of races detected and checks for data corruption at the end.
+ *
+ * Usage:
+ *   ./cxl_test3_race <instance_id>
+ *   - instance_id: Integer identifier for the test instance (e.g., 6 or 7).
+ *
+ * Main Components:
+ * - cxl_test3_data_t: Shared structure for synchronization and statistics.
+ * - cxl_write_barrier(): Ensures write ordering and flushes cache lines.
+ * - cxl_read_barrier(): Ensures read ordering.
+ * - get_timestamp_us(): Utility for microsecond-precision timestamps.
+ *
+ * Output:
+ * - Prints progress, race detection events, and final statistics including
+ *   operation counts and data integrity check.
+ *
+ * Note:
+ * - Intended for use on systems with CXL device support and appropriate permissions.
+ * - Demonstrates the importance of proper synchronization in concurrent memory access.
+ */
 // ===== TEST 3: Concurrent Access Race Conditions =====
 // Save as cxl_test3_race.c
 

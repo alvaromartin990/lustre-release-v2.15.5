@@ -38,6 +38,9 @@ int main() {
     strcpy((char*)shared->message, "Hello from S6 via CXL shared memory!");
     
     // CRITICAL: Ensure data is written to CXL memory
+    // The cxl_write_barrier function enforces a memory write barrier to guarantee
+    // that all changes to the shared structure are visible to other processes
+    // accessing the CXL shared memory, preventing reordering or caching issues.
     cxl_write_barrier(shared, sizeof(cxl_shared_data_t));
     
     printf("✓ Data written to CXL shared memory:\n");

@@ -68,7 +68,9 @@ int main() {
     }
     
     // Cleanup
-    munmap(shared, CXL_TEST_SIZE);
+    if (munmap(shared, CXL_TEST_SIZE) == -1) {
+        perror("Failed to unmap CXL memory");
+    }
     close(fd);
     return (attempts >= max_attempts) ? 1 : 0;
 }

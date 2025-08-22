@@ -1,3 +1,48 @@
+/**
+ * @file cxl_test2_structure.c
+ * @brief Test program for shared data structure behavior using CXL memory.
+ *
+ * This test demonstrates how multiple processes can interact with a shared data structure
+ * mapped to a CXL (Compute Express Link) device. The shared structure contains an array,
+ * a sum of its elements, modification metadata, and an operation log. Each process modifies
+ * a portion of the array, updates the sum, and logs its actions, ensuring consistency via
+ * memory barriers and cache flushes.
+ *
+ * Key Features:
+ * - Maps a region of persistent memory from a CXL device (/dev/dax0.0).
+ * - Initializes the shared structure on first access, including a magic number for validation.
+ * - Each process (identified by an instance ID) performs 10 rounds of modifications:
+ *   - Verifies the consistency of the stored sum versus a freshly calculated sum.
+ *   - Modifies a slice of the array based on its instance ID and round number.
+ *   - Updates metadata: sum, last modifier, modification count, and operation log.
+ *   - Uses memory barriers and cache flushes to ensure changes are visible to other processes.
+ * - Prints the final state of the shared structure after all rounds.
+ *
+ * Usage:
+ *   ./cxl_test2_structure <instance_id>
+ *
+ * Dependencies:
+ *   - Requires a CXL device exposed as /dev/dax0.0.
+ *   - Must be run on a system supporting x86 cache flush instructions.
+ *
+ * Structure Fields:
+ *   - magic: Magic number to validate initialization.
+ *   - array_sum: Sum of all elements in the array.
+ *   - array: Integer array shared among processes.
+ *   - last_modifier: Instance ID of the last process to modify the array.
+ *   - modification_count: Total number of modifications performed.
+ *   - operation_log: Log of the last operation performed.
+ *
+ * Synchronization:
+ *   - Uses mfence and clflush instructions for write barriers.
+ *   - Uses lfence for read barriers.
+ *
+ * Error Handling:
+ *   - Reports errors for device open, memory mapping, and unmapping failures.
+ *
+ * Author: [Your Name]
+ * Date: [Date]
+ */
 // ===== TEST 2: Shared Data Structure Behavior =====
 // Save as cxl_test2_structure.c
 
@@ -126,7 +171,9 @@ int main(int argc, char *argv[]) {
     printf("  Total Modifications: %lu\n", shared->modification_count);
     printf("  Last Operation: %s\n", shared->operation_log);
     
-    munmap(shared, CXL_TEST_SIZE);
+    if (munmap(shared, CXL_TEST_SIZE) == -1) {
+        perror("Failed to unmap CXL memory");
+    }
     close(fd);
     return 0;
 }
