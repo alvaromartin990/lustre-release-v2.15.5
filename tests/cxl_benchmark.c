@@ -22,7 +22,7 @@
 #define MEMORY_SIZE (1024 * 1024)  // 1MB test memory
 
 /* CXL DAX device configuration */
-#define CXL_DAX_DEVICE_PATH "/dev/dax1.0"  // Adjust based on your setup
+#define CXL_DAX_DEVICE_PATH "/dev/dax0.0"  // Adjust based on your setup
 #define CXL_MAPPING_SIZE (128ULL * 1024 * 1024 * 1024)  // 128GB as mentioned in the PDF
 #define CXL_ALIGNMENT_SIZE (2 * 1024 * 1024)  // 2MiB alignment requirement
 
