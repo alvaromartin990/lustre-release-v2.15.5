@@ -104,7 +104,12 @@ int main(int argc, char *argv[]) {
         close(fd);
         return 1;
     }
-    
+
+    // CRITICAL: Always clear the entire mapped region first to avoid corruption from previous runs
+    printf("Clearing CXL memory region to ensure clean test...\n");
+    memset(shared, 0, CXL_TEST_SIZE);
+    cxl_write_barrier(shared, CXL_TEST_SIZE);
+
     // Initialize on first access
     if (shared->magic != CXL_MAGIC) {
         shared->magic = CXL_MAGIC;
@@ -117,7 +122,7 @@ int main(int argc, char *argv[]) {
         cxl_write_barrier(shared, sizeof(cxl_test3_data_t));
     }
     
-    printf("🏁 Starting race condition test (%d iterations)...\n", RACE_ITERATIONS);
+    printf("Starting race condition test (%d iterations)...\n", RACE_ITERATIONS);
     
     int races_found = 0;
     
@@ -130,7 +135,7 @@ int main(int argc, char *argv[]) {
         if (shared->active_writers > 0) {
             races_found++;
             shared->race_detected++;
-            printf("🚨 RACE DETECTED at iteration %d! Active writers: %lu\n", 
+            printf("RACE DETECTED at iteration %d! Active writers: %lu\n", 
                    i, shared->active_writers);
         }
         
@@ -169,7 +174,7 @@ int main(int argc, char *argv[]) {
     sleep(2);
     cxl_read_barrier();
     
-    printf("\n📊 Race Test Results (S%d):\n", instance_id);
+    printf("\nRace Test Results (S%d):\n", instance_id);
     printf("  Final Counter: %lu\n", shared->race_counter);
     printf("  Expected Counter: %lu\n", shared->s6_operations + shared->s7_operations);
     printf("  S6 Operations: %lu\n", shared->s6_operations);
