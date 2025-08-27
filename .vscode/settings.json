@@ -1,6 +1,7 @@
 {
 	"files.associations": {
 		"lustre_scrub.h": "c",
-		"typeinfo": "c"
+		"typeinfo": "c",
+		"mman.h": "c"
 	}
 }
