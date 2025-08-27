@@ -103,7 +103,7 @@ int test_sizes[] = {1, 5, 10, 50, 100, 500, 1000, 2000, 5000, 10000};
 int num_test_sizes = sizeof(test_sizes) / sizeof(test_sizes[0]);
 
 // CXL configuration
-#define CXL_DAX_DEVICE "/dev/dax1.0"  // Adjust based on your CXL setup
+#define CXL_DAX_DEVICE "/dev/dax0.0"  // Adjust based on your CXL setup
 
 // High-resolution timing functions
 static inline uint64_t rdtsc_start(void) {
