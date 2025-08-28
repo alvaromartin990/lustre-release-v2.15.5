@@ -214,7 +214,7 @@ void test_lustre_allocation(int array_size, const char* pattern) {
     clock_gettime(CLOCK_MONOTONIC, &start);
     start_cycles = rdtsc_start();
     
-    flush_memory_region(idc_array, array_size * sizeof(struct osd_idmap_cache));
+    // flush_memory_region(idc_array, array_size * sizeof(struct osd_idmap_cache));
     
     end_cycles = rdtsc_end();
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -270,7 +270,8 @@ void test_regular_allocation(int array_size, const char* pattern) {
     
     for (int i = 0; i < array_size; i++) {
         if (temp_ptrs[i]) {
-            flush_memory_region(temp_ptrs[i], sizeof(struct osd_idmap_cache));
+            // flush_memory_region(temp_ptrs[i], sizeof(struct osd_idmap_cache));
+            printf("No flush test\n");
         }
     }
     
@@ -354,7 +355,7 @@ void test_cxl_allocation(int array_size, const char* pattern) {
     clock_gettime(CLOCK_MONOTONIC, &start);
     start_cycles = rdtsc_start();
     
-    flush_memory_region(cxl_addr, total_size);
+    // flush_memory_region(cxl_addr, total_size);
     
     end_cycles = rdtsc_end();
     clock_gettime(CLOCK_MONOTONIC, &end);
