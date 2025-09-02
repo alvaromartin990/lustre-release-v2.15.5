@@ -1,0 +1,1000 @@
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0a.6: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0a.7: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0b.0: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0b.1: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0b.2: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0b.3: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0b.4: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0b.5: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0b.6: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0b.7: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0c.0: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0c.1: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0c.2: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0c.3: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0c.4: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0c.5: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0c.6: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0c.7: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0d.0: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0d.1: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0d.2: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0d.3: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0d.4: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0d.5: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0d.6: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:0d.7: [8086:324d] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:1d.0: [8086:344f] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:1d.1: [8086:3457] type 00 class 0x088000 PCIe Root Complex Integrated Endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:1e.0: [8086:3258] type 00 class 0x088000 conventional PCI endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:1e.1: [8086:3259] type 00 class 0x088000 conventional PCI endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:1e.2: [8086:325a] type 00 class 0x088000 conventional PCI endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:1e.3: [8086:325b] type 00 class 0x088000 conventional PCI endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:1e.4: [8086:325c] type 00 class 0x088000 conventional PCI endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:1e.5: [8086:325d] type 00 class 0x088000 conventional PCI endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:1e.6: [8086:325e] type 00 class 0x088000 conventional PCI endpoint
+[Thu Aug 21 21:59:34 2025] pci 0000:ff:1e.7: [8086:325f] type 00 class 0x088000 conventional PCI endpoint
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:ff: on NUMA node 2
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKA configured for IRQ 15
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKA disabled
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKB configured for IRQ 15
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKB disabled
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKC configured for IRQ 15
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKC disabled
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKD configured for IRQ 15
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKD disabled
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKE configured for IRQ 15
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKE disabled
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKF configured for IRQ 15
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKF disabled
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKG configured for IRQ 15
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKG disabled
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKH configured for IRQ 15
+[Thu Aug 21 21:59:34 2025] ACPI: PCI: Interrupt link LNKH disabled
+[Thu Aug 21 21:59:34 2025] iommu: Default domain type: Translated
+[Thu Aug 21 21:59:34 2025] iommu: DMA domain TLB invalidation policy: lazy mode
+[Thu Aug 21 21:59:34 2025] SCSI subsystem initialized
+[Thu Aug 21 21:59:34 2025] ACPI: bus type USB registered
+[Thu Aug 21 21:59:34 2025] usbcore: registered new interface driver usbfs
+[Thu Aug 21 21:59:34 2025] usbcore: registered new interface driver hub
+[Thu Aug 21 21:59:34 2025] usbcore: registered new device driver usb
+[Thu Aug 21 21:59:34 2025] pps_core: LinuxPPS API ver. 1 registered
+[Thu Aug 21 21:59:34 2025] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[Thu Aug 21 21:59:34 2025] PTP clock support registered
+[Thu Aug 21 21:59:34 2025] EDAC MC: Ver: 3.0.0
+[Thu Aug 21 21:59:34 2025] Registered efivars operations
+[Thu Aug 21 21:59:34 2025] NetLabel: Initializing
+[Thu Aug 21 21:59:34 2025] NetLabel:  domain hash size = 128
+[Thu Aug 21 21:59:34 2025] NetLabel:  protocols = UNLABELED CIPSOv4 CALIPSO
+[Thu Aug 21 21:59:34 2025] NetLabel:  unlabeled traffic allowed by default
+[Thu Aug 21 21:59:34 2025] PCI: Using ACPI for IRQ routing
+[Thu Aug 21 21:59:34 2025] PCI: pci_cache_line_size set to 64 bytes
+[Thu Aug 21 21:59:34 2025] e820: reserve RAM buffer [mem 0x0003e000-0x0003ffff]
+[Thu Aug 21 21:59:34 2025] e820: reserve RAM buffer [mem 0x5ae26018-0x5bffffff]
+[Thu Aug 21 21:59:34 2025] e820: reserve RAM buffer [mem 0x5ae5f018-0x5bffffff]
+[Thu Aug 21 21:59:34 2025] e820: reserve RAM buffer [mem 0x5b4ec018-0x5bffffff]
+[Thu Aug 21 21:59:34 2025] e820: reserve RAM buffer [mem 0x5b4f3018-0x5bffffff]
+[Thu Aug 21 21:59:34 2025] e820: reserve RAM buffer [mem 0x5c403000-0x5fffffff]
+[Thu Aug 21 21:59:34 2025] e820: reserve RAM buffer [mem 0x65d69000-0x67ffffff]
+[Thu Aug 21 21:59:34 2025] e820: reserve RAM buffer [mem 0x6d332000-0x6fffffff]
+[Thu Aug 21 21:59:34 2025] e820: reserve RAM buffer [mem 0x77800000-0x77ffffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:02:00.0: vgaarb: setting as boot VGA device
+[Thu Aug 21 21:59:34 2025] pci 0000:02:00.0: vgaarb: bridge control possible
+[Thu Aug 21 21:59:34 2025] pci 0000:02:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+[Thu Aug 21 21:59:34 2025] vgaarb: loaded
+[Thu Aug 21 21:59:34 2025] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0, 0, 0, 0, 0
+[Thu Aug 21 21:59:34 2025] hpet0: 8 comparators, 64-bit 25.000000 MHz counter
+[Thu Aug 21 21:59:34 2025] clocksource: Switched to clocksource tsc-early
+[Thu Aug 21 21:59:34 2025] VFS: Disk quotas dquot_6.6.0
+[Thu Aug 21 21:59:34 2025] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[Thu Aug 21 21:59:34 2025] pnp: PnP ACPI init
+[Thu Aug 21 21:59:34 2025] system 00:01: [io  0x0500-0x05fe] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:01: [io  0x0400-0x041f] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:01: [mem 0xff000000-0xffffffff] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:02: [io  0x0a00-0x0a3f] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:02: [io  0x0a40-0x0a5f] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:02: [io  0x0a60-0x0a6f] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:02: [io  0x0a70-0x0a7f] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:02: [io  0x0a80-0x0a8f] has been reserved
+[Thu Aug 21 21:59:34 2025] pnp 00:03: [dma 0 disabled]
+[Thu Aug 21 21:59:34 2025] pnp 00:04: [dma 0 disabled]
+[Thu Aug 21 21:59:34 2025] system 00:05: [io  0x0500-0x05fe] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:05: [mem 0xfd000000-0xfd69ffff] could not be reserved
+[Thu Aug 21 21:59:34 2025] system 00:05: [mem 0xfd6c0000-0xfd6cffff] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:05: [mem 0xfd6f0000-0xfdffffff] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:05: [mem 0xfe000000-0xfe01ffff] could not be reserved
+[Thu Aug 21 21:59:34 2025] system 00:05: [mem 0xfe200000-0xfe7fffff] has been reserved
+[Thu Aug 21 21:59:34 2025] system 00:05: [mem 0xff000000-0xffffffff] has been reserved
+[Thu Aug 21 21:59:34 2025] pnp: PnP ACPI: found 7 devices
+[Thu Aug 21 21:59:34 2025] clocksource: acpi_pm: mask: 0xffffff max_cycles: 0xffffff, max_idle_ns: 2085701024 ns
+[Thu Aug 21 21:59:34 2025] NET: Registered PF_INET protocol family
+[Thu Aug 21 21:59:34 2025] IP idents hash table entries: 262144 (order: 9, 2097152 bytes, vmalloc)
+[Thu Aug 21 21:59:34 2025] tcp_listen_portaddr_hash hash table entries: 65536 (order: 8, 1048576 bytes, vmalloc)
+[Thu Aug 21 21:59:34 2025] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, vmalloc)
+[Thu Aug 21 21:59:34 2025] TCP established hash table entries: 524288 (order: 10, 4194304 bytes, vmalloc)
+[Thu Aug 21 21:59:34 2025] TCP bind hash table entries: 65536 (order: 8, 1048576 bytes, vmalloc)
+[Thu Aug 21 21:59:34 2025] TCP: Hash tables configured (established 524288 bind 65536)
+[Thu Aug 21 21:59:34 2025] MPTCP token hash table entries: 65536 (order: 8, 1572864 bytes, vmalloc)
+[Thu Aug 21 21:59:34 2025] UDP hash table entries: 65536 (order: 9, 2097152 bytes, vmalloc)
+[Thu Aug 21 21:59:34 2025] UDP-Lite hash table entries: 65536 (order: 9, 2097152 bytes, vmalloc)
+[Thu Aug 21 21:59:34 2025] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[Thu Aug 21 21:59:34 2025] NET: Registered PF_XDP protocol family
+[Thu Aug 21 21:59:34 2025] pci 0000:01:00.0: PCI bridge to [bus 02]
+[Thu Aug 21 21:59:34 2025] pci 0000:01:00.0:   bridge window [io  0x2000-0x2fff]
+[Thu Aug 21 21:59:34 2025] pci 0000:01:00.0:   bridge window [mem 0x94000000-0x950fffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:00:0f.0: PCI bridge to [bus 01-02]
+[Thu Aug 21 21:59:34 2025] pci 0000:00:0f.0:   bridge window [io  0x2000-0x2fff]
+[Thu Aug 21 21:59:34 2025] pci 0000:00:0f.0:   bridge window [mem 0x94000000-0x950fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7 window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:00: resource 5 [io  0x1000-0x3fff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:00: resource 7 [mem 0x000c8000-0x000cffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:00: resource 8 [mem 0xfe010000-0xfe010fff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:00: resource 9 [mem 0x90040000-0x957fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:00: resource 10 [mem 0x200000000000-0x203fffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:01: resource 0 [io  0x2000-0x2fff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:01: resource 1 [mem 0x94000000-0x950fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:02: resource 0 [io  0x2000-0x2fff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:02: resource 1 [mem 0x94000000-0x950fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:15: resource 4 [io  0x4000-0x5fff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:15: resource 5 [mem 0x95800000-0x9f7fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:15: resource 6 [mem 0x204000000000-0x207fffffffff window]
+[Thu Aug 21 21:59:34 2025] pci 0000:26:01.0: PCI bridge to [bus 27]
+[Thu Aug 21 21:59:34 2025] pci 0000:26:01.0:   bridge window [mem 0xa8e00000-0xa92fffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:26:01.0:   bridge window [mem 0x20bfff400000-0x20bfffcfffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:26: resource 4 [io  0x6000-0x6fff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:26: resource 5 [mem 0x9f800000-0xa93fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:26: resource 6 [mem 0x208000000000-0x20bfffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:27: resource 1 [mem 0xa8e00000-0xa92fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:27: resource 2 [mem 0x20bfff400000-0x20bfffcfffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci 0000:37:01.0: PCI bridge to [bus 38]
+[Thu Aug 21 21:59:34 2025] pci 0000:37:01.0:   bridge window [io  0x7000-0x7fff]
+[Thu Aug 21 21:59:34 2025] pci 0000:37:01.0:   bridge window [mem 0xb2e00000-0xb2efffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:37:01.0:   bridge window [mem 0x20ffffe00000-0x20ffffefffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:37: resource 4 [io  0x7000-0x7fff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:37: resource 5 [mem 0xa9400000-0xb2ffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:37: resource 6 [mem 0x20c000000000-0x20ffffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:38: resource 0 [io  0x7000-0x7fff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:38: resource 1 [mem 0xb2e00000-0xb2efffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:38: resource 2 [mem 0x20ffffe00000-0x20ffffefffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:01.0: bridge window [io  0x1000-0x0fff] to [bus 49] add_size 1000
+[Thu Aug 21 21:59:34 2025] pci 0000:48:01.0: bridge window [mem 0x00100000-0x000fffff 64bit pref] to [bus 49] add_size 200000 add_align 100000
+[Thu Aug 21 21:59:34 2025] pci 0000:48:03.0: bridge window [io  0x1000-0x0fff] to [bus 4a] add_size 1000
+[Thu Aug 21 21:59:34 2025] pci 0000:48:03.0: bridge window [mem 0x00100000-0x000fffff 64bit pref] to [bus 4a] add_size 200000 add_align 100000
+[Thu Aug 21 21:59:34 2025] pci 0000:48:05.0: bridge window [io  0x1000-0x0fff] to [bus 4b] add_size 1000
+[Thu Aug 21 21:59:34 2025] pci 0000:48:05.0: bridge window [mem 0x00100000-0x000fffff 64bit pref] to [bus 4b] add_size 200000 add_align 100000
+[Thu Aug 21 21:59:34 2025] pci 0000:48:07.0: bridge window [io  0x1000-0x0fff] to [bus 4c] add_size 1000
+[Thu Aug 21 21:59:34 2025] pci 0000:48:07.0: bridge window [mem 0x00100000-0x000fffff 64bit pref] to [bus 4c] add_size 200000 add_align 100000
+[Thu Aug 21 21:59:34 2025] pci 0000:48:01.0: bridge window [mem 0x210000000000-0x2100001fffff 64bit pref]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:48:03.0: bridge window [mem 0x210000200000-0x2100003fffff 64bit pref]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:48:05.0: bridge window [mem 0x210000400000-0x2100005fffff 64bit pref]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:48:07.0: bridge window [mem 0x210000600000-0x2100007fffff 64bit pref]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:48:01.0: bridge window [io  0x8000-0x8fff]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:48:03.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:48:03.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:48:05.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:48:05.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:48:07.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:48:07.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:48:07.0: bridge window [io  0x8000-0x8fff]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:48:05.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:48:05.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:48:03.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:48:03.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:48:01.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:48:01.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:48:01.0: PCI bridge to [bus 49]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:01.0:   bridge window [mem 0xbca00000-0xbcafffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:01.0:   bridge window [mem 0x210000000000-0x2100001fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:03.0: PCI bridge to [bus 4a]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:03.0:   bridge window [mem 0xbc900000-0xbc9fffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:03.0:   bridge window [mem 0x210000200000-0x2100003fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:05.0: PCI bridge to [bus 4b]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:05.0:   bridge window [mem 0xbc800000-0xbc8fffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:05.0:   bridge window [mem 0x210000400000-0x2100005fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:07.0: PCI bridge to [bus 4c]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:07.0:   bridge window [io  0x8000-0x8fff]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:07.0:   bridge window [mem 0xbc700000-0xbc7fffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:48:07.0:   bridge window [mem 0x210000600000-0x2100007fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:48: resource 4 [io  0x8000-0x8fff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:48: resource 5 [mem 0xb3000000-0xbcbfffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:48: resource 6 [mem 0x210000000000-0x213fffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:49: resource 1 [mem 0xbca00000-0xbcafffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:49: resource 2 [mem 0x210000000000-0x2100001fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:4a: resource 1 [mem 0xbc900000-0xbc9fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:4a: resource 2 [mem 0x210000200000-0x2100003fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:4b: resource 1 [mem 0xbc800000-0xbc8fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:4b: resource 2 [mem 0x210000400000-0x2100005fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:4c: resource 0 [io  0x8000-0x8fff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:4c: resource 1 [mem 0xbc700000-0xbc7fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:4c: resource 2 [mem 0x210000600000-0x2100007fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:59: resource 4 [io  0x9000-0x9fff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:59: resource 5 [mem 0xbcc00000-0xc67fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:59: resource 6 [mem 0x214000000000-0x217fffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:6a: resource 4 [mem 0xc6800000-0xc6ffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:6a: resource 5 [mem 0x218000000000-0x21bfffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:6f: resource 4 [mem 0xc7000000-0xc77fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:6f: resource 5 [mem 0x21c000000000-0x21ffffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:74: resource 4 [mem 0xc7800000-0xc7ffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:74: resource 5 [mem 0x220000000000-0x223fffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:79: resource 4 [mem 0xc8000000-0xc87fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:79: resource 5 [mem 0x224000000000-0x227fffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:97: resource 4 [io  0xb000-0xbfff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:97: resource 5 [mem 0xd1400000-0xd97fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:97: resource 6 [mem 0x22c000000000-0x22ffffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:a7: resource 4 [io  0xc000-0xcfff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:a7: resource 5 [mem 0xe1700000-0xe17fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:a7: resource 6 [mem 0x233f00000000-0x233fffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:a8: resource 4 [mem 0xd9a00000-0xe16fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:a8: resource 5 [mem 0x230000000000-0x233effffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:b7: resource 4 [io  0xd000-0xdfff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:b7: resource 5 [mem 0xe1800000-0xe97fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:b7: resource 6 [mem 0x234000000000-0x237fffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:c7: resource 4 [io  0xe000-0xefff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:c7: resource 5 [mem 0xe9800000-0xf17fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:c7: resource 6 [mem 0x238000000000-0x23bfffffffff window]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:01.0: bridge window [io  0x1000-0x0fff] to [bus d8] add_size 1000
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:01.0: bridge window [mem 0x00100000-0x000fffff 64bit pref] to [bus d8] add_size 200000 add_align 100000
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:03.0: bridge window [io  0x1000-0x0fff] to [bus d9] add_size 1000
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:03.0: bridge window [mem 0x00100000-0x000fffff 64bit pref] to [bus d9] add_size 200000 add_align 100000
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:05.0: bridge window [io  0x1000-0x0fff] to [bus da] add_size 1000
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:05.0: bridge window [mem 0x00100000-0x000fffff 64bit pref] to [bus da] add_size 200000 add_align 100000
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:07.0: bridge window [io  0x1000-0x0fff] to [bus db] add_size 1000
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:07.0: bridge window [mem 0x00100000-0x000fffff 64bit pref] to [bus db] add_size 200000 add_align 100000
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:01.0: bridge window [mem 0x23c000000000-0x23c0001fffff 64bit pref]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:03.0: bridge window [mem 0x23c000200000-0x23c0003fffff 64bit pref]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:05.0: bridge window [mem 0x23c000400000-0x23c0005fffff 64bit pref]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:07.0: bridge window [mem 0x23c000600000-0x23c0007fffff 64bit pref]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:01.0: bridge window [io  0xf000-0xffff]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:03.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:03.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:05.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:05.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:07.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:07.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:07.0: bridge window [io  0xf000-0xffff]: assigned
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:05.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:05.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:03.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:03.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:01.0: bridge window [io  size 0x1000]: can't assign; no space
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:01.0: bridge window [io  size 0x1000]: failed to assign
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:01.0: PCI bridge to [bus d8]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:01.0:   bridge window [mem 0xf9600000-0xf96fffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:01.0:   bridge window [mem 0x23c000000000-0x23c0001fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:03.0: PCI bridge to [bus d9]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:03.0:   bridge window [mem 0xf9500000-0xf95fffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:03.0:   bridge window [mem 0x23c000200000-0x23c0003fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:05.0: PCI bridge to [bus da]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:05.0:   bridge window [mem 0xf9400000-0xf94fffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:05.0:   bridge window [mem 0x23c000400000-0x23c0005fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:07.0: PCI bridge to [bus db]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:07.0:   bridge window [io  0xf000-0xffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:07.0:   bridge window [mem 0xf9300000-0xf93fffff]
+[Thu Aug 21 21:59:34 2025] pci 0000:d7:07.0:   bridge window [mem 0x23c000600000-0x23c0007fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:d7: resource 4 [io  0xf000-0xffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:d7: resource 5 [mem 0xf1800000-0xf97fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:d7: resource 6 [mem 0x23c000000000-0x23ffffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:d8: resource 1 [mem 0xf9600000-0xf96fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:d8: resource 2 [mem 0x23c000000000-0x23c0001fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:d9: resource 1 [mem 0xf9500000-0xf95fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:d9: resource 2 [mem 0x23c000200000-0x23c0003fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:da: resource 1 [mem 0xf9400000-0xf94fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:da: resource 2 [mem 0x23c000400000-0x23c0005fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:db: resource 0 [io  0xf000-0xffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:db: resource 1 [mem 0xf9300000-0xf93fffff]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:db: resource 2 [mem 0x23c000600000-0x23c0007fffff 64bit pref]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:80: resource 4 [io  0xa000-0xafff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:80: resource 5 [mem 0xc9000000-0xd13fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:80: resource 6 [mem 0x228000000000-0x22bfffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:e7: resource 4 [mem 0xf9800000-0xf9ffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:e7: resource 5 [mem 0x240000000000-0x243fffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:ec: resource 4 [mem 0xfa000000-0xfa7fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:ec: resource 5 [mem 0x244000000000-0x247fffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:f1: resource 4 [mem 0xfa800000-0xfaffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:f1: resource 5 [mem 0x248000000000-0x24bfffffffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:f6: resource 4 [mem 0xfb000000-0xfb7fffff window]
+[Thu Aug 21 21:59:34 2025] pci_bus 0000:f6: resource 5 [mem 0x24c000000000-0x24ffffffffff window]
+[Thu Aug 21 21:59:34 2025] pci 0000:27:00.0: CLS mismatch (64 != 32), using 64 bytes
+[Thu Aug 21 21:59:34 2025] Trying to unpack rootfs image as initramfs...
+[Thu Aug 21 21:59:34 2025] PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+[Thu Aug 21 21:59:34 2025] software IO TLB: mapped [mem 0x0000000050574000-0x0000000054574000] (64MB)
+[Thu Aug 21 21:59:34 2025] ACPI: bus type thunderbolt registered
+[Thu Aug 21 21:59:34 2025] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x1e4530a99b6, max_idle_ns: 440795257976 ns
+[Thu Aug 21 21:59:34 2025] clocksource: Switched to clocksource tsc
+[Thu Aug 21 21:59:34 2025] Initialise system trusted keyrings
+[Thu Aug 21 21:59:34 2025] Key type blacklist registered
+[Thu Aug 21 21:59:34 2025] workingset: timestamp_bits=36 max_order=27 bucket_order=0
+[Thu Aug 21 21:59:34 2025] zbud: loaded
+[Thu Aug 21 21:59:34 2025] integrity: Platform Keyring initialized
+[Thu Aug 21 21:59:34 2025] integrity: Machine keyring initialized
+[Thu Aug 21 21:59:36 2025] Freeing initrd memory: 100384K
+[Thu Aug 21 21:59:36 2025] NET: Registered PF_ALG protocol family
+[Thu Aug 21 21:59:36 2025] xor: automatically using best checksumming function   avx       
+[Thu Aug 21 21:59:36 2025] Key type asymmetric registered
+[Thu Aug 21 21:59:36 2025] Asymmetric key parser 'x509' registered
+[Thu Aug 21 21:59:36 2025] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 246)
+[Thu Aug 21 21:59:36 2025] io scheduler mq-deadline registered
+[Thu Aug 21 21:59:36 2025] io scheduler kyber registered
+[Thu Aug 21 21:59:36 2025] io scheduler bfq registered
+[Thu Aug 21 21:59:36 2025] atomic64_test: passed for x86-64 platform with CX8 and with SSE
+[Thu Aug 21 21:59:36 2025] pcieport 0000:00:00.4: PME: Signaling with IRQ 44
+[Thu Aug 21 21:59:36 2025] pcieport 0000:00:0f.0: PME: Signaling with IRQ 45
+[Thu Aug 21 21:59:36 2025] pcieport 0000:15:00.4: PME: Signaling with IRQ 46
+[Thu Aug 21 21:59:36 2025] pcieport 0000:26:00.4: PME: Signaling with IRQ 47
+[Thu Aug 21 21:59:36 2025] pcieport 0000:26:01.0: PME: Signaling with IRQ 48
+[Thu Aug 21 21:59:36 2025] pcieport 0000:37:00.4: PME: Signaling with IRQ 49
+[Thu Aug 21 21:59:36 2025] pcieport 0000:37:01.0: PME: Signaling with IRQ 50
+[Thu Aug 21 21:59:36 2025] pcieport 0000:48:00.4: PME: Signaling with IRQ 51
+[Thu Aug 21 21:59:36 2025] pcieport 0000:48:01.0: PME: Signaling with IRQ 52
+[Thu Aug 21 21:59:36 2025] pcieport 0000:48:01.0: pciehp: Slot #48 AttnBtn+ PwrCtrl+ MRL- AttnInd+ PwrInd+ HotPlug+ Surprise+ Interlock- NoCompl- IbPresDis- LLActRep+ (with Cmd Compl erratum)
+[Thu Aug 21 21:59:36 2025] pcieport 0000:48:03.0: PME: Signaling with IRQ 53
+[Thu Aug 21 21:59:36 2025] pcieport 0000:48:03.0: pciehp: Slot #49 AttnBtn+ PwrCtrl+ MRL- AttnInd+ PwrInd+ HotPlug+ Surprise+ Interlock- NoCompl- IbPresDis- LLActRep+ (with Cmd Compl erratum)
+[Thu Aug 21 21:59:36 2025] pcieport 0000:48:05.0: PME: Signaling with IRQ 54
+[Thu Aug 21 21:59:36 2025] pcieport 0000:48:05.0: pciehp: Slot #50 AttnBtn+ PwrCtrl+ MRL- AttnInd+ PwrInd+ HotPlug+ Surprise+ Interlock- NoCompl- IbPresDis- LLActRep+ (with Cmd Compl erratum)
+[Thu Aug 21 21:59:36 2025] pcieport 0000:48:07.0: PME: Signaling with IRQ 55
+[Thu Aug 21 21:59:36 2025] pcieport 0000:48:07.0: pciehp: Slot #51 AttnBtn+ PwrCtrl+ MRL- AttnInd+ PwrInd+ HotPlug+ Surprise+ Interlock- NoCompl- IbPresDis- LLActRep+ (with Cmd Compl erratum)
+[Thu Aug 21 21:59:36 2025] pcieport 0000:59:00.4: PME: Signaling with IRQ 56
+[Thu Aug 21 21:59:36 2025] pcieport 0000:6a:00.4: PME: Signaling with IRQ 57
+[Thu Aug 21 21:59:36 2025] pcieport 0000:6f:00.4: PME: Signaling with IRQ 58
+[Thu Aug 21 21:59:36 2025] pcieport 0000:74:00.4: PME: Signaling with IRQ 59
+[Thu Aug 21 21:59:36 2025] pcieport 0000:79:00.4: PME: Signaling with IRQ 60
+[Thu Aug 21 21:59:36 2025] pcieport 0000:97:00.4: PME: Signaling with IRQ 61
+[Thu Aug 21 21:59:36 2025] pcieport 0000:a7:00.4: PME: Signaling with IRQ 62
+[Thu Aug 21 21:59:36 2025] pcieport 0000:b7:00.4: PME: Signaling with IRQ 63
+[Thu Aug 21 21:59:36 2025] pcieport 0000:c7:00.4: PME: Signaling with IRQ 64
+[Thu Aug 21 21:59:36 2025] pcieport 0000:d7:00.4: PME: Signaling with IRQ 65
+[Thu Aug 21 21:59:36 2025] pcieport 0000:d7:01.0: PME: Signaling with IRQ 66
+[Thu Aug 21 21:59:36 2025] pcieport 0000:d7:01.0: pciehp: Slot #52 AttnBtn+ PwrCtrl+ MRL- AttnInd+ PwrInd+ HotPlug+ Surprise+ Interlock- NoCompl- IbPresDis- LLActRep+ (with Cmd Compl erratum)
+[Thu Aug 21 21:59:36 2025] pcieport 0000:d7:03.0: PME: Signaling with IRQ 67
+[Thu Aug 21 21:59:36 2025] pcieport 0000:d7:03.0: pciehp: Slot #53 AttnBtn+ PwrCtrl+ MRL- AttnInd+ PwrInd+ HotPlug+ Surprise+ Interlock- NoCompl- IbPresDis- LLActRep+ (with Cmd Compl erratum)
+[Thu Aug 21 21:59:36 2025] pcieport 0000:d7:05.0: PME: Signaling with IRQ 68
+[Thu Aug 21 21:59:36 2025] pcieport 0000:d7:05.0: pciehp: Slot #54 AttnBtn+ PwrCtrl+ MRL- AttnInd+ PwrInd+ HotPlug+ Surprise+ Interlock- NoCompl- IbPresDis- LLActRep+ (with Cmd Compl erratum)
+[Thu Aug 21 21:59:36 2025] pcieport 0000:d7:07.0: PME: Signaling with IRQ 69
+[Thu Aug 21 21:59:36 2025] pcieport 0000:d7:07.0: pciehp: Slot #55 AttnBtn+ PwrCtrl+ MRL- AttnInd+ PwrInd+ HotPlug+ Surprise+ Interlock- NoCompl- IbPresDis- LLActRep+ (with Cmd Compl erratum)
+[Thu Aug 21 21:59:36 2025] pcieport 0000:80:00.4: PME: Signaling with IRQ 70
+[Thu Aug 21 21:59:36 2025] pcieport 0000:e7:00.4: PME: Signaling with IRQ 71
+[Thu Aug 21 21:59:36 2025] pcieport 0000:ec:00.4: PME: Signaling with IRQ 72
+[Thu Aug 21 21:59:36 2025] pcieport 0000:f1:00.4: PME: Signaling with IRQ 73
+[Thu Aug 21 21:59:36 2025] pcieport 0000:f6:00.4: PME: Signaling with IRQ 74
+[Thu Aug 21 21:59:36 2025] shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+[Thu Aug 21 21:59:36 2025] Monitor-Mwait will be used to enter C-1 state
+[Thu Aug 21 21:59:36 2025] Monitor-Mwait will be used to enter C-2 state
+[Thu Aug 21 21:59:36 2025] ACPI: \_SB_.SCK0.C000: Found 2 idle states
+[Thu Aug 21 21:59:36 2025] input: Power Button as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0C0C:00/input/input0
+[Thu Aug 21 21:59:36 2025] ACPI: button: Power Button [PWRB]
+[Thu Aug 21 21:59:36 2025] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input1
+[Thu Aug 21 21:59:36 2025] ACPI: button: Power Button [PWRF]
+[Thu Aug 21 21:59:36 2025] acpi/hmat: Memory Flags:0001 Processor Domain:0 Memory Domain:0
+[Thu Aug 21 21:59:36 2025] acpi/hmat: Memory Flags:0001 Processor Domain:1 Memory Domain:1
+[Thu Aug 21 21:59:36 2025] acpi/hmat: Memory Flags:0001 Processor Domain:2 Memory Domain:2
+[Thu Aug 21 21:59:36 2025] acpi/hmat: Memory Flags:0001 Processor Domain:3 Memory Domain:3
+[Thu Aug 21 21:59:36 2025] acpi/hmat: Memory Flags:0001 Processor Domain:4 Memory Domain:4
+[Thu Aug 21 21:59:36 2025] ERST: Error Record Serialization Table (ERST) support is initialized.
+[Thu Aug 21 21:59:36 2025] pstore: Registered erst as persistent store backend
+[Thu Aug 21 21:59:36 2025] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+[Thu Aug 21 21:59:36 2025] 00:03: ttyS0 at I/O 0x3f8 (irq = 4, base_baud = 115200) is a 16550A
+[Thu Aug 21 21:59:36 2025] 00:04: ttyS1 at I/O 0x2f8 (irq = 3, base_baud = 115200) is a 16550A
+[Thu Aug 21 21:59:36 2025] Non-volatile memory driver v1.3
+[Thu Aug 21 21:59:36 2025] tpm_tis MSFT0101:00: 2.0 TPM (device-id 0x1B, rev-id 22)
+[Thu Aug 21 21:59:36 2025] rdac: device handler registered
+[Thu Aug 21 21:59:36 2025] hp_sw: device handler registered
+[Thu Aug 21 21:59:36 2025] emc: device handler registered
+[Thu Aug 21 21:59:36 2025] alua: device handler registered
+[Thu Aug 21 21:59:36 2025] xhci_hcd 0000:00:14.0: xHCI Host Controller
+[Thu Aug 21 21:59:36 2025] xhci_hcd 0000:00:14.0: new USB bus registered, assigned bus number 1
+[Thu Aug 21 21:59:36 2025] xhci_hcd 0000:00:14.0: hcc params 0x20007fc1 hci version 0x120 quirks 0x0000000200009810
+[Thu Aug 21 21:59:36 2025] xhci_hcd 0000:00:14.0: xHCI Host Controller
+[Thu Aug 21 21:59:36 2025] xhci_hcd 0000:00:14.0: new USB bus registered, assigned bus number 2
+[Thu Aug 21 21:59:36 2025] xhci_hcd 0000:00:14.0: Host supports USB 3.1 Enhanced SuperSpeed
+[Thu Aug 21 21:59:36 2025] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002, bcdDevice= 5.14
+[Thu Aug 21 21:59:36 2025] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[Thu Aug 21 21:59:36 2025] usb usb1: Product: xHCI Host Controller
+[Thu Aug 21 21:59:36 2025] usb usb1: Manufacturer: Linux 5.14.0 xhci-hcd
+[Thu Aug 21 21:59:36 2025] usb usb1: SerialNumber: 0000:00:14.0
+[Thu Aug 21 21:59:36 2025] hub 1-0:1.0: USB hub found
+[Thu Aug 21 21:59:36 2025] hub 1-0:1.0: 16 ports detected
+[Thu Aug 21 21:59:36 2025] usb usb2: New USB device found, idVendor=1d6b, idProduct=0003, bcdDevice= 5.14
+[Thu Aug 21 21:59:36 2025] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[Thu Aug 21 21:59:36 2025] usb usb2: Product: xHCI Host Controller
+[Thu Aug 21 21:59:36 2025] usb usb2: Manufacturer: Linux 5.14.0 xhci-hcd
+[Thu Aug 21 21:59:36 2025] usb usb2: SerialNumber: 0000:00:14.0
+[Thu Aug 21 21:59:36 2025] hub 2-0:1.0: USB hub found
+[Thu Aug 21 21:59:36 2025] hub 2-0:1.0: 10 ports detected
+[Thu Aug 21 21:59:36 2025] usbcore: registered new interface driver usbserial_generic
+[Thu Aug 21 21:59:36 2025] usbserial: USB Serial support registered for generic
+[Thu Aug 21 21:59:36 2025] i8042: PNP: No PS/2 controller found.
+[Thu Aug 21 21:59:36 2025] mousedev: PS/2 mouse device common for all mice
+[Thu Aug 21 21:59:36 2025] rtc_cmos 00:00: RTC can wake from S4
+[Thu Aug 21 21:59:36 2025] rtc_cmos 00:00: registered as rtc0
+[Thu Aug 21 21:59:36 2025] rtc_cmos 00:00: setting system clock to 2025-08-22T04:59:36 UTC (1755838776)
+[Thu Aug 21 21:59:36 2025] rtc_cmos 00:00: alarms up to one month, y3k, 114 bytes nvram
+[Thu Aug 21 21:59:36 2025] intel_pstate: Intel P-state driver initializing
+[Thu Aug 21 21:59:36 2025] efifb: probing for efifb
+[Thu Aug 21 21:59:36 2025] efifb: framebuffer at 0x94000000, using 3072k, total 3072k
+[Thu Aug 21 21:59:36 2025] efifb: mode is 1024x768x32, linelength=4096, pages=1
+[Thu Aug 21 21:59:36 2025] efifb: scrolling: redraw
+[Thu Aug 21 21:59:36 2025] efifb: Truecolor: size=8:8:8:8, shift=24:16:8:0
+[Thu Aug 21 21:59:36 2025] Console: switching to colour frame buffer device 128x48
+[Thu Aug 21 21:59:36 2025] fb0: EFI VGA frame buffer device
+[Thu Aug 21 21:59:36 2025] EFI Variables Facility v0.08 2004-May-17
+[Thu Aug 21 21:59:36 2025] hid: raw HID events driver (C) Jiri Kosina
+[Thu Aug 21 21:59:36 2025] usbcore: registered new interface driver usbhid
+[Thu Aug 21 21:59:36 2025] usbhid: USB HID core driver
+[Thu Aug 21 21:59:36 2025] drop_monitor: Initializing network drop monitor service
+[Thu Aug 21 21:59:36 2025] Initializing XFRM netlink socket
+[Thu Aug 21 21:59:36 2025] NET: Registered PF_INET6 protocol family
+[Thu Aug 21 21:59:36 2025] Segment Routing with IPv6
+[Thu Aug 21 21:59:36 2025] NET: Registered PF_PACKET protocol family
+[Thu Aug 21 21:59:36 2025] mpls_gso: MPLS GSO support
+[Thu Aug 21 21:59:36 2025] ENERGY_PERF_BIAS: Set to 'normal', was 'performance'
+[Thu Aug 21 21:59:36 2025] microcode: Current revision: 0x21000240
+[Thu Aug 21 21:59:36 2025] resctrl: Sub-NUMA Cluster mode detected with 2 nodes per L3 cache
+[Thu Aug 21 21:59:36 2025] resctrl: L3 allocation detected
+[Thu Aug 21 21:59:36 2025] resctrl: L2 allocation detected
+[Thu Aug 21 21:59:36 2025] resctrl: MB allocation detected
+[Thu Aug 21 21:59:36 2025] resctrl: L3 monitoring detected
+[Thu Aug 21 21:59:36 2025] IPI shorthand broadcast: enabled
+[Thu Aug 21 21:59:36 2025] AVX2 version of gcm_enc/dec engaged.
+[Thu Aug 21 21:59:36 2025] AES CTR mode by8 optimization enabled
+[Thu Aug 21 21:59:36 2025] sched_clock: Marking stable (3320001234, 3304835)->(4143637214, -820331145)
+[Thu Aug 21 21:59:36 2025] registered taskstats version 1
+[Thu Aug 21 21:59:36 2025] Loading compiled-in X.509 certificates
+[Thu Aug 21 21:59:36 2025] Loaded X.509 cert 'Build time autogenerated kernel key: e1086d1399917650cd4669c0b0fdbfa45ef716b4'
+[Thu Aug 21 21:59:36 2025] Demotion targets for Node 0: null
+[Thu Aug 21 21:59:36 2025] Demotion targets for Node 1: null
+[Thu Aug 21 21:59:36 2025] Demotion targets for Node 2: null
+[Thu Aug 21 21:59:36 2025] Demotion targets for Node 3: null
+[Thu Aug 21 21:59:36 2025] page_owner is disabled
+[Thu Aug 21 21:59:36 2025] Key type .fscrypt registered
+[Thu Aug 21 21:59:36 2025] Key type fscrypt-provisioning registered
+[Thu Aug 21 21:59:36 2025] pstore: Using crash dump compression: deflate
+[Thu Aug 21 21:59:36 2025] Key type big_key registered
+[Thu Aug 21 21:59:36 2025] Key type trusted registered
+[Thu Aug 21 21:59:36 2025] Key type encrypted registered
+[Thu Aug 21 21:59:36 2025] integrity: Loading X.509 certificate: UEFI:MokListRT (MOKvar table)
+[Thu Aug 21 21:59:36 2025] integrity: Loaded X.509 cert 'CentOS Secure Boot CA 2: 70007f99209c126be14774eaec7b6d9631f34dca'
+[Thu Aug 21 21:59:36 2025] Loading compiled-in module X.509 certificates
+[Thu Aug 21 21:59:36 2025] Loaded X.509 cert 'Build time autogenerated kernel key: e1086d1399917650cd4669c0b0fdbfa45ef716b4'
+[Thu Aug 21 21:59:36 2025] ima: Allocated hash algorithm: sha256
+[Thu Aug 21 21:59:36 2025] usb 1-1: new low-speed USB device number 2 using xhci_hcd
+[Thu Aug 21 21:59:36 2025] ima: No architecture policies found
+[Thu Aug 21 21:59:36 2025] evm: Initialising EVM extended attributes:
+[Thu Aug 21 21:59:36 2025] evm: security.selinux
+[Thu Aug 21 21:59:36 2025] evm: security.SMACK64 (disabled)
+[Thu Aug 21 21:59:36 2025] evm: security.SMACK64EXEC (disabled)
+[Thu Aug 21 21:59:36 2025] evm: security.SMACK64TRANSMUTE (disabled)
+[Thu Aug 21 21:59:36 2025] evm: security.SMACK64MMAP (disabled)
+[Thu Aug 21 21:59:36 2025] evm: security.apparmor (disabled)
+[Thu Aug 21 21:59:36 2025] evm: security.ima
+[Thu Aug 21 21:59:36 2025] evm: security.capability
+[Thu Aug 21 21:59:36 2025] evm: HMAC attrs: 0x1
+[Thu Aug 21 21:59:36 2025] usb 1-1: New USB device found, idVendor=046d, idProduct=c31c, bcdDevice=64.02
+[Thu Aug 21 21:59:36 2025] usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Thu Aug 21 21:59:36 2025] usb 1-1: Product: USB Keyboard
+[Thu Aug 21 21:59:36 2025] usb 1-1: Manufacturer: Logitech
+[Thu Aug 21 21:59:36 2025] input: Logitech USB Keyboard as /devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/0003:046D:C31C.0001/input/input2
+[Thu Aug 21 21:59:36 2025] Running certificate verification RSA selftest
+[Thu Aug 21 21:59:36 2025] Loaded X.509 cert 'Certificate verification self-testing key: f58703bb33ce1b73ee02eccdee5b8817518fe3db'
+[Thu Aug 21 21:59:36 2025] Running certificate verification ECDSA selftest
+[Thu Aug 21 21:59:36 2025] Loaded X.509 cert 'Certificate verification ECDSA self-testing key: 2900bcea1deb7bc8479a84a23d758efdfdd2b2d3'
+[Thu Aug 21 21:59:36 2025] PM: hibernation: Checking hibernation image partition /dev/mapper/cs_solab--s7-swap
+[Thu Aug 21 21:59:36 2025] hid-generic 0003:046D:C31C.0001: input,hidraw0: USB HID v1.10 Keyboard [Logitech USB Keyboard] on usb-0000:00:14.0-1/input0
+[Thu Aug 21 21:59:36 2025] input: Logitech USB Keyboard Consumer Control as /devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.1/0003:046D:C31C.0002/input/input3
+[Thu Aug 21 21:59:36 2025] input: Logitech USB Keyboard System Control as /devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.1/0003:046D:C31C.0002/input/input4
+[Thu Aug 21 21:59:36 2025] hid-generic 0003:046D:C31C.0002: input,hiddev96,hidraw1: USB HID v1.10 Device [Logitech USB Keyboard] on usb-0000:00:14.0-1/input1
+[Thu Aug 21 21:59:36 2025] clk: Disabling unused clocks
+[Thu Aug 21 21:59:36 2025] Freeing unused decrypted memory: 2028K
+[Thu Aug 21 21:59:36 2025] Freeing unused kernel image (initmem) memory: 4060K
+[Thu Aug 21 21:59:36 2025] Write protecting the kernel read-only data: 26624k
+[Thu Aug 21 21:59:36 2025] Freeing unused kernel image (rodata/data gap) memory: 1352K
+[Thu Aug 21 21:59:36 2025] x86/mm: Checked W+X mappings: passed, no W+X pages found.
+[Thu Aug 21 21:59:36 2025] Run /init as init process
+[Thu Aug 21 21:59:36 2025]   with arguments:
+[Thu Aug 21 21:59:36 2025]     /init
+[Thu Aug 21 21:59:36 2025]     rhgb
+[Thu Aug 21 21:59:36 2025]   with environment:
+[Thu Aug 21 21:59:36 2025]     HOME=/
+[Thu Aug 21 21:59:36 2025]     TERM=linux
+[Thu Aug 21 21:59:36 2025]     BOOT_IMAGE=(hd0,gpt2)/vmlinuz-5.14.0
+[Thu Aug 21 21:59:36 2025] systemd[1]: systemd 252-53.el9 running in system mode (+PAM +AUDIT +SELINUX -APPARMOR +IMA +SMACK +SECCOMP +GCRYPT +GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN -IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT -QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK +XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified)
+[Thu Aug 21 21:59:36 2025] systemd[1]: Detected architecture x86-64.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Running in initrd.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Hostname set to <solab-s7>.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Queued start job for default target Initrd Default Target.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Created slice Slice /system/systemd-hibernate-resume.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Reached target Initrd /usr File System.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Reached target Slice Units.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Reached target Swaps.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Reached target Timer Units.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Listening on D-Bus System Message Bus Socket.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Listening on Journal Socket (/dev/log).
+[Thu Aug 21 21:59:36 2025] systemd[1]: Listening on Journal Socket.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Listening on udev Control Socket.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Listening on udev Kernel Socket.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Reached target Socket Units.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Starting Create List of Static Device Nodes...
+[Thu Aug 21 21:59:36 2025] systemd[1]: Starting Journal Service...
+[Thu Aug 21 21:59:36 2025] systemd[1]: Starting Load Kernel Modules...
+[Thu Aug 21 21:59:36 2025] systemd[1]: Starting Create System Users...
+[Thu Aug 21 21:59:36 2025] systemd[1]: Starting Setup Virtual Console...
+[Thu Aug 21 21:59:36 2025] systemd[1]: Finished Create List of Static Device Nodes.
+[Thu Aug 21 21:59:36 2025] usb 1-5: new high-speed USB device number 3 using xhci_hcd
+[Thu Aug 21 21:59:36 2025] systemd[1]: Finished Create System Users.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Starting Create Static Device Nodes in /dev...
+[Thu Aug 21 21:59:36 2025] systemd[1]: Finished Create Static Device Nodes in /dev.
+[Thu Aug 21 21:59:36 2025] fuse: init (API version 7.37)
+[Thu Aug 21 21:59:36 2025] systemd[1]: Finished Load Kernel Modules.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Starting Apply Kernel Variables...
+[Thu Aug 21 21:59:36 2025] systemd[1]: Finished Apply Kernel Variables.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Finished Setup Virtual Console.
+[Thu Aug 21 21:59:36 2025] systemd[1]: dracut ask for additional cmdline parameters was skipped because no trigger condition checks were met.
+[Thu Aug 21 21:59:36 2025] systemd[1]: Starting dracut cmdline hook...
+[Thu Aug 21 21:59:36 2025] systemd[1]: Started Journal Service.
+[Thu Aug 21 21:59:36 2025] usb 1-5: New USB device found, idVendor=1d6b, idProduct=0107, bcdDevice= 1.00
+[Thu Aug 21 21:59:36 2025] usb 1-5: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[Thu Aug 21 21:59:36 2025] usb 1-5: Product: USB Virtual Hub
+[Thu Aug 21 21:59:36 2025] usb 1-5: Manufacturer: Aspeed
+[Thu Aug 21 21:59:36 2025] usb 1-5: SerialNumber: 00000000
+[Thu Aug 21 21:59:36 2025] hub 1-5:1.0: USB hub found
+[Thu Aug 21 21:59:36 2025] hub 1-5:1.0: 7 ports detected
+[Thu Aug 21 21:59:36 2025] device-mapper: core: CONFIG_IMA_DISABLE_HTABLE is disabled. Duplicate IMA measurements will not be recorded in the IMA log.
+[Thu Aug 21 21:59:36 2025] device-mapper: uevent: version 1.0.3
+[Thu Aug 21 21:59:36 2025] device-mapper: ioctl: 4.50.0-ioctl (2025-04-28) initialised: dm-devel@lists.linux.dev
+[Thu Aug 21 21:59:37 2025] usb 1-5.1: new high-speed USB device number 4 using xhci_hcd
+[Thu Aug 21 21:59:37 2025] dca service started, version 1.12.1
+[Thu Aug 21 21:59:37 2025] Key type psk registered
+[Thu Aug 21 21:59:37 2025] usb 1-5.1: New USB device found, idVendor=0557, idProduct=9241, bcdDevice= 5.04
+[Thu Aug 21 21:59:37 2025] usb 1-5.1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Thu Aug 21 21:59:37 2025] usb 1-5.1: Product: SMCI HID KM
+[Thu Aug 21 21:59:37 2025] usb 1-5.1: Manufacturer: Linux 5.4.62 with aspeed_vhub
+[Thu Aug 21 21:59:37 2025] input: Linux 5.4.62 with aspeed_vhub SMCI HID KM as /devices/pci0000:00/0000:00:14.0/usb1/1-5/1-5.1/1-5.1:1.0/0003:0557:9241.0003/input/input5
+[Thu Aug 21 21:59:37 2025] libata version 3.00 loaded.
+[Thu Aug 21 21:59:37 2025] ACPI: bus type drm_connector registered
+[Thu Aug 21 21:59:37 2025] idxd 0000:6a:01.0: enabling device (0144 -> 0146)
+[Thu Aug 21 21:59:37 2025] idxd 0000:6a:01.0: Unable to turn on user SVA feature.
+[Thu Aug 21 21:59:37 2025] idxd 0000:6a:01.0: Intel(R) Accelerator Device (v100)
+[Thu Aug 21 21:59:37 2025] idxd 0000:e7:01.0: enabling device (0144 -> 0146)
+[Thu Aug 21 21:59:37 2025] idxd 0000:e7:01.0: Unable to turn on user SVA feature.
+[Thu Aug 21 21:59:37 2025] idxd 0000:e7:01.0: Intel(R) Accelerator Device (v100)
+[Thu Aug 21 21:59:37 2025] igb: Intel(R) Gigabit Ethernet Network Driver
+[Thu Aug 21 21:59:37 2025] igb: Copyright (c) 2007-2014 Intel Corporation.
+[Thu Aug 21 21:59:37 2025] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver
+[Thu Aug 21 21:59:37 2025] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
+[Thu Aug 21 21:59:37 2025] nvme nvme0: pci function 0000:49:00.0
+[Thu Aug 21 21:59:37 2025] ahci 0000:00:17.0: version 3.0
+[Thu Aug 21 21:59:37 2025] ahci 0000:00:17.0: AHCI vers 0001.0301, 32 command slots, 6 Gbps, SATA mode
+[Thu Aug 21 21:59:37 2025] ahci 0000:00:17.0: 8/8 ports implemented (port mask 0xff)
+[Thu Aug 21 21:59:37 2025] ahci 0000:00:17.0: flags: 64bit ncq sntf clo only pio slum part ems deso sadm sds 
+[Thu Aug 21 21:59:37 2025] hid-generic 0003:0557:9241.0003: input,hidraw2: USB HID v1.00 Keyboard [Linux 5.4.62 with aspeed_vhub SMCI HID KM] on usb-0000:00:14.0-5.1/input0
+[Thu Aug 21 21:59:37 2025] input: Linux 5.4.62 with aspeed_vhub SMCI HID KM as /devices/pci0000:00/0000:00:14.0/usb1/1-5/1-5.1/1-5.1:1.1/0003:0557:9241.0004/input/input6
+[Thu Aug 21 21:59:37 2025] hid-generic 0003:0557:9241.0004: input,hidraw3: USB HID v1.00 Mouse [Linux 5.4.62 with aspeed_vhub SMCI HID KM] on usb-0000:00:14.0-5.1/input1
+[Thu Aug 21 21:59:37 2025] scsi host0: ahci
+[Thu Aug 21 21:59:37 2025] scsi host1: ahci
+[Thu Aug 21 21:59:37 2025] scsi host2: ahci
+[Thu Aug 21 21:59:37 2025] scsi host3: ahci
+[Thu Aug 21 21:59:37 2025] scsi host4: ahci
+[Thu Aug 21 21:59:37 2025] scsi host5: ahci
+[Thu Aug 21 21:59:37 2025] scsi host6: ahci
+[Thu Aug 21 21:59:37 2025] scsi host7: ahci
+[Thu Aug 21 21:59:37 2025] ata1: SATA max UDMA/133 abar m2048@0x95107000 port 0x95107100 irq 111 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ata2: SATA max UDMA/133 abar m2048@0x95107000 port 0x95107180 irq 111 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ata3: SATA max UDMA/133 abar m2048@0x95107000 port 0x95107200 irq 111 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ata4: SATA max UDMA/133 abar m2048@0x95107000 port 0x95107280 irq 111 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ata5: SATA max UDMA/133 abar m2048@0x95107000 port 0x95107300 irq 111 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ata6: SATA max UDMA/133 abar m2048@0x95107000 port 0x95107380 irq 111 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ata7: SATA max UDMA/133 abar m2048@0x95107000 port 0x95107400 irq 111 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ata8: SATA max UDMA/133 abar m2048@0x95107000 port 0x95107480 irq 111 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ahci 0000:00:19.0: AHCI vers 0001.0301, 32 command slots, 6 Gbps, SATA mode
+[Thu Aug 21 21:59:37 2025] ahci 0000:00:19.0: 4/4 ports implemented (port mask 0xf)
+[Thu Aug 21 21:59:37 2025] ahci 0000:00:19.0: flags: 64bit ncq sntf clo only pio slum part ems deso sadm sds 
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.0: added PHC on eth0
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.0: Intel(R) Gigabit Ethernet Network Connection
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.0: eth0: (PCIe:5.0Gb/s:Width x4) 7c:c2:55:4d:e2:7e
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.0: eth0: PBA No: 010300-000
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.0: Using MSI-X interrupts. 8 rx queue(s), 8 tx queue(s)
+[Thu Aug 21 21:59:37 2025] scsi host8: ahci
+[Thu Aug 21 21:59:37 2025] scsi host9: ahci
+[Thu Aug 21 21:59:37 2025] scsi host10: ahci
+[Thu Aug 21 21:59:37 2025] scsi host11: ahci
+[Thu Aug 21 21:59:37 2025] ata9: SATA max UDMA/133 abar m2048@0x95105000 port 0x95105100 irq 112 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ata10: SATA max UDMA/133 abar m2048@0x95105000 port 0x95105180 irq 112 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ata11: SATA max UDMA/133 abar m2048@0x95105000 port 0x95105200 irq 112 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] ata12: SATA max UDMA/133 abar m2048@0x95105000 port 0x95105280 irq 112 lpm-pol 0
+[Thu Aug 21 21:59:37 2025] nvme nvme0: D3 entry latency set to 8 seconds
+[Thu Aug 21 21:59:37 2025] usb 1-5.2: new high-speed USB device number 5 using xhci_hcd
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.1: added PHC on eth1
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.1: Intel(R) Gigabit Ethernet Network Connection
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.1: eth1: (PCIe:5.0Gb/s:Width x4) 7c:c2:55:4d:e2:7f
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.1: eth1: PBA No: 010300-000
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.1: Using MSI-X interrupts. 8 rx queue(s), 8 tx queue(s)
+[Thu Aug 21 21:59:37 2025] nvme nvme0: 128/0/0 default/read/poll queues
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.2: added PHC on eth2
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.2: Intel(R) Gigabit Ethernet Network Connection
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.2: eth2: (PCIe:5.0Gb/s:Width x4) 7c:c2:55:4d:e2:80
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.2: eth2: PBA No: 010300-000
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.2: Using MSI-X interrupts. 8 rx queue(s), 8 tx queue(s)
+[Thu Aug 21 21:59:37 2025]  nvme0n1: p1 p2 p3
+[Thu Aug 21 21:59:37 2025] usb 1-5.2: New USB device found, idVendor=0b1f, idProduct=03ee, bcdDevice= 5.04
+[Thu Aug 21 21:59:37 2025] usb 1-5.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Thu Aug 21 21:59:37 2025] usb 1-5.2: Product: RNDIS/Ethernet Gadget
+[Thu Aug 21 21:59:37 2025] usb 1-5.2: Manufacturer: Linux 5.4.62 with aspeed_vhub
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.3: added PHC on eth3
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.3: Intel(R) Gigabit Ethernet Network Connection
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.3: eth3: (PCIe:5.0Gb/s:Width x4) 7c:c2:55:4d:e2:81
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.3: eth3: PBA No: 010300-000
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.3: Using MSI-X interrupts. 8 rx queue(s), 8 tx queue(s)
+[Thu Aug 21 21:59:37 2025] ata4: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata6: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata5: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata2: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata8: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata3: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata1: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata7: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata9: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata11: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata10: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] ata12: SATA link down (SStatus 0 SControl 300)
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.0 ens7f0: renamed from eth0
+[Thu Aug 21 21:59:37 2025] Console: switching to colour dummy device 80x25
+[Thu Aug 21 21:59:37 2025] ast 0000:02:00.0: vgaarb: deactivate vga console
+[Thu Aug 21 21:59:37 2025] ast 0000:02:00.0: Using default configuration
+[Thu Aug 21 21:59:37 2025] ast 0000:02:00.0: AST 2600 detected
+[Thu Aug 21 21:59:37 2025] ast 0000:02:00.0: [drm] Using analog VGA
+[Thu Aug 21 21:59:37 2025] ast 0000:02:00.0: [drm] dram MCLK=396 Mhz type=1 bus_width=16
+[Thu Aug 21 21:59:37 2025] [drm] Initialized ast 0.1.0 for 0000:02:00.0 on minor 0
+[Thu Aug 21 21:59:37 2025] usbcore: registered new interface driver cdc_ether
+[Thu Aug 21 21:59:37 2025] rndis_host 1-5.2:2.0 usb0: register 'rndis_host' at usb-0000:00:14.0-5.2, RNDIS device, 72:ea:c1:af:e1:04
+[Thu Aug 21 21:59:37 2025] usbcore: registered new interface driver rndis_host
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.1 ens7f1: renamed from eth1
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.2 ens7f2: renamed from eth2
+[Thu Aug 21 21:59:37 2025] igb 0000:38:00.3 ens7f3: renamed from eth3
+[Thu Aug 21 21:59:37 2025] rndis_host 1-5.2:2.0 enp0s20f0u5u2c2: renamed from usb0
+[Thu Aug 21 21:59:37 2025] fbcon: astdrmfb (fb0) is primary device
+[Thu Aug 21 21:59:37 2025] Console: switching to colour frame buffer device 240x67
+[Thu Aug 21 21:59:37 2025] ast 0000:02:00.0: [drm] fb0: astdrmfb frame buffer device
+[Thu Aug 21 21:59:38 2025] ixgbe 0000:27:00.0: Multiqueue Enabled: Rx Queue count = 63, Tx Queue count = 63 XDP Queue count = 0
+[Thu Aug 21 21:59:38 2025] ixgbe 0000:27:00.0: 31.504 Gb/s available PCIe bandwidth (8.0 GT/s PCIe x4 link)
+[Thu Aug 21 21:59:38 2025] ixgbe 0000:27:00.0: MAC: 4, PHY: 0, PBA No: 030B08-0F8
+[Thu Aug 21 21:59:38 2025] ixgbe 0000:27:00.0: 90:5a:08:39:e8:ca
+[Thu Aug 21 21:59:38 2025] ixgbe 0000:27:00.0: Intel(R) 10 Gigabit Network Connection
+[Thu Aug 21 21:59:39 2025] ixgbe 0000:27:00.1: Multiqueue Enabled: Rx Queue count = 63, Tx Queue count = 63 XDP Queue count = 0
+[Thu Aug 21 21:59:39 2025] ixgbe 0000:27:00.1: 31.504 Gb/s available PCIe bandwidth (8.0 GT/s PCIe x4 link)
+[Thu Aug 21 21:59:39 2025] ixgbe 0000:27:00.1: MAC: 4, PHY: 0, PBA No: 030B08-0F8
+[Thu Aug 21 21:59:39 2025] ixgbe 0000:27:00.1: 90:5a:08:39:e8:cb
+[Thu Aug 21 21:59:39 2025] ixgbe 0000:27:00.1: Intel(R) 10 Gigabit Network Connection
+[Thu Aug 21 21:59:39 2025] ixgbe 0000:27:00.1 ens3f1: renamed from eth1
+[Thu Aug 21 21:59:39 2025] ixgbe 0000:27:00.0 ens3f0: renamed from eth0
+[Thu Aug 21 21:59:39 2025] PM: hibernation: Configured hibernation resume from disk to 265289729
+[Thu Aug 21 21:59:39 2025] PM: hibernation: Hibernation image partition 253:1 present
+[Thu Aug 21 21:59:39 2025] PM: hibernation: Looking for hibernation image.
+[Thu Aug 21 21:59:39 2025] PM: Image not found (code -22)
+[Thu Aug 21 21:59:39 2025] PM: hibernation: Hibernation image not present or could not be loaded.
+[Thu Aug 21 21:59:40 2025] SGI XFS with ACLs, security attributes, scrub, quota, no debug enabled
+[Thu Aug 21 21:59:40 2025] XFS (dm-0): Mounting V5 Filesystem 140e3710-86a6-4a15-9ffc-3291b9d7c899
+[Thu Aug 21 21:59:40 2025] XFS (dm-0): Ending clean mount
+[Thu Aug 21 21:59:40 2025] systemd-journald[1274]: Received SIGTERM from PID 1 (systemd).
+[Thu Aug 21 21:59:40 2025] systemd[1]: systemd 252-53.el9 running in system mode (+PAM +AUDIT +SELINUX -APPARMOR +IMA +SMACK +SECCOMP +GCRYPT +GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN -IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT -QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK +XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified)
+[Thu Aug 21 21:59:40 2025] systemd[1]: Detected architecture x86-64.
+[Thu Aug 21 21:59:40 2025] systemd-rc-local-generator[1958]: /etc/rc.d/rc.local is not marked executable, skipping.
+[Thu Aug 21 21:59:41 2025] systemd[1]: initrd-switch-root.service: Deactivated successfully.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Stopped Switch Root.
+[Thu Aug 21 21:59:41 2025] systemd[1]: systemd-journald.service: Scheduled restart job, restart counter is at 1.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Created slice Slice /system/getty.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Created slice Slice /system/sshd-keygen.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Created slice Slice /system/systemd-fsck.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Created slice User and Session Slice.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Dispatch Password Requests to Console Directory Watch was skipped because of an unmet condition check (ConditionPathExists=!/run/plymouth/pid).
+[Thu Aug 21 21:59:41 2025] systemd[1]: Started Forward Password Requests to Wall Directory Watch.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Set up automount Arbitrary Executable File Formats File System Automount Point.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Reached target Local Encrypted Volumes.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Stopped target Switch Root.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Stopped target Initrd File Systems.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Stopped target Initrd Root File System.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Reached target Local Integrity Protected Volumes.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Reached target Slice Units.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Reached target Local Verity Protected Volumes.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Listening on Device-mapper event daemon FIFOs.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Listening on LVM2 poll daemon socket.
+[Thu Aug 21 21:59:41 2025] systemd[1]: multipathd control socket was skipped because of an unmet condition check (ConditionPathExists=/etc/multipath.conf).
+[Thu Aug 21 21:59:41 2025] systemd[1]: Listening on RPCbind Server Activation Socket.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Reached target RPC Port Mapper.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Listening on Process Core Dump Socket.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Listening on initctl Compatibility Named Pipe.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Listening on udev Control Socket.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Listening on udev Kernel Socket.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Activating swap /dev/mapper/cs_solab--s7-swap...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Mounting Huge Pages File System...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Mounting POSIX Message Queue File System...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Mounting Kernel Debug File System...
+[Thu Aug 21 21:59:41 2025] Adding 4194300k swap on /dev/mapper/cs_solab--s7-swap.  Priority:-2 extents:1 across:4194300k SS
+[Thu Aug 21 21:59:41 2025] systemd[1]: Mounting Kernel Trace File System...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Kernel Module supporting RPCSEC_GSS was skipped because of an unmet condition check (ConditionPathExists=/etc/krb5.keytab).
+[Thu Aug 21 21:59:41 2025] systemd[1]: iscsi-starter.service was skipped because of an unmet condition check (ConditionDirectoryNotEmpty=/var/lib/iscsi/nodes).
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Create List of Static Device Nodes...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Monitoring of LVM2 mirrors, snapshots etc. using dmeventd or progress polling...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Load Kernel Module configfs...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Load Kernel Module drm...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Load Kernel Module efi_pstore...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Load Kernel Module fuse...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Read and set NIS domainname from /etc/sysconfig/network...
+[Thu Aug 21 21:59:41 2025] systemd[1]: plymouth-switch-root.service: Deactivated successfully.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Stopped Plymouth switch root service.
+[Thu Aug 21 21:59:41 2025] systemd[1]: systemd-fsck-root.service: Deactivated successfully.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Stopped File System Check on Root Device.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Stopped Journal Service.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Journal Service...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Load Kernel Modules...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Generate network units from Kernel command line...
+[Thu Aug 21 21:59:41 2025] systemd[1]: TPM2 PCR Machine ID Measurement was skipped because of an unmet condition check (ConditionPathExists=/sys/firmware/efi/efivars/StubPcrKernelImage-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f).
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Remount Root and Kernel File Systems...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Repartition Root Disk was skipped because no trigger condition checks were met.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Coldplug All udev Devices...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Activated swap /dev/mapper/cs_solab--s7-swap.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Mounted Huge Pages File System.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Mounted POSIX Message Queue File System.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Mounted Kernel Debug File System.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Mounted Kernel Trace File System.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Finished Create List of Static Device Nodes.
+[Thu Aug 21 21:59:41 2025] systemd[1]: modprobe@configfs.service: Deactivated successfully.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Finished Load Kernel Module configfs.
+[Thu Aug 21 21:59:41 2025] systemd[1]: modprobe@drm.service: Deactivated successfully.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Finished Load Kernel Module drm.
+[Thu Aug 21 21:59:41 2025] systemd[1]: modprobe@efi_pstore.service: Deactivated successfully.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Finished Load Kernel Module efi_pstore.
+[Thu Aug 21 21:59:41 2025] systemd[1]: modprobe@fuse.service: Deactivated successfully.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Finished Load Kernel Module fuse.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Finished Read and set NIS domainname from /etc/sysconfig/network.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Finished Load Kernel Modules.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Finished Generate network units from Kernel command line.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Reached target Preparation for Network.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Reached target Swaps.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Mounting FUSE Control File System...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Starting Apply Kernel Variables...
+[Thu Aug 21 21:59:41 2025] systemd[1]: Mounted FUSE Control File System.
+[Thu Aug 21 21:59:41 2025] systemd[1]: Started Journal Service.
+[Thu Aug 21 21:59:41 2025] systemd-journald[1999]: Received client request to flush runtime journal.
+[Thu Aug 21 21:59:41 2025] IPMI message handler: version 39.2
+[Thu Aug 21 21:59:41 2025] ipmi device interface
+[Thu Aug 21 21:59:41 2025] ipmi_si: IPMI System Interface driver
+[Thu Aug 21 21:59:41 2025] ipmi_si dmi-ipmi-si.0: ipmi_platform: probing via SMBIOS
+[Thu Aug 21 21:59:41 2025] ipmi_platform: ipmi_si: SMBIOS: io 0xca2 regsize 1 spacing 1 irq 0
+[Thu Aug 21 21:59:41 2025] ipmi_si: Adding SMBIOS-specified kcs state machine
+[Thu Aug 21 21:59:41 2025] ipmi_si IPI0001:00: ipmi_platform: probing via ACPI
+[Thu Aug 21 21:59:41 2025] ipmi_si IPI0001:00: ipmi_platform: [io  0x0ca2] regsize 1 spacing 1 irq 0
+[Thu Aug 21 21:59:41 2025] ipmi_si dmi-ipmi-si.0: Removing SMBIOS-specified kcs state machine in favor of ACPI
+[Thu Aug 21 21:59:41 2025] ipmi_si: Adding ACPI-specified kcs state machine
+[Thu Aug 21 21:59:41 2025] ipmi_si: Trying ACPI-specified kcs state machine at i/o address 0xca2, slave address 0x20, irq 0
+[Thu Aug 21 21:59:41 2025] cxl_acpi ACPI0017:00: root0 added (root port)
+[Thu Aug 21 21:59:41 2025] acpi ACPI0016:07: UID found: 289
+[Thu Aug 21 21:59:41 2025] acpi ACPI0016:07: RCRB found for UID 289: 0x00000000d9800000
+[Thu Aug 21 21:59:41 2025]  pci0000:a8: Component Registers found for dport: 0x00000000d9820000
+[Thu Aug 21 21:59:41 2025]  pci0000:a8: Mapped CXL Memory Device resource 0x00000000d9820000
+[Thu Aug 21 21:59:41 2025]  pci0000:a8: found RAS capability (0x100)
+[Thu Aug 21 21:59:41 2025]  pci0000:a8: Unknown CM cap ID: 3 (0x930)
+[Thu Aug 21 21:59:41 2025]  pci0000:a8: Set up component registers
+[Thu Aug 21 21:59:41 2025]  pci0000:a8: RCH dport added to root0
+[Thu Aug 21 21:59:41 2025] ipmi_si IPI0001:00: The BMC does not support clearing the recv irq bit, compensating, but the BMC needs to be fixed.
+[Thu Aug 21 21:59:41 2025] cxl_acpi ACPI0017:00: add: decoder0.0 node: 4 range [0x8080000000 - 0xa07fffffff]
+[Thu Aug 21 21:59:41 2025]  pci0000:a8: host supports CXL (restricted)
+[Thu Aug 21 21:59:41 2025] ipmi_si IPI0001:00: IPMI message handler: Found new BMC (man_id: 0x002a7c, prod_id: 0x1c5e, dev_id: 0x20)
+[Thu Aug 21 21:59:41 2025] CXL bus rescan result: 0
+[Thu Aug 21 21:59:41 2025] ismt_smbus 0000:00:15.0: enabling device (0000 -> 0002)
+[Thu Aug 21 21:59:41 2025] input: PC Speaker as /devices/platform/pcspkr/input/input7
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: enabling device (0140 -> 0142)
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Mapped CXL Memory Device resource 0x0000233efff00000
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: found Status capability (0x40)
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: found Mailbox capability (0x1000)
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: found Memory Device capability (0x48)
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Probing device registers...
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Mapped CXL Memory Device resource 0x00000000e1610000
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: found RAS capability (0x100)
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Unknown CM cap ID: 0 (0x0)
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Unknown CM cap ID: 4 (0x300)
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Unknown CM cap ID: 0 (0x0)
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: found HDM decoder capability (0x500)
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Set up component registers
+[Thu Aug 21 21:59:41 2025] i801_smbus 0000:00:1f.4: enabling device (0141 -> 0143)
+[Thu Aug 21 21:59:41 2025] i801_smbus 0000:00:1f.4: SPD Write Disable is set
+[Thu Aug 21 21:59:41 2025] i801_smbus 0000:00:1f.4: SMBus using PCI interrupt
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Mailbox payload sized 8192
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Mailbox interrupts are unsupported
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0400
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 8192, out_len 28
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Found LOG type 0da9c0b5-bf41-4b78-8f79-96b1623b3f17 of size 116
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0401
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 116, out_len 1025
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x0100 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x0101 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x0102 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x0103 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x0400 enabled
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x0401 enabled
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x4000 enabled
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x4200 enabled
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x4201 enabled
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x4202 enabled
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0xc007 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0xc008 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0xc010 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x4800 enabled
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x4801 enabled
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x4802 enabled
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x4803 enabled
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x5600 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x5601 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x5602 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x5603 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x5604 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x5605 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x5606 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x5607 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0x5608 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0xc100 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0xc101 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Opcode 0xc102 unsupported by driver
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0301
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Mailbox operation had an error: cmd is not supported
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x4000
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 67, out_len 69
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x4800
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 8192, out_len 48
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Read 1/1 DC regions
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: DC region dc0 DPA: 0x0 LEN: 0x2000000000 BLKSZ: 0x80000000
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: DC flags 0x28
+[Thu Aug 21 21:59:41 2025] run_dcd_handler: ret 0
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: [DCD] init devdax: 257~320 run_dcd_handler ret: 0
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Total dynamic capacity: 0x2000000000
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: DPA(dc0): [mem 0x00000000-0x1fffffffff flags 0x200]
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: DPA(ram): no capacity
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: DPA(pmem): no capacity
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0102
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 5, out_len 5
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0103
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0102
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 5, out_len 5
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: [DEBUG] dcd_settings:0x61
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Reading event logs: 1f
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0100
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 8192, out_len 32
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: payload_size 8192 size_out 32
+[Thu Aug 21 21:59:41 2025] payload: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[Thu Aug 21 21:59:41 2025] payload: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0100
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 8192, out_len 32
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: payload_size 8192 size_out 32
+[Thu Aug 21 21:59:41 2025] payload: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[Thu Aug 21 21:59:41 2025] payload: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0100
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 8192, out_len 32
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: payload_size 8192 size_out 32
+[Thu Aug 21 21:59:41 2025] payload: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[Thu Aug 21 21:59:41 2025] payload: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0100
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 8192, out_len 32
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: payload_size 8192 size_out 32
+[Thu Aug 21 21:59:41 2025] payload: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[Thu Aug 21 21:59:41 2025] payload: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x0100
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 8192, out_len 32
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: payload_size 8192 size_out 32
+[Thu Aug 21 21:59:41 2025] payload: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[Thu Aug 21 21:59:41 2025] payload: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x4801
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 16, out_len 16
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Extent count: 1 Generation Num: 3
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Sending command: 0x4801
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Doorbell wait took 0ms
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: size_out 8192, out_len 56
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Get extent list count:1 generation Num:3
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: Storing extent 0/1
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: DC extent DPA:0x0 LEN:0x2000000000 (DCR:0:0x0)
+[Thu Aug 21 21:59:41 2025] mei_me 0000:00:16.0: Device doesn't have valid ME Interface
+[Thu Aug 21 21:59:41 2025] i2c i2c-6: 16/16 memory slots populated (from DMI)
+[Thu Aug 21 21:59:41 2025] i2c i2c-6: Systems with more than 8 memory slots not supported yet, not instantiating SPD
+[Thu Aug 21 21:59:41 2025] ipmi_si IPI0001:00: IPMI kcs interface initialized
+[Thu Aug 21 21:59:41 2025] iTCO_vendor_support: vendor-support=0
+[Thu Aug 21 21:59:41 2025] ipmi_ssif: IPMI SSIF Interface driver
+[Thu Aug 21 21:59:41 2025] cxl_mem mem0: host-bridge: pci0000:a8
+[Thu Aug 21 21:59:41 2025] cxl endpoint1: Mapped CXL Memory Device resource 0x00000000e1610000
+[Thu Aug 21 21:59:41 2025] cxl endpoint1: found RAS capability (0x100)
+[Thu Aug 21 21:59:41 2025] cxl endpoint1: Unknown CM cap ID: 0 (0x0)
+[Thu Aug 21 21:59:41 2025] cxl endpoint1: Unknown CM cap ID: 4 (0x300)
+[Thu Aug 21 21:59:41 2025] cxl endpoint1: Unknown CM cap ID: 0 (0x0)
+[Thu Aug 21 21:59:41 2025] cxl endpoint1: found HDM decoder capability (0x500)
+[Thu Aug 21 21:59:41 2025] cxl endpoint1: Set up component registers
+[Thu Aug 21 21:59:41 2025] iTCO_wdt iTCO_wdt: unable to reset NO_REBOOT flag, device disabled by hardware/BIOS
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: found RAS capability (0x100)
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: Unknown CM cap ID: 0 (0x0)
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: Unknown CM cap ID: 4 (0x300)
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: Unknown CM cap ID: 0 (0x0)
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: found HDM decoder capability (0x500)
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: decoder1.0: committed: 0 base: 0x0_00000000 size: 0x0_00000000
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: Fallback map 1 range register
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: No CDAT mailbox
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: DVSEC Range0 allowed by platform
+[Thu Aug 21 21:59:41 2025] RAPL PMU: API unit is 2^-32 Joules, 3 fixed counters, 655360 ms ovfl timer
+[Thu Aug 21 21:59:41 2025] RAPL PMU: hw unit of domain package 2^-14 Joules
+[Thu Aug 21 21:59:41 2025] RAPL PMU: hw unit of domain dram 2^-14 Joules
+[Thu Aug 21 21:59:41 2025] RAPL PMU: hw unit of domain psys 2^-0 Joules
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: decoder1.0: committed: 0 base: 0x0_00000000 size: 0x0_00000000
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: decoder1.0: [mem 0x00000000-0x1fffffffff flags 0x80000200] mode: 3
+[Thu Aug 21 21:59:41 2025] cxl decoder1.0: Added to port endpoint1
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: [DEBUG] mem0:decoder1.0 no CXL window for range 0x8080000000:0xa07fffffff
+[Thu Aug 21 21:59:41 2025] cxl (null): [DEBUG] cxl_region_alloc()
+[Thu Aug 21 21:59:41 2025] cxl_region region1: [DEBUG] cxl_region_probe()
+[Thu Aug 21 21:59:41 2025] cxl_region region1: config state: 0
+[Thu Aug 21 21:59:41 2025] cxl_region region1: [DEBUG] cxl_region_probe() out:
+[Thu Aug 21 21:59:41 2025] cxl_region region1: probe: -6
+[Thu Aug 21 21:59:41 2025] cxl_acpi ACPI0017:00: decoder0.0: created region1
+[Thu Aug 21 21:59:41 2025] cxl_pci 0000:a8:00.0: mem0:decoder1.0: construct_region region1 res: [mem 0x8080000000-0xa07fffffff flags 0x200] iw: 1 ig: 4096
+[Thu Aug 21 21:59:41 2025] cxl region1: region sort successful
+[Thu Aug 21 21:59:41 2025] cxl region1: mem0:endpoint1 decoder1.0 add: mem0:decoder1.0 @ 0 next: none nr_eps: 1 nr_targets: 1
+[Thu Aug 21 21:59:41 2025] cxl_region region1: [DEBUG] cxl_region_probe()
+[Thu Aug 21 21:59:41 2025] cxl_region region1: [DEBUG] cxl_region_probe() out:
+[Thu Aug 21 21:59:41 2025] cxl_region region1: [DEBUG] region mode: dc
+[Thu Aug 21 21:59:41 2025] cxl_region region1: [DEBUG] __devm_cxl_add_dax_region is_dc: 1
+[Thu Aug 21 21:59:41 2025] (NULL device *): [DEBUG] cxl_dax_region_alloc()
+[Thu Aug 21 21:59:41 2025] cxl_region region1: [DEBUG] cxl_region_add_dc_extents: nr_targets: 1
+[Thu Aug 21 21:59:41 2025] cxl decoder1.0: Searching for DC extents
+[Thu Aug 21 21:59:41 2025] cxl decoder1.0: Checking extent DPA:0x0 LEN:0x2000000000
+[Thu Aug 21 21:59:41 2025] cxl decoder1.0: Cxled resource [mem 0x00000000-0x1fffffffff flags 0x80000200]
+[Thu Aug 21 21:59:41 2025] cxl decoder1.0: Found extent DPA:0x0 LEN:0x2000000000
+[Thu Aug 21 21:59:41 2025] cxl dax_region1: Adding DC extent DPA:0x0 LEN:0x2000000000
+[Thu Aug 21 21:59:41 2025] cxl dax_region1: Inserting at HPA offset:0x0
+[Thu Aug 21 21:59:41 2025] cxl dax_region1: Trying notify: type 0 HPA offset:0x0 LEN:0x2000000000
+[Thu Aug 21 21:59:41 2025] cxl_region region1: region1: register dax_region1
+[Thu Aug 21 21:59:41 2025] cxl_region region1: probe: 0
+[Thu Aug 21 21:59:41 2025] cxl_port endpoint1: probe: 0
+[Thu Aug 21 21:59:41 2025] cxl_mem mem0: endpoint1 added to root0
+[Thu Aug 21 21:59:41 2025] cxl_mem mem0: probe: 0
+[Thu Aug 21 21:59:41 2025] power_meter ACPI000D:00: Found ACPI power meter.
+[Thu Aug 21 21:59:41 2025] power_meter ACPI000D:00: Ignoring unsafe software power cap!
+[Thu Aug 21 21:59:41 2025] power_meter ACPI000D:00: hwmon_device_register() is deprecated. Please convert the driver to use hwmon_device_register_with_info().
+[Thu Aug 21 21:59:42 2025] EDAC i10nm: No hbm memory
+[Thu Aug 21 21:59:42 2025] EDAC MC0: Giving out device to module i10nm_edac controller Intel_10nm Socket#0 IMC#0: DEV 0000:7e:0c.0 (INTERRUPT)
+[Thu Aug 21 21:59:42 2025] EDAC MC1: Giving out device to module i10nm_edac controller Intel_10nm Socket#0 IMC#1: DEV 0000:7e:0d.0 (INTERRUPT)
+[Thu Aug 21 21:59:42 2025] EDAC MC2: Giving out device to module i10nm_edac controller Intel_10nm Socket#0 IMC#2: DEV 0000:7e:0e.0 (INTERRUPT)
+[Thu Aug 21 21:59:42 2025] EDAC MC3: Giving out device to module i10nm_edac controller Intel_10nm Socket#0 IMC#3: DEV 0000:7e:0f.0 (INTERRUPT)
+[Thu Aug 21 21:59:42 2025] EDAC MC4: Giving out device to module i10nm_edac controller Intel_10nm Socket#1 IMC#0: DEV 0000:fe:0c.0 (INTERRUPT)
+[Thu Aug 21 21:59:42 2025] EDAC MC5: Giving out device to module i10nm_edac controller Intel_10nm Socket#1 IMC#1: DEV 0000:fe:0d.0 (INTERRUPT)
+[Thu Aug 21 21:59:42 2025] EDAC MC6: Giving out device to module i10nm_edac controller Intel_10nm Socket#1 IMC#2: DEV 0000:fe:0e.0 (INTERRUPT)
+[Thu Aug 21 21:59:42 2025] EDAC MC7: Giving out device to module i10nm_edac controller Intel_10nm Socket#1 IMC#3: DEV 0000:fe:0f.0 (INTERRUPT)
+[Thu Aug 21 21:59:42 2025] EDAC i10nm: v0.0.6
+[Thu Aug 21 21:59:42 2025] intel_rapl_common: Found RAPL domain package
+[Thu Aug 21 21:59:42 2025] intel_rapl_common: Found RAPL domain dram
+[Thu Aug 21 21:59:42 2025] intel_rapl_common: Found RAPL domain package
+[Thu Aug 21 21:59:42 2025] intel_rapl_common: Found RAPL domain dram
+[Thu Aug 21 21:59:42 2025] XFS (nvme0n1p2): Mounting V5 Filesystem 69657338-fc79-4ea5-b7f9-eced31482e33
+[Thu Aug 21 21:59:42 2025] XFS (dm-2): Mounting V5 Filesystem 4a20288b-8afd-4bfa-b103-e2cd55bbfe1e
+[Thu Aug 21 21:59:42 2025] XFS (nvme0n1p2): Ending clean mount
+[Thu Aug 21 21:59:42 2025] XFS (dm-2): Ending clean mount
+[Thu Aug 21 21:59:42 2025] RPC: Registered named UNIX socket transport module.
+[Thu Aug 21 21:59:42 2025] RPC: Registered udp transport module.
+[Thu Aug 21 21:59:42 2025] RPC: Registered tcp transport module.
+[Thu Aug 21 21:59:42 2025] RPC: Registered tcp-with-tls transport module.
+[Thu Aug 21 21:59:42 2025] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[Thu Aug 21 21:59:42 2025] NET: Registered PF_QIPCRTR protocol family
+[Thu Aug 21 21:59:43 2025] ixgbe 0000:27:00.0: registered PHC device on ens3f0
+[Thu Aug 21 21:59:43 2025] ixgbe 0000:27:00.1: registered PHC device on ens3f1
+[Thu Aug 21 21:59:47 2025] ixgbe 0000:27:00.0 ens3f0: NIC Link is Up 1 Gbps, Flow Control: None
+[Thu Aug 21 21:59:47 2025] ixgbe 0000:27:00.1 ens3f1: NIC Link is Up 1 Gbps, Flow Control: None
+[Thu Aug 21 21:59:50 2025] block dm-0: the capability attribute has been deprecated.
+[Thu Aug 21 21:59:50 2025] block nvme0n1: No UUID available providing old NGUID
+[Fri Aug 22 11:05:34 2025] usb 1-1: USB disconnect, device number 2

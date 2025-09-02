@@ -1,0 +1,23 @@
+=== COMPLETE KERNEL LOGS FROM TEST START ===
+=== Captured at Tue Sep  2 10:17:08 AM PDT 2025 ===
+=== All kernel messages since marker: LUSTRE_OPEN_TEST_START_1756833424 ===
+
+=== COMPLETE DMESG OUTPUT ===
+[994676.819756] LUSTRE_OPEN_TEST_START_1756833424
+[994677.833481] MDT_DEBUG: This is an OPEN operation!
+[994677.834661] Stage 1: File being created at mdt_reint_internal
+[994677.836186] Stage 2: __osd_object_create (DMU create)
+[994677.837115] OSD_TIMING: __osd_object_create (DMU create) took 0 ms
+[994677.838022] Stage 3: FID Allocation at osd_create
+[994677.838805] OSD_TIMING: FID Allocation took 0 ms
+[994677.839974] MDD_TIMING: mdo_create_object took 3791 microseconds
+[994677.841067] MDD_TIMING: mdd_create_object_internal total took 4885 microseconds
+[994677.841903] Stage 4: osd_zap_add OI Mapping
+[994677.843308] MDD_TIMING: mdo_attr_set took 22 microseconds
+[994677.844742] Stage 5: osd_xattr_update
+[994677.846104] OSD_TIMING: __osd_sa_attr_init took 0 ms
+[994677.847697] MDT_TIMING: [MDT] mdt_reint_rec OPEN took 13036 microseconds
+[994677.849038] MDT_TIMING: [MDT:lustre-MDT0000 Node:0] Operation OPEN_FILE_OP (6) took 15574 microseconds
+[994677.851798] MDD_TIMING: mdo_attr_set took 2 microseconds
+[994677.853278] MDT_TIMING: [MDT:lustre-MDT0000 Node:0] Operation SETATTR (1) took 1700 microseconds
+
