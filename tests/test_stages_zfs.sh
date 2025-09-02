@@ -485,4 +485,4 @@ if ! command -v bc >/dev/null 2>&1; then
 fi
 
 # Run main function
-main 
+main
