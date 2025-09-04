@@ -36,4 +36,42 @@ Sep 02 10:17:05 solab-s7 kernel: MDT_TIMING: [MDT] mdt_reint_rec OPEN took 13036
 Sep 02 10:17:05 solab-s7 kernel: MDT_TIMING: [MDT:lustre-MDT0000 Node:0] Operation OPEN_FILE_OP (6) took 15574 microseconds
 Sep 02 10:17:05 solab-s7 kernel: MDD_TIMING: mdo_attr_set took 2 microseconds
 Sep 02 10:17:05 solab-s7 kernel: MDT_TIMING: [MDT:lustre-MDT0000 Node:0] Operation SETATTR (1) took 1700 microseconds
+=======
+=== KERNEL LOGS CAPTURED AT Tue Sep  2 12:55:37 PM PDT 2025 ===
+=== Looking for MDT_TIMING, MDD_TIMING, OSD_TIMING, REINT_OPEN, and Stage messages ===
 
+=== DMESG OUTPUT (since test start) ===
+[1004173.488092] MDT_DEBUG: This is an OPEN operation!
+[1004173.489143] Stage 1: File being created at mdt_reint_internal
+[1004173.492262] Stage 2: __osd_object_create (DMU create)
+[1004173.493302] OSD_TIMING: __osd_object_create (DMU create) took 0 ms
+[1004173.494359] Stage 3: FID Allocation at osd_create
+[1004173.495307] OSD_TIMING: FID Allocation took 0 ms
+[1004173.496369] MDD_TIMING: mdo_create_object took 4118 microseconds
+[1004173.497305] MDD_TIMING: mdd_create_object_internal total took 5055 microseconds
+[1004173.498273] Stage 4: osd_zap_add OI Mapping
+[1004173.499285] MDD_TIMING: mdo_attr_set took 17 microseconds
+[1004173.500353] Stage 5: osd_xattr_update
+[1004173.501324] OSD_TIMING: __osd_sa_attr_init took 0 ms
+[1004173.502534] MDT_TIMING: [MDT] mdt_reint_rec OPEN took 13391 microseconds
+[1004173.503550] MDT_TIMING: [MDT:lustre-MDT0000 Node:0] Operation OPEN_FILE_OP (6) took 20350 microseconds
+[1004173.505609] MDD_TIMING: mdo_attr_set took 2 microseconds
+[1004173.506728] MDT_TIMING: [MDT:lustre-MDT0000 Node:0] Operation SETATTR (1) took 1295 microseconds
+
+=== JOURNALCTL OUTPUT (since test start) ===
+Sep 02 12:55:35 solab-s6 kernel: MDT_DEBUG: This is an OPEN operation!
+Sep 02 12:55:35 solab-s6 kernel: Stage 1: File being created at mdt_reint_internal
+Sep 02 12:55:35 solab-s6 kernel: Stage 2: __osd_object_create (DMU create)
+Sep 02 12:55:35 solab-s6 kernel: OSD_TIMING: __osd_object_create (DMU create) took 0 ms
+Sep 02 12:55:35 solab-s6 kernel: Stage 3: FID Allocation at osd_create
+Sep 02 12:55:35 solab-s6 kernel: OSD_TIMING: FID Allocation took 0 ms
+Sep 02 12:55:35 solab-s6 kernel: MDD_TIMING: mdo_create_object took 4118 microseconds
+Sep 02 12:55:35 solab-s6 kernel: MDD_TIMING: mdd_create_object_internal total took 5055 microseconds
+Sep 02 12:55:35 solab-s6 kernel: Stage 4: osd_zap_add OI Mapping
+Sep 02 12:55:35 solab-s6 kernel: MDD_TIMING: mdo_attr_set took 17 microseconds
+Sep 02 12:55:35 solab-s6 kernel: Stage 5: osd_xattr_update
+Sep 02 12:55:35 solab-s6 kernel: OSD_TIMING: __osd_sa_attr_init took 0 ms
+Sep 02 12:55:35 solab-s6 kernel: MDT_TIMING: [MDT] mdt_reint_rec OPEN took 13391 microseconds
+Sep 02 12:55:35 solab-s6 kernel: MDT_TIMING: [MDT:lustre-MDT0000 Node:0] Operation OPEN_FILE_OP (6) took 20350 microseconds
+Sep 02 12:55:35 solab-s6 kernel: MDD_TIMING: mdo_attr_set took 2 microseconds
+Sep 02 12:55:35 solab-s6 kernel: MDT_TIMING: [MDT:lustre-MDT0000 Node:0] Operation SETATTR (1) took 1295 microseconds
