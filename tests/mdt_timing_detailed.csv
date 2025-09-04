@@ -1,7 +1,7 @@
 line_num,mdt_name,node_id,operation,op_code,time_us,format
-64,lustre-MDT0001,1,RENAME,5,3861,new
-65,lustre-MDT0001,1,RENAME,5,3398,new
-66,lustre-MDT0001,1,RENAME,5,3967,new
-67,lustre-MDT0001,1,RENAME,5,3868,new
-68,lustre-MDT0001,1,RENAME,5,3796,new
-69,lustre-MDT0000,0,RENAME,5,3467,new
+64,lustre-MDT0000,0,RENAME,5,6513,new
+65,lustre-MDT0000,0,RENAME,5,6213,new
+66,lustre-MDT0000,0,RENAME,5,5965,new
+67,lustre-MDT0000,0,RENAME,5,6109,new
+68,lustre-MDT0000,0,RENAME,5,4200,new
+69,lustre-MDT0000,0,RENAME,5,5498,new
