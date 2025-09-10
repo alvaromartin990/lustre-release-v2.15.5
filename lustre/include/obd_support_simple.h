@@ -846,7 +846,7 @@ do {									      \
 		ptr = cfs_cpt_malloc((cptab), (cpt), (size),		      \
 				     (flags) | __GFP_ZERO | __GFP_NOWARN);    \
 	if (!(cptab) || unlikely(!(ptr))) /* retry without CPT if failure */  \
-		ptr = malloc(size, (flags) | __GFP_ZERO);		      \
+		ptr = kmalloc(size, (flags) | __GFP_ZERO);		      \
 	if (likely((ptr) != NULL))					      \
 		OBD_ALLOC_POST((ptr), (size), "kmalloced");		      \
 } while (0)
