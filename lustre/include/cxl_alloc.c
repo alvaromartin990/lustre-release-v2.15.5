@@ -13,6 +13,8 @@
 
 /* Module parameter: default NUMA node to allocate from (CXL-attached node) */
 int cxl_node_id = -1;
+EXPORT_SYMBOL(cxl_node_id);
+
 module_param(cxl_node_id, int, 0444);
 MODULE_PARM_DESC(cxl_node_id, "Default NUMA node id to use for CXL allocations (-1 = disabled)");
 
