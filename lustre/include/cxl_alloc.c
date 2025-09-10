@@ -48,6 +48,7 @@ void *cxl_kmalloc(size_t size, gfp_t flags, int node)
     pr_info("cxl_kmalloc: %zu bytes on node %d -> %p\n", size, node, p);
     return p;
 }
+EXPORT_SYMBOL(cxl_kmalloc);
 
 /* Zeroed allocation */
 void *cxl_kzalloc(size_t size, gfp_t flags, int node)
@@ -106,6 +107,7 @@ void cxl_kfree(const void *ptr)
     else
         kfree((void *)ptr);
 }
+EXPORT_SYMBOL(cxl_kfree);
 
 /* Slab helpers pinned to node */
 struct kmem_cache *cxl_kmem_cache_create(const char *name, size_t size,
