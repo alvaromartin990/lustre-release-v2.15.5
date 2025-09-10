@@ -12,7 +12,7 @@
 #include "cxl_alloc.h"
 
 /* Module parameter: default NUMA node to allocate from (CXL-attached node) */
-static int cxl_node_id = -1;
+int cxl_node_id = -1;
 module_param(cxl_node_id, int, 0444);
 MODULE_PARM_DESC(cxl_node_id, "Default NUMA node id to use for CXL allocations (-1 = disabled)");
 
@@ -36,18 +36,14 @@ void cxl_exit_allocator(void)
 /* Helper: try kmalloc_node, fallback to kmalloc */
 void *cxl_kmalloc(size_t size, gfp_t flags, int node)
 {
-    void *p = NULL;
+    void *p;
 
-    if (node >= 0) {
-        /* try kmalloc_node first */
+    if (node >= 0)
         p = kmalloc_node(size, flags, node);
-        if (p)
-            return p;
-        /* if kmalloc_node failed, try smaller fallback */
-    }
+    else
+        p = kmalloc(size, flags);
 
-    /* fallback to generic kmalloc */
-    p = kmalloc(size, flags);
+    pr_info("cxl_kmalloc: %zu bytes on node %d -> %p\n", size, node, p);
     return p;
 }
 
