@@ -846,7 +846,7 @@ do {									      \
 		ptr = cfs_cpt_malloc((cptab), (cpt), (size),		      \
 				     (flags) | __GFP_ZERO | __GFP_NOWARN);    \
 	if (!(cptab) || unlikely(!(ptr))) /* retry without CPT if failure */  \
-		ptr = malloc(size, (flags) | __GFP_ZERO);		      \
+		ptr = malloc(size);		      \
 	if (likely((ptr) != NULL))					      \
 		OBD_ALLOC_POST((ptr), (size), "kmalloced");		      \
 } while (0)
@@ -941,7 +941,7 @@ do {									      \
 	if (likely(ptr)) {						      \
 		OBD_FREE_PRE(ptr, size, "kfreed");			      \
 		POISON(ptr, 0x5a, size);				      \
-		kfree(ptr);						      \
+		free(ptr);						      \
 		POISON_PTR(ptr);					      \
 	}								      \
 } while (0)
