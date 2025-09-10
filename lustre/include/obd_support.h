@@ -28,6 +28,8 @@
 #include <uapi/linux/lustre/lustre_idl.h>
 #include <uapi/linux/lustre/lgss.h>
 
+#include "cxl_alloc.h"
+
 /* global variables */
 extern struct percpu_counter obd_memory;
 
@@ -846,13 +848,27 @@ do {									      \
 		ptr = cfs_cpt_malloc((cptab), (cpt), (size),		      \
 				     (flags) | __GFP_ZERO | __GFP_NOWARN);    \
 	if (!(cptab) || unlikely(!(ptr))) /* retry without CPT if failure */  \
-		ptr = malloc(size);		      \
+		ptr = kmalloc(size, (flags) | __GFP_ZERO);		      \
 	if (likely((ptr) != NULL))					      \
 		OBD_ALLOC_POST((ptr), (size), "kmalloced");		      \
 } while (0)
 
-#define OBD_ALLOC_GFP(ptr, size, gfp_mask)				      \
-	__OBD_MALLOC_VERBOSE(ptr, NULL, 0, size, gfp_mask)
+#ifdef CONFIG_LUSTRE_CXL_ALLOC
+/* If CONFIG_LUSTRE_CXL_ALLOC is set, route allocations to the CXL-aware
+ * wrapper which can accept a node id via module param cxl_node_id.
+ */
+#define OBD_ALLOC_GFP(ptr, size, gfp_mask)                         \
+    do {                                                            \
+        int _cn = cxl_node_id;                                       \
+        (ptr) = cxl_kmalloc((size), (gfp_mask), _cn);                \
+        if ((ptr) && (gfp_mask & __GFP_ZERO))                        \
+            memset((ptr), 0, (size));                                \
+        OBD_ALLOC_POST((ptr), (size), "cxl-kmalloced");             \
+    } while (0)
+#else
+#define OBD_ALLOC_GFP(ptr, size, gfp_mask)                         \
+    __OBD_MALLOC_VERBOSE(ptr, NULL, 0, size, gfp_mask)
+#endif
 
 #define OBD_ALLOC(ptr, size) OBD_ALLOC_GFP(ptr, size, GFP_NOFS)
 #define OBD_ALLOC_WAIT(ptr, size) OBD_ALLOC_GFP(ptr, size, GFP_KERNEL)
@@ -936,15 +952,27 @@ do {									      \
 #define POISON_PAGE(page, val) do { } while (0)
 #endif
 
-#define OBD_FREE(ptr, size)						      \
-do {									      \
-	if (likely(ptr)) {						      \
-		OBD_FREE_PRE(ptr, size, "kfreed");			      \
-		POISON(ptr, 0x5a, size);				      \
-		free(ptr);						      \
-		POISON_PTR(ptr);					      \
-	}								      \
+#ifdef CONFIG_LUSTRE_CXL_ALLOC
+#define OBD_FREE(ptr, size)                            \
+do {                                                  \
+    if (likely(ptr)) {                                \
+        OBD_FREE_PRE(ptr, size, "kfreed");            \
+        POISON(ptr, 0x5a, size);                      \
+        cxl_kfree(ptr);                               \
+        POISON_PTR(ptr);                              \
+    }                                                 \
 } while (0)
+#else
+#define OBD_FREE(ptr, size)                            \
+do {                                                  \
+    if (likely(ptr)) {                                \
+        OBD_FREE_PRE(ptr, size, "kfreed");            \
+        POISON(ptr, 0x5a, size);                      \
+        kfree(ptr);                                   \
+        POISON_PTR(ptr);                              \
+    }                                                 \
+} while (0)
+#endif
 
 #define OBD_FREE_RCU(ptr, size, list)					\
 do {									\
