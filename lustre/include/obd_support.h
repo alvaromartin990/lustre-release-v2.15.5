@@ -29,7 +29,6 @@
 #include <uapi/linux/lustre/lgss.h>
 
 #include "cxl_alloc.h"
-extern int cxl_node_id;
 
 /* global variables */
 extern struct percpu_counter obd_memory;
