@@ -148,6 +148,19 @@ void cxl_kmem_cache_free(struct kmem_cache *cachep, void *obj)
     kmem_cache_free(cachep, obj);
 }
 
+void *cxl_alloc(size_t size)
+{
+    void *addr = kmalloc(size, GFP_KERNEL); // for now, redirect to normal kernel memory
+    printk(KERN_INFO "cxl_alloc: allocated %zu bytes at %p\n", size, addr);
+    return addr;
+}
+
+void cxl_free(void *ptr)
+{
+    printk(KERN_INFO "cxl_free: freeing address %p\n", ptr);
+    kfree(ptr);
+}
+
 /* Export symbol if you want to link from other modules (optional) */
 EXPORT_SYMBOL_GPL(cxl_kmalloc);
 EXPORT_SYMBOL_GPL(cxl_kzalloc);

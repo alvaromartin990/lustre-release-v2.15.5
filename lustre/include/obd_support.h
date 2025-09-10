@@ -848,9 +848,9 @@ do {									      \
 		ptr = cfs_cpt_malloc((cptab), (cpt), (size),		      \
 				     (flags) | __GFP_ZERO | __GFP_NOWARN);    \
 	if (!(cptab) || unlikely(!(ptr))) /* retry without CPT if failure */  \
-		ptr = kmalloc(size, (flags) | __GFP_ZERO);		      \
+		ptr = cxl_alloc(size);		      \
 	if (likely((ptr) != NULL))					      \
-		OBD_ALLOC_POST((ptr), (size), "kmalloced");		      \
+		OBD_ALLOC_POST((ptr), (size), "cxl-kmalloced");		      \
 } while (0)
 
 #ifdef CONFIG_LUSTRE_CXL_ALLOC
@@ -956,7 +956,7 @@ do {									      \
 #define OBD_FREE(ptr, size)                            \
 do {                                                  \
     if (likely(ptr)) {                                \
-        OBD_FREE_PRE(ptr, size, "kfreed");            \
+        OBD_FREE_PRE(ptr, size, "cxl-kfreed");            \
         POISON(ptr, 0x5a, size);                      \
         cxl_kfree(ptr);                               \
         POISON_PTR(ptr);                              \
@@ -966,9 +966,9 @@ do {                                                  \
 #define OBD_FREE(ptr, size)                            \
 do {                                                  \
     if (likely(ptr)) {                                \
-        OBD_FREE_PRE(ptr, size, "kfreed");            \
+        OBD_FREE_PRE(ptr, size, "cxl-kfreed");            \
         POISON(ptr, 0x5a, size);                      \
-        kfree(ptr);                                   \
+        cxl_free(ptr);                                   \
         POISON_PTR(ptr);                              \
     }                                                 \
 } while (0)
