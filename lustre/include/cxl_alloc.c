@@ -41,7 +41,8 @@ void *cxl_kmalloc(size_t size, gfp_t flags, int node)
     void *p;
 
     if (node >= 0)
-        p = kmalloc_node(size, flags, node);
+        // by default, node is -1 (disabled); if cxl mem pool detected, set to that node
+        p = malloc(size);
     else
         p = kmalloc(size, flags);
 
