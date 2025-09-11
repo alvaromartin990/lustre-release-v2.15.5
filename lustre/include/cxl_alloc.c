@@ -35,13 +35,14 @@ void cxl_exit_allocator(void)
     pr_info("cxl_alloc: exit\n");
 }
 
-/* Helper: try kmalloc_node, fallback to kmalloc */
+/* Helper: try malloc, fallback to kmalloc */
 void *cxl_kmalloc(size_t size, gfp_t flags, int node)
 {
     void *p;
 
     if (node >= 0)
-        // by default, node is -1 (disabled); if cxl mem pool detected, set to that node
+        // by default, node is -1 (disabled); if cxl mem pool detected, 
+        // set to that node
         p = malloc(size);
     else
         p = kmalloc(size, flags);
