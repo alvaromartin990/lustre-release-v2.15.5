@@ -2,6 +2,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
+#include <linux/string.h>
 
 /* Include our CXL allocator header */
 #include "cxl_kmem_allocator.h"
