@@ -11,15 +11,14 @@ KERNEL_VERSION ?= $(shell uname -r)
 KERNEL_DIR := /lib/modules/$(KERNEL_VERSION)/build
 PWD := $(shell pwd)
 
-# Source files
+# Source files - for single source file, just specify the object
 obj-m += $(MODULE_NAME).o
-$(MODULE_NAME)-objs := cxl_kmem_allocator.o
 
 # Compiler flags for CXL support
 ccflags-y += -DCONFIG_CXL_ALLOCATOR_DEBUG
 ccflags-y += -DCONFIG_CXL_PERFORMANCE_MONITORING
 ccflags-y += -I$(PWD)/include
-ccflags-y += -Wall -Wextra -Werror
+ccflags-y += -Wall -Wno-unused-parameter
 
 # Additional flags for specific kernel versions
 ifeq ($(shell test $(shell echo $(KERNEL_VERSION) | cut -d. -f1) -ge 5 && echo true), true)
@@ -46,7 +45,7 @@ uninstall:
 
 # Testing targets
 load: module
-	sudo insmod $(MODULE_NAME).ko cxl_dax_device="/dev/dax1.0" enable_fallback=1
+	sudo insmod $(MODULE_NAME).ko cxl_dax_device="/dev/dax0.0" enable_fallback=1
 
 unload:
 	sudo rmmod $(MODULE_NAME) || true

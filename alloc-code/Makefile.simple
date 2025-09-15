@@ -1,0 +1,51 @@
+# Simple Makefile for CXL Memory Allocator - Testing Version
+
+MODULE_NAME := cxl_kmem_allocator
+KERNEL_VERSION ?= $(shell uname -r)
+KERNEL_DIR := /lib/modules/$(KERNEL_VERSION)/build
+PWD := $(shell pwd)
+
+# Use the simple source file - rename it to match module name
+obj-m += $(MODULE_NAME).o
+
+# Minimal compiler flags
+ccflags-y += -I$(PWD)
+
+all: module
+
+module:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
+
+clean:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
+	rm -f *.o *.ko *.mod.c *.mod.o *.symvers *.order
+
+# Simple load with correct device path
+load: module
+	sudo insmod $(MODULE_NAME).ko cxl_dax_device="/dev/dax0.0" enable_fallback=1 pool_size_mb=64
+
+unload:
+	sudo rmmod $(MODULE_NAME) || true
+
+reload: unload load
+
+status:
+	lsmod | grep $(MODULE_NAME) || echo "Module not loaded"
+	dmesg | tail -10 | grep CXL || echo "No recent CXL messages"
+
+# Test the allocator with a simple test
+test-allocator: load
+	@echo "Testing CXL allocator..."
+	@echo "Check dmesg output:"
+	dmesg | grep CXL | tail -10
+
+help:
+	@echo "Simple CXL Allocator Build"
+	@echo "=========================="
+	@echo "  module  - Build the module"
+	@echo "  load    - Load with 64MB test pool" 
+	@echo "  unload  - Unload the module"
+	@echo "  status  - Check module status"
+	@echo "  test-allocator - Load and show test output"
+
+.PHONY: all module clean load unload reload status test-allocator help

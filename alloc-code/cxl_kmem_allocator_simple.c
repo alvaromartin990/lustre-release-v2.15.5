@@ -1,52 +1,53 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * CXL Kernel Memory Allocator Implementation
+ * CXL Kernel Memory Allocator - Simplified Version
  * 
- * Provides kernel-space CXL memory allocation compatible with Lustre's
- * existing memory allocation patterns.
+ * This is a minimal version that uses regular kernel memory
+ * for testing the allocation logic without DAX dependencies.
  */
 
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/slab.h>
-#include <linux/io.h>
-#include <linux/mm.h>
 #include <linux/vmalloc.h>
-#include <linux/proc_fs.h>
-#include <linux/seq_file.h>
+#include <linux/list.h>
+#include <linux/spinlock.h>
 
 #include "cxl_kmem_allocator.h"
 
 /* Module parameters */
 static char *cxl_dax_device = "/dev/dax0.0";
 module_param(cxl_dax_device, charp, 0644);
-MODULE_PARM_DESC(cxl_dax_device, "CXL DAX device path");
+MODULE_PARM_DESC(cxl_dax_device, "CXL DAX device path (unused in simple version)");
 
 static bool enable_fallback = true;
 module_param(enable_fallback, bool, 0644);
 MODULE_PARM_DESC(enable_fallback, "Enable fallback to system memory");
 
+static int pool_size_mb = 64;
+module_param(pool_size_mb, int, 0644);
+MODULE_PARM_DESC(pool_size_mb, "Test pool size in MB (default 64MB)");
+
 /* Global CXL memory pool */
 struct cxl_memory_pool cxl_pool = {0};
 EXPORT_SYMBOL(cxl_pool);
-
-/* Proc filesystem entry for monitoring */
-static struct proc_dir_entry *cxl_proc_entry;
 
 /* Static prototypes */
 static struct cxl_mem_chunk *cxl_find_free_chunk(size_t size);
 static struct cxl_mem_chunk *cxl_split_chunk(struct cxl_mem_chunk *chunk, size_t size);
 static void cxl_merge_free_chunks(void);
-static int cxl_setup_dax_mapping(const char *dax_path);
 
 /**
  * cxl_kmem_init - Initialize the CXL memory allocator
  */
 int cxl_kmem_init(void)
 {
-	int ret = 0;
+	struct cxl_mem_chunk *initial_chunk;
+	size_t total_size = (size_t)pool_size_mb * 1024 * 1024;
 	
-	pr_info("CXL Memory Allocator: Initializing...\n");
+	pr_info("CXL Memory Allocator: Initializing simple test version...\n");
+	pr_info("CXL: Creating %dMB test pool using vmalloc\n", pool_size_mb);
+	pr_info("CXL: DAX device %s will be used in full version\n", cxl_dax_device);
 	
 	/* Initialize pool structure */
 	memset(&cxl_pool, 0, sizeof(cxl_pool));
@@ -61,30 +62,38 @@ int cxl_kmem_init(void)
 	
 	cxl_pool.fallback_enabled = enable_fallback;
 	
-	/* Setup DAX device mapping */
-	ret = cxl_setup_dax_mapping(cxl_dax_device);
-	if (ret) {
-		pr_err("CXL Memory Allocator: Failed to setup DAX mapping: %d\n", ret);
-		goto err_setup;
+	/* Allocate test pool using vmalloc */
+	cxl_pool.base_addr = vmalloc(total_size);
+	if (!cxl_pool.base_addr) {
+		pr_err("CXL: Failed to allocate test pool\n");
+		return -ENOMEM;
 	}
+	
+	cxl_pool.phys_base = 0; /* Not relevant for vmalloc */
+	cxl_pool.total_size = total_size;
+	cxl_pool.allocated_size = 0;
+	
+	/* Create initial free chunk covering the entire region */
+	initial_chunk = kzalloc(sizeof(*initial_chunk), GFP_KERNEL);
+	if (!initial_chunk) {
+		vfree(cxl_pool.base_addr);
+		cxl_pool.base_addr = NULL;
+		return -ENOMEM;
+	}
+	
+	INIT_LIST_HEAD(&initial_chunk->list);
+	initial_chunk->size = total_size;
+	initial_chunk->offset = 0;
+	initial_chunk->vaddr = cxl_pool.base_addr;
+	initial_chunk->magic = CXL_CHUNK_MAGIC;
+	atomic_set(&initial_chunk->ref_count, 0);
+	
+	list_add(&initial_chunk->list, &cxl_pool.free_chunks);
 	
 	pr_info("CXL Memory Allocator: Initialized %zu bytes at %p\n", 
 		cxl_pool.total_size, cxl_pool.base_addr);
 	
-	/* Create proc entry for monitoring */
-	cxl_proc_entry = proc_create("cxl_allocator", 0644, NULL, &cxl_proc_ops);
-	if (!cxl_proc_entry) {
-		pr_warn("CXL: Failed to create proc entry\n");
-	}
-	
 	return 0;
-
-err_setup:
-	if (cxl_proc_entry) {
-		proc_remove(cxl_proc_entry);
-		cxl_proc_entry = NULL;
-	}
-	return ret;
 }
 EXPORT_SYMBOL(cxl_kmem_init);
 
@@ -97,12 +106,6 @@ void cxl_kmem_exit(void)
 	unsigned long flags;
 	
 	pr_info("CXL Memory Allocator: Shutting down...\n");
-	
-	/* Remove proc entry */
-	if (cxl_proc_entry) {
-		proc_remove(cxl_proc_entry);
-		cxl_proc_entry = NULL;
-	}
 	
 	spin_lock_irqsave(&cxl_pool.pool_lock, flags);
 	
@@ -122,61 +125,15 @@ void cxl_kmem_exit(void)
 	
 	spin_unlock_irqrestore(&cxl_pool.pool_lock, flags);
 	
-	/* Unmap the CXL region */
+	/* Free the test pool */
 	if (cxl_pool.base_addr) {
-		vfree(cxl_pool.base_addr);  /* Use vfree for vmalloc'd memory */
+		vfree(cxl_pool.base_addr);
 		cxl_pool.base_addr = NULL;
 	}
 	
 	pr_info("CXL Memory Allocator: Shutdown complete\n");
 }
 EXPORT_SYMBOL(cxl_kmem_exit);
-
-/**
- * cxl_setup_dax_mapping - Setup memory mapping for CXL DAX device
- * Simplified version for initial testing - uses regular kernel memory
- */
-static int cxl_setup_dax_mapping(const char *dax_path)
-{
-	struct cxl_mem_chunk *initial_chunk;
-	size_t pool_size = 64 * 1024 * 1024; /* 64MB for testing */
-	
-	pr_info("CXL: Setting up simplified memory pool (64MB) for testing\n");
-	pr_info("CXL: DAX device path: %s (will implement full DAX later)\n", dax_path);
-	
-	/* For now, allocate a large chunk of regular kernel memory as a proof of concept */
-	cxl_pool.base_addr = vmalloc(pool_size);
-	if (!cxl_pool.base_addr) {
-		pr_err("CXL: Failed to allocate test memory pool\n");
-		return -ENOMEM;
-	}
-	
-	cxl_pool.phys_base = 0; /* Will be set when real DAX is implemented */
-	cxl_pool.total_size = pool_size;
-	cxl_pool.allocated_size = 0;
-	
-	/* Create initial free chunk covering the entire region */
-	initial_chunk = kzalloc(sizeof(*initial_chunk), GFP_KERNEL);
-	if (!initial_chunk) {
-		vfree(cxl_pool.base_addr);
-		cxl_pool.base_addr = NULL;
-		return -ENOMEM;
-	}
-	
-	INIT_LIST_HEAD(&initial_chunk->list);
-	initial_chunk->size = pool_size;
-	initial_chunk->offset = 0;
-	initial_chunk->vaddr = cxl_pool.base_addr;
-	initial_chunk->magic = CXL_CHUNK_MAGIC;
-	atomic_set(&initial_chunk->ref_count, 0);
-	
-	list_add(&initial_chunk->list, &cxl_pool.free_chunks);
-	
-	pr_info("CXL: Test memory pool initialized at %p, size %zu bytes\n", 
-		cxl_pool.base_addr, pool_size);
-	
-	return 0;
-}
 
 /**
  * cxl_find_free_chunk - Find a suitable free chunk
@@ -199,7 +156,7 @@ static struct cxl_mem_chunk *cxl_split_chunk(struct cxl_mem_chunk *chunk, size_t
 {
 	struct cxl_mem_chunk *new_chunk;
 	
-	if (chunk->size <= size + sizeof(*new_chunk))
+	if (chunk->size <= size + sizeof(*new_chunk) + 64)
 		return chunk; /* Not worth splitting */
 	
 	new_chunk = kzalloc(sizeof(*new_chunk), GFP_ATOMIC);
@@ -287,7 +244,7 @@ void *cxl_kmalloc(size_t size, gfp_t flags)
 		memset(ptr, 0, size);
 	
 	/* Memory fence to ensure CXL coherency */
-	cxl_memory_fence();
+	mb();
 	
 	return ptr;
 }
@@ -307,7 +264,6 @@ EXPORT_SYMBOL(cxl_kzalloc);
  */
 void *cxl_vmalloc(size_t size)
 {
-	/* For large allocations, use the same underlying mechanism */
 	return cxl_kmalloc(size, GFP_KERNEL);
 }
 EXPORT_SYMBOL(cxl_vmalloc);
@@ -378,89 +334,8 @@ void cxl_kfree(const void *ptr)
 	}
 	
 	/* Memory fence to ensure CXL coherency */
-	cxl_memory_fence();
+	mb();
 }
-
-/**
- * Pool management functions
- */
-size_t cxl_pool_get_free_size(void)
-{
-	return cxl_pool.total_size - cxl_pool.allocated_size;
-}
-EXPORT_SYMBOL(cxl_pool_get_free_size);
-
-size_t cxl_pool_get_allocated_size(void)
-{
-	return cxl_pool.allocated_size;
-}
-EXPORT_SYMBOL(cxl_pool_get_allocated_size);
-
-/**
- * Debug functions
- */
-#ifdef CONFIG_CXL_ALLOCATOR_DEBUG
-void cxl_dump_pool_stats(void)
-{
-	pr_info("=== CXL Pool Statistics ===\n");
-	pr_info("Total size: %zu bytes\n", cxl_pool.total_size);
-	pr_info("Allocated: %zu bytes\n", cxl_pool.allocated_size);
-	pr_info("Free: %zu bytes\n", cxl_pool.total_size - cxl_pool.allocated_size);
-	pr_info("Allocations: %lld\n", atomic64_read(&cxl_pool.alloc_count));
-	pr_info("Frees: %lld\n", atomic64_read(&cxl_pool.free_count));
-	pr_info("Fallbacks: %lld\n", atomic64_read(&cxl_pool.fallback_count));
-}
-EXPORT_SYMBOL(cxl_dump_pool_stats);
-
-void cxl_dump_allocated_chunks(void)
-{
-	struct cxl_mem_chunk *chunk;
-	int count = 0;
-	
-	pr_info("=== Allocated Chunks ===\n");
-	list_for_each_entry(chunk, &cxl_pool.allocated_chunks, list) {
-		pr_info("Chunk %d: addr=%p, size=%zu, offset=%lu\n",
-			++count, chunk->vaddr, chunk->size, chunk->offset);
-	}
-	pr_info("Total allocated chunks: %d\n", count);
-}
-EXPORT_SYMBOL(cxl_dump_allocated_chunks);
-#endif
-
-/**
- * Proc filesystem interface for monitoring
- */
-static int cxl_proc_show(struct seq_file *m, void *v)
-{
-	seq_printf(m, "CXL Memory Allocator Status\n");
-	seq_printf(m, "===========================\n");
-	seq_printf(m, "Pool base address: %p\n", cxl_pool.base_addr);
-	seq_printf(m, "Total pool size: %zu bytes (%zu MB)\n", 
-		   cxl_pool.total_size, cxl_pool.total_size >> 20);
-	seq_printf(m, "Currently allocated: %zu bytes (%zu MB)\n", 
-		   cxl_pool.allocated_size, cxl_pool.allocated_size >> 20);
-	seq_printf(m, "Free space: %zu bytes (%zu MB)\n", 
-		   cxl_pool.total_size - cxl_pool.allocated_size,
-		   (cxl_pool.total_size - cxl_pool.allocated_size) >> 20);
-	seq_printf(m, "Total allocations: %lld\n", atomic64_read(&cxl_pool.alloc_count));
-	seq_printf(m, "Total frees: %lld\n", atomic64_read(&cxl_pool.free_count));
-	seq_printf(m, "Fallback allocations: %lld\n", atomic64_read(&cxl_pool.fallback_count));
-	seq_printf(m, "Fallback enabled: %s\n", cxl_pool.fallback_enabled ? "yes" : "no");
-	
-	return 0;
-}
-
-static int cxl_proc_open(struct inode *inode, struct file *file)
-{
-	return single_open(file, cxl_proc_show, NULL);
-}
-
-static const struct proc_ops cxl_proc_ops = {
-	.proc_open = cxl_proc_open,
-	.proc_read = seq_read,
-	.proc_lseek = seq_lseek,
-	.proc_release = single_release,
-};
 EXPORT_SYMBOL(cxl_kfree);
 
 /**
@@ -497,6 +372,21 @@ static void cxl_merge_free_chunks(void)
 }
 
 /**
+ * Pool management functions
+ */
+size_t cxl_pool_get_free_size(void)
+{
+	return cxl_pool.total_size - cxl_pool.allocated_size;
+}
+EXPORT_SYMBOL(cxl_pool_get_free_size);
+
+size_t cxl_pool_get_allocated_size(void)
+{
+	return cxl_pool.allocated_size;
+}
+EXPORT_SYMBOL(cxl_pool_get_allocated_size);
+
+/**
  * Module init/exit functions
  */
 static int __init cxl_allocator_init(void)
@@ -514,5 +404,5 @@ module_exit(cxl_allocator_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("CXL Development Team");
-MODULE_DESCRIPTION("CXL Memory Allocator for Lustre");
-MODULE_VERSION("1.0");
+MODULE_DESCRIPTION("CXL Memory Allocator for Lustre - Simple Version");
+MODULE_VERSION("1.0-simple");
