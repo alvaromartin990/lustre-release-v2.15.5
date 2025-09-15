@@ -23,7 +23,7 @@
 #include "cxl_kmem_allocator.h"
 
 /* Module parameters */
-static char *cxl_dax_device = "/dev/dax1.0";
+static char *cxl_dax_device = "/dev/dax0.0";
 module_param(cxl_dax_device, charp, 0644);
 MODULE_PARM_DESC(cxl_dax_device, "CXL DAX device path");
 
