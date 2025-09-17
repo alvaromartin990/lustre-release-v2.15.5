@@ -23,10 +23,10 @@ static int __init test_cxl_init(void)
     
     /* Step 1: Check if CXL functions are available (symbol resolution) */
     test_count++;
-    safe_cxl_kmalloc = (void*(*)(size_t, gfp_t))kallsyms_lookup_name("cxl_kmalloc");
-    safe_cxl_kfree = (void(*)(const void*))kallsyms_lookup_name("cxl_kfree");
-    safe_cxl_kzalloc = (void*(*)(size_t, gfp_t))kallsyms_lookup_name("cxl_kzalloc");
-    
+    safe_cxl_kmalloc = (void*(*)(size_t, gfp_t))module_kallsyms_lookup_name("cxl_kmalloc");
+    safe_cxl_kfree = (void(*)(const void*))module_kallsyms_lookup_name("cxl_kfree");
+    safe_cxl_kzalloc = (void*(*)(size_t, gfp_t))module_kallsyms_lookup_name("cxl_kzalloc");
+
     if (!safe_cxl_kmalloc || !safe_cxl_kfree || !safe_cxl_kzalloc) {
         pr_info("Test %d INFO: Using direct function calls (symbols not in kallsyms)\n", test_count);
         /* Fall back to direct calls - they should work if properly exported */
