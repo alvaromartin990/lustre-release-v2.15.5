@@ -6,16 +6,18 @@ KERNEL_VERSION ?= $(shell uname -r)
 KERNEL_DIR := /lib/modules/$(KERNEL_VERSION)/build
 PWD := $(shell pwd)
 
-# Source files
-MAIN_SOURCE := cxl_kmem_allocator_simple.c
+# Source files (updated to match your actual file names)
+MAIN_SOURCE := cxl_kmem_allocator.c
 TEST_SOURCE := test_cxl_allocator.c
 
 # Module objects - this tells kbuild which files to compile
 obj-m += $(MODULE_NAME).o
+# Only add test module if source exists
+ifneq (,$(wildcard $(TEST_SOURCE)))
 obj-m += $(TEST_MODULE).o
+endif
 
-# Tell kbuild that our .ko file should be built from the simple.c file
-$(MODULE_NAME)-objs := cxl_kmem_allocator_simple.o
+# Main module uses the main .c file directly (no separate object needed since names match)
 
 # Compiler flags
 ccflags-y += -I$(PWD) -Wall -Wextra
@@ -52,10 +54,14 @@ main-only: check-kernel
 	@echo "Building main module only..."
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) $(MODULE_NAME).ko
 
-# Build only the test module
+# Build only the test module (if source exists)
 test-only: check-kernel $(MODULE_NAME).ko
-	@echo "Building test module only..."
-	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) $(TEST_MODULE).ko
+	@if [ -f "$(TEST_SOURCE)" ]; then \
+		echo "Building test module only..."; \
+		$(MAKE) -C $(KERNEL_DIR) M=$(PWD) $(TEST_MODULE).ko; \
+	else \
+		echo "Test source $(TEST_SOURCE) not found"; \
+	fi
 
 clean:
 	@echo "Cleaning build artifacts..."
@@ -80,15 +86,15 @@ load: module
 	@$(MAKE) status
 
 load-test: load
-	@echo "Loading test module..."
 	@if [ -f "$(TEST_MODULE).ko" ]; then \
+		echo "Loading test module..."; \
 		if lsmod | grep -q $(TEST_MODULE); then \
 			sudo rmmod $(TEST_MODULE); \
 		fi; \
 		sudo insmod $(TEST_MODULE).ko; \
 		echo "Test module loaded"; \
 	else \
-		echo "Test module not found, run 'make module' first"; \
+		echo "Test module not built. Create $(TEST_SOURCE) and run 'make module' first"; \
 	fi
 
 unload:
