@@ -10,7 +10,7 @@
 
 // --- Module Info ---
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Alvaro");
+MODULE_AUTHOR("Lustre Developer");
 MODULE_DESCRIPTION("CXL Memory Allocator Test Module");
 
 // --- Module Parameter ---
@@ -19,7 +19,8 @@ module_param(dax_path, charp, 0644);
 MODULE_PARM_DESC(dax_path, "Path to the DAX device (e.g., /dev/dax0.0)");
 
 
-#define CXL_BLOCK_MAGIC 0xDEADBEEFCXL00BAD
+// FIXED: Magic number must be a valid hexadecimal constant.
+#define CXL_BLOCK_MAGIC 0xDAXBADF00DCAFEFEULL
 
 /* Represents the header for every memory block (allocated or free) */
 struct cxl_block_header {
@@ -44,7 +45,6 @@ static struct {
 
 int cxl_alloc_init(const char *path)
 {
-	long mapping_size;
 	struct cxl_block_header *initial_block;
 	struct cxl_free_block *free_node;
 
@@ -53,44 +53,38 @@ int cxl_alloc_init(const char *path)
 	spin_lock_init(&cxl_pool.lock);
 	INIT_LIST_HEAD(&cxl_pool.freelist);
 
-	// 1. Get the block device from the path (kernel "open")
-	cxl_pool.bdev = lookup_bdev(path);
+	// FIXED: Use blkdev_get_by_path for modern kernels.
+	// We pass FMODE_EXCL to ensure nothing else is using the device.
+	cxl_pool.bdev = blkdev_get_by_path(path, FMODE_READ | FMODE_WRITE | FMODE_EXCL, &cxl_pool);
 	if (IS_ERR(cxl_pool.bdev)) {
-		pr_err("cxl_alloc: Failed to look up bdev for %s\n", path);
+		pr_err("cxl_alloc: Failed to get bdev for %s\n", path);
 		return PTR_ERR(cxl_pool.bdev);
 	}
-    pr_info("cxl_alloc: Opened block device %s\n", path);
 
-	// 2. Get the DAX device
-	cxl_pool.dax_dev = dax_get_by_host(cxl_pool.bdev->bd_disk->disk_name);
+	// FIXED: Use fs_dax_get_by_bdev to get the dax_device struct.
+	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev);
 	if (!cxl_pool.dax_dev) {
-		pr_err("cxl_alloc: Failed to get DAX device\n");
-		bdput(cxl_pool.bdev);
+		pr_err("cxl_alloc: Failed to get DAX device; is the filesystem mounted with -o dax?\n");
+		// FIXED: Use blkdev_put for cleanup.
+		blkdev_put(cxl_pool.bdev, FMODE_READ | FMODE_WRITE | FMODE_EXCL);
 		return -ENXIO;
 	}
-    pr_info("cxl_alloc: Got DAX device for %s\n", path);
 
-	// 3. Map the device memory into kernel virtual address space (kernel "mmap")
-	cxl_pool.addr = dax_direct_access(cxl_pool.dax_dev, 0, -1UL, DAX_ACCESS);
-	if (IS_ERR(cxl_pool.addr)) {
+	// FIXED: Get the device size from the inode.
+	cxl_pool.size = i_size_read(cxl_pool.bdev->bd_inode);
+
+	// FIXED: dax_direct_access now returns the mapped size and takes a `void **`
+	// to store the kernel virtual address.
+	if (dax_direct_access(cxl_pool.dax_dev, 0, cxl_pool.size / PAGE_SIZE,
+			      DAX_ACCESS_PRIVATE, &cxl_pool.addr, NULL) < 0) {
 		pr_err("cxl_alloc: Failed to map DAX device\n");
 		dax_put(cxl_pool.dax_dev);
-		bdput(cxl_pool.bdev);
-		return PTR_ERR(cxl_pool.addr);
+		blkdev_put(cxl_pool.bdev, FMODE_READ | FMODE_WRITE | FMODE_EXCL);
+		return -EFAULT;
 	}
-    pr_info("cxl_alloc: Mapped DAX device at %p\n", cxl_pool.addr);
 
-	mapping_size = dax_direct_access(cxl_pool.dax_dev, 0, 0, DAX_SIZE);
-	if (mapping_size < 0) {
-		pr_err("cxl_alloc: Failed to get DAX mapping size\n");
-		dax_put(cxl_pool.dax_dev);
-		bdput(cxl_pool.bdev);
-		return mapping_size;
-	}
-	cxl_pool.size = mapping_size;
-    pr_info("cxl_alloc: DAX device size: %ld MB\n", mapping_size / (1024 * 1024));
 
-	// 4. Initialize the freelist with one giant block
+	// Initialize the freelist with one giant block
 	if (cxl_pool.size < sizeof(struct cxl_block_header) + sizeof(struct cxl_free_block)) {
 		pr_err("cxl_alloc: CXL pool is too small for initial block\n");
 		cxl_alloc_exit();
@@ -117,7 +111,8 @@ void cxl_alloc_exit(void)
 		cxl_pool.dax_dev = NULL;
 	}
 	if (cxl_pool.bdev) {
-		bdput(cxl_pool.bdev);
+		// FIXED: Use blkdev_put for cleanup.
+		blkdev_put(cxl_pool.bdev, FMODE_READ | FMODE_WRITE | FMODE_EXCL);
 		cxl_pool.bdev = NULL;
 	}
 	pr_info("cxl_alloc: Allocator shut down.\n");
@@ -133,9 +128,7 @@ void *cxl_malloc(size_t size)
 
 	spin_lock_irqsave(&cxl_pool.lock, flags);
 
-	// First-fit: Find the first free block that is large enough
 	list_for_each_entry(free_block, &cxl_pool.freelist, link) {
-		// Get the header, which is located immediately before the free_block struct
 		hdr = (struct cxl_block_header *)free_block - 1;
 
 		if (hdr->magic != CXL_BLOCK_MAGIC) {
@@ -151,9 +144,8 @@ void *cxl_malloc(size_t size)
 
 	if (found_block) {
 		list_del(&found_block->link);
-		// Get header again, outside the loop
 		hdr = (struct cxl_block_header *)found_block - 1;
-		ptr = (void *)(hdr + 1); // User data starts after the header
+		ptr = (void *)(hdr + 1);
 	}
 
 	spin_unlock_irqrestore(&cxl_pool.lock, flags);
@@ -175,7 +167,6 @@ void cxl_free(void *ptr)
 	if (!ptr)
 		return;
 
-	// Get the header from the user-provided pointer
 	hdr = (struct cxl_block_header *)ptr - 1;
 
 	if (hdr->magic != CXL_BLOCK_MAGIC) {
@@ -186,11 +177,10 @@ void cxl_free(void *ptr)
 	free_node = (struct cxl_free_block *)ptr;
 
 	spin_lock_irqsave(&cxl_pool.lock, flags);
-	list_add(&free_node->link, &cxl_pool.freelist); // Add back to freelist
+	list_add(&free_node->link, &cxl_pool.freelist);
 	spin_unlock_irqrestore(&cxl_pool.lock, flags);
 }
 
-// --- Test Function ---
 static void cxl_test_allocations(void)
 {
 	void *p1, *p2, *p3;
@@ -215,7 +205,6 @@ static void cxl_test_allocations(void)
 	pr_info("cxl_alloc: --- Test Complete ---\n");
 }
 
-// --- Module Init and Exit ---
 static int __init cxl_module_init(void)
 {
 	int ret;
@@ -224,7 +213,6 @@ static int __init cxl_module_init(void)
 	if (ret)
 		return ret;
 
-	// Run a quick test to verify it works
 	cxl_test_allocations();
 
 	return 0;
