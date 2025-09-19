@@ -16,10 +16,9 @@ MODULE_AUTHOR("Lustre Developer");
 MODULE_DESCRIPTION("CXL Memory Allocator Test Module");
 
 // --- Module Parameter ---
-// IMPORTANT: This path should be the BLOCK DEVICE (e.g., /dev/pmem0), NOT the dax char device (/dev/dax0.0)
-static char *block_device_path = "/dev/pmem0";
-module_param(block_device_path, charp, 0644);
-MODULE_PARM_DESC(block_device_path, "Path to the DAX-capable block device (e.g., /dev/pmem0)");
+static char *dax_path = "/dev/dax0.0";
+module_param(dax_path, charp, 0644);
+MODULE_PARM_DESC(dax_path, "Path to the DAX device (e.g., /dev/dax0.0)");
 
 #define CXL_BLOCK_MAGIC 0xDABBADF00DCAFEFEULL
 
@@ -38,13 +37,14 @@ struct cxl_free_block {
 static struct {
 	struct dax_device *dax_dev;
 	struct block_device *bdev;
-	struct file *file_handle;
+	struct file *file_handle; // To hold the open file
 	void *addr;
 	size_t size;
 	struct list_head freelist;
 	spinlock_t lock;
 } cxl_pool;
 
+// Forward declaration for cxl_alloc_exit
 void cxl_alloc_exit(void);
 
 int cxl_alloc_init(const char *path)
@@ -54,7 +54,7 @@ int cxl_alloc_init(const char *path)
 	struct inode *inode;
 	u64 start_off;
 
-	pr_info("cxl_alloc: Initializing with block device %s\n", path);
+	pr_info("cxl_alloc: Initializing with device %s\n", path);
 
 	spin_lock_init(&cxl_pool.lock);
 	INIT_LIST_HEAD(&cxl_pool.freelist);
@@ -74,10 +74,11 @@ int cxl_alloc_init(const char *path)
 
 	cxl_pool.bdev = I_BDEV(inode);
 
-	// DEFINITIVE FIX: Use the correct function name with all three required arguments.
-	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off, &cxl_pool);
+	// FIXED: For kernel 5.14, fs_dax_get_by_bdev takes only 2 parameters:
+	// struct block_device *bdev and u64 *start_off
+	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off);
 	if (!cxl_pool.dax_dev) {
-		pr_err("cxl_alloc: Failed to get DAX device. Is the device formatted with a DAX-aware filesystem (ext4/xfs)?\n");
+		pr_err("cxl_alloc: Failed to get DAX device; is it configured for dax?\n");
 		filp_close(cxl_pool.file_handle, NULL);
 		return -ENXIO;
 	}
@@ -87,7 +88,7 @@ int cxl_alloc_init(const char *path)
 	if (dax_direct_access(cxl_pool.dax_dev, 0, cxl_pool.size / PAGE_SIZE,
 			      DAX_ACCESS, &cxl_pool.addr, NULL) < 0) {
 		pr_err("cxl_alloc: Failed to map DAX device\n");
-		dax_put(cxl_pool.dax_dev);
+		fs_put_dax(cxl_pool.dax_dev);  // FIXED: Use fs_put_dax instead of dax_put
 		filp_close(cxl_pool.file_handle, NULL);
 		return -EFAULT;
 	}
@@ -99,7 +100,7 @@ int cxl_alloc_init(const char *path)
 	}
 
 	initial_block = (struct cxl_block_header *)cxl_pool.addr;
-	initial_block.magic = CXL_BLOCK_MAGIC;
+	initial_block->magic = CXL_BLOCK_MAGIC;
 	initial_block->size = cxl_pool.size - sizeof(struct cxl_block_header);
 
 	free_node = (struct cxl_free_block *)(initial_block + 1);
@@ -114,7 +115,7 @@ int cxl_alloc_init(const char *path)
 void cxl_alloc_exit(void)
 {
 	if (cxl_pool.dax_dev) {
-		dax_put(cxl_pool.dax_dev);
+		fs_put_dax(cxl_pool.dax_dev);  // FIXED: Use fs_put_dax instead of dax_put
 		cxl_pool.dax_dev = NULL;
 	}
 	if (cxl_pool.file_handle && !IS_ERR(cxl_pool.file_handle)) {
@@ -197,7 +198,7 @@ static void cxl_test_allocations(void)
 
 static int __init cxl_module_init(void)
 {
-	int ret = cxl_alloc_init(block_device_path);
+	int ret = cxl_alloc_init(dax_path);
 	if (ret) return ret;
 	cxl_test_allocations();
 	return 0;
