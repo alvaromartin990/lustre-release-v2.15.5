@@ -1,6 +1,7 @@
 # Makefile for CXL allocator kernel module
 
 obj-m += cxl_alloc.o
+obj-m += cxl_alloc_test.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
@@ -8,5 +9,4 @@ all:
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-obj-m += cxl_alloc.o
-obj-m += cxl_alloc_test.o
+
