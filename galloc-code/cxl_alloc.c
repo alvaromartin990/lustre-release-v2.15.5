@@ -47,12 +47,14 @@ static struct {
 // Forward declaration for cxl_alloc_exit
 void cxl_alloc_exit(void);
 
+// Alternative DAX initialization code if the first fix doesn't work
+// Replace the cxl_alloc_init function with this version:
+
 int cxl_alloc_init(const char *path)
 {
 	struct cxl_block_header *initial_block;
 	struct cxl_free_block *free_node;
 	struct inode *inode;
-	u64 start_off;
 
 	pr_info("cxl_alloc: Initializing with device %s\n", path);
 
@@ -74,9 +76,14 @@ int cxl_alloc_init(const char *path)
 
 	cxl_pool.bdev = I_BDEV(inode);
 
-	// FIXED: For kernel 5.14, fs_dax_get_by_bdev takes only 2 parameters:
-	// struct block_device *bdev and u64 *start_off
-	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off);
+	// Try different signatures based on your kernel version
+	// Option 1: No parameters except bdev
+	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev);
+	
+	// Option 2: If that doesn't work, you might need to omit start_off
+	// u64 start_off;
+	// cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off);
+	
 	if (!cxl_pool.dax_dev) {
 		pr_err("cxl_alloc: Failed to get DAX device; is it configured for dax?\n");
 		filp_close(cxl_pool.file_handle, NULL);
@@ -88,11 +95,14 @@ int cxl_alloc_init(const char *path)
 	if (dax_direct_access(cxl_pool.dax_dev, 0, cxl_pool.size / PAGE_SIZE,
 			      DAX_ACCESS, &cxl_pool.addr, NULL) < 0) {
 		pr_err("cxl_alloc: Failed to map DAX device\n");
-		fs_put_dax(cxl_pool.dax_dev);  // FIXED: Use fs_put_dax instead of dax_put
+		// Try different put function names if fs_put_dax doesn't work:
+		// put_dax(cxl_pool.dax_dev);  // Alternative 1
+		fs_put_dax(cxl_pool.dax_dev);   // Alternative 2 (most likely)
 		filp_close(cxl_pool.file_handle, NULL);
 		return -EFAULT;
 	}
 
+	// Rest of initialization...
 	if (cxl_pool.size < sizeof(struct cxl_block_header) + sizeof(struct cxl_free_block)) {
 		pr_err("cxl_alloc: CXL pool is too small\n");
 		cxl_alloc_exit();
