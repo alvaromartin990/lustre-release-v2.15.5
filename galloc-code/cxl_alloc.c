@@ -52,6 +52,7 @@ int cxl_alloc_init(const char *path)
 	struct cxl_block_header *initial_block;
 	struct cxl_free_block *free_node;
 	struct inode *inode;
+	u64 start_off;
 
 	pr_info("cxl_alloc: Initializing with block device %s\n", path);
 
@@ -73,11 +74,10 @@ int cxl_alloc_init(const char *path)
 
 	cxl_pool.bdev = I_BDEV(inode);
 
-	// This function is for getting dax from a filesystem on a block device.
-	// It should now work correctly.
-	cxl_pool.dax_dev = fs_get_dax(cxl_pool.bdev);
+	// DEFINITIVE FIX: Use the correct function name with all three required arguments.
+	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off, &cxl_pool);
 	if (!cxl_pool.dax_dev) {
-		pr_err("cxl_alloc: Failed to get DAX device. Is the device formatted with a DAX-aware filesystem (ext4/xfs) and mounted with the -o dax option?\n");
+		pr_err("cxl_alloc: Failed to get DAX device. Is the device formatted with a DAX-aware filesystem (ext4/xfs)?\n");
 		filp_close(cxl_pool.file_handle, NULL);
 		return -ENXIO;
 	}
@@ -99,7 +99,7 @@ int cxl_alloc_init(const char *path)
 	}
 
 	initial_block = (struct cxl_block_header *)cxl_pool.addr;
-	initial_block->magic = CXL_BLOCK_MAGIC;
+	initial_block.magic = CXL_BLOCK_MAGIC;
 	initial_block->size = cxl_pool.size - sizeof(struct cxl_block_header);
 
 	free_node = (struct cxl_free_block *)(initial_block + 1);
