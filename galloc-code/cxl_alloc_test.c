@@ -7,7 +7,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Alvarito");
 MODULE_DESCRIPTION("Test module for CXL Allocator");
 
-static int __init cxl_test_init(void)
+static int __init cxl_test_init2(void)
 {
     void *p1, *p2, *p3;
 
@@ -43,6 +43,30 @@ static int __init cxl_test_init(void)
     if (p3) {
         cxl_free(p3);
         pr_info("cxl_alloc_test: Freed 1 MB\n");
+    }
+
+    pr_info("cxl_alloc_test: Allocator test complete\n");
+
+    return 0;
+}
+
+static int __init cxl_test_init(void)
+{
+    void *p;
+    size_t sizes[] = { 256, 512, 1024, 2048, 8192, 65536 }; // 256B, 512B, 1K, 2K, 8K, 64K
+    int i;
+
+    pr_info("cxl_alloc_test: Starting allocator test\n");
+
+    for (i = 0; i < ARRAY_SIZE(sizes); i++) {
+        p = cxl_malloc(sizes[i]);
+        if (p) {
+            pr_info("cxl_alloc_test: Allocated %zu bytes at %p\n", sizes[i], p);
+            cxl_free(p);
+            pr_info("cxl_alloc_test: Freed %zu bytes\n", sizes[i]);
+        } else {
+            pr_err("cxl_alloc_test: Failed to allocate %zu bytes\n", sizes[i]);
+        }
     }
 
     pr_info("cxl_alloc_test: Allocator test complete\n");
