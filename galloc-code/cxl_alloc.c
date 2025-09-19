@@ -96,6 +96,7 @@ int cxl_alloc_init(const char *path)
 
     return 0;
 }
+EXPORT_SYMBOL(cxl_alloc_init); // Export for use in other modules!
 
 // --- Allocator exit ---
 void cxl_alloc_exit(void)
@@ -106,6 +107,7 @@ void cxl_alloc_exit(void)
     }
     pr_info("cxl_alloc: Allocator shut down.\n");
 }
+EXPORT_SYMBOL(cxl_alloc_exit); // Export for use in other modules!
 
 // --- Allocation/free ---
 void *cxl_malloc(size_t size)
@@ -135,6 +137,7 @@ void *cxl_malloc(size_t size)
 
     return ptr;
 }
+EXPORT_SYMBOL(cxl_malloc); // Export for use in other modules!
 
 void cxl_free(void *ptr)
 {
@@ -153,6 +156,7 @@ void cxl_free(void *ptr)
     list_add(&free_node->link, &cxl_pool.freelist);
     spin_unlock_irqrestore(&cxl_pool.lock, flags);
 }
+EXPORT_SYMBOL(cxl_free); // Export for use in other modules!
 
 // --- Test ---
 static void cxl_test_allocations(void)
