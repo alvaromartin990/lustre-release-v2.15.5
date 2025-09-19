@@ -1,18 +1,18 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
-#include <linux/dax.h>
 #include <linux/fs.h>
 #include <linux/spinlock.h>
 #include <linux/slab.h>    // For ALIGN()
 #include <linux/file.h>    // Required for filp_open/close
 #include <linux/uaccess.h> // Required for file modes
 #include <linux/mm.h>      // For memory mapping
+#include <linux/mman.h>    // For mmap constants
 
 #include "cxl_alloc.h"
 
 // --- Module Info ---
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Su putisima madre");
+MODULE_AUTHOR("Lustre Developer");
 MODULE_DESCRIPTION("CXL Memory Allocator Test Module - Device DAX");
 
 // --- Module Parameter ---
@@ -51,6 +51,7 @@ int cxl_alloc_init(const char *path)
 	struct cxl_free_block *free_node;
 	struct inode *inode;
 	loff_t device_size;
+	unsigned long addr_ul;
 
 	pr_info("cxl_alloc: Initializing with device DAX device %s\n", path);
 
@@ -80,14 +81,16 @@ int cxl_alloc_init(const char *path)
 
 	cxl_pool.size = device_size;
 
-	// Try to map the device using vm_mmap
-	cxl_pool.addr = (void *)vm_mmap(cxl_pool.file_handle, 0, cxl_pool.size, 
-					PROT_READ | PROT_WRITE, MAP_SHARED, 0);
-	if (IS_ERR(cxl_pool.addr)) {
-		pr_err("cxl_alloc: Failed to map DAX device: %ld\n", PTR_ERR(cxl_pool.addr));
+	// Try to map the device using vm_mmap with kernel constants
+	addr_ul = vm_mmap(cxl_pool.file_handle, 0, cxl_pool.size, 
+			  VM_READ | VM_WRITE, VM_SHARED, 0);
+	if (IS_ERR_VALUE(addr_ul)) {
+		pr_err("cxl_alloc: Failed to map DAX device: %ld\n", addr_ul);
 		filp_close(cxl_pool.file_handle, NULL);
-		return PTR_ERR(cxl_pool.addr);
+		return addr_ul;
 	}
+
+	cxl_pool.addr = (void *)addr_ul;
 
 	if (cxl_pool.size < sizeof(struct cxl_block_header) + sizeof(struct cxl_free_block)) {
 		pr_err("cxl_alloc: CXL pool is too small\n");
