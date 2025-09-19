@@ -7,3 +7,6 @@ all:
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+
+obj-m += cxl_alloc.o
+obj-m += cxl_alloc_test.o
