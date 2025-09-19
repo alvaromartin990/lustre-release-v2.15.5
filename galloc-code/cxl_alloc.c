@@ -8,6 +8,8 @@
 #include <linux/file.h>    // Required for filp_open/close
 #include <linux/uaccess.h> // Required for file modes
 
+#include "cxl_alloc.h"
+
 // --- Module Info ---
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lustre Developer");
@@ -18,7 +20,6 @@ static char *dax_path = "/dev/dax0.0";
 module_param(dax_path, charp, 0644);
 MODULE_PARM_DESC(dax_path, "Path to the DAX device (e.g., /dev/dax0.0)");
 
-// FIXED: Magic number must be a valid hexadecimal constant.
 #define CXL_BLOCK_MAGIC 0xDABBADF00DCAFEFEULL
 
 /* Header for every memory block */
@@ -43,18 +44,21 @@ static struct {
 	spinlock_t lock;
 } cxl_pool;
 
+// FIXED: Add forward declaration for cxl_alloc_exit to resolve implicit declaration error.
+void cxl_alloc_exit(void);
+
 int cxl_alloc_init(const char *path)
 {
 	struct cxl_block_header *initial_block;
 	struct cxl_free_block *free_node;
 	struct inode *inode;
+	u64 start_off; // For the extra argument
 
 	pr_info("cxl_alloc: Initializing with device %s\n", path);
 
 	spin_lock_init(&cxl_pool.lock);
 	INIT_LIST_HEAD(&cxl_pool.freelist);
 
-	// FIXED: Use filp_open to get a file handle to the device path.
 	cxl_pool.file_handle = filp_open(path, O_RDWR | O_EXCL, 0);
 	if (IS_ERR(cxl_pool.file_handle)) {
 		pr_err("cxl_alloc: Failed to open device path %s\n", path);
@@ -68,10 +72,10 @@ int cxl_alloc_init(const char *path)
 		return -EINVAL;
 	}
 
-	// Get the block device from the inode
 	cxl_pool.bdev = I_BDEV(inode);
 
-	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev);
+	// FIXED: Provide the required start_off argument.
+	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off);
 	if (!cxl_pool.dax_dev) {
 		pr_err("cxl_alloc: Failed to get DAX device; is it configured for dax?\n");
 		filp_close(cxl_pool.file_handle, NULL);
@@ -80,7 +84,6 @@ int cxl_alloc_init(const char *path)
 
 	cxl_pool.size = i_size_read(cxl_pool.bdev->bd_inode);
 
-	// FIXED: Use DAX_ACCESS as the correct mode enum.
 	if (dax_direct_access(cxl_pool.dax_dev, 0, cxl_pool.size / PAGE_SIZE,
 			      DAX_ACCESS, &cxl_pool.addr, NULL) < 0) {
 		pr_err("cxl_alloc: Failed to map DAX device\n");
@@ -91,7 +94,7 @@ int cxl_alloc_init(const char *path)
 
 	if (cxl_pool.size < sizeof(struct cxl_block_header) + sizeof(struct cxl_free_block)) {
 		pr_err("cxl_alloc: CXL pool is too small\n");
-		cxl_alloc_exit();
+		cxl_alloc_exit(); // This call now works due to the forward declaration
 		return -EINVAL;
 	}
 
@@ -114,7 +117,6 @@ void cxl_alloc_exit(void)
 		dax_put(cxl_pool.dax_dev);
 		cxl_pool.dax_dev = NULL;
 	}
-	// FIXED: Use filp_close for cleanup.
 	if (cxl_pool.file_handle && !IS_ERR(cxl_pool.file_handle)) {
 		filp_close(cxl_pool.file_handle, NULL);
 	}
