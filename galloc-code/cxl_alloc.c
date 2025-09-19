@@ -74,9 +74,9 @@ int cxl_alloc_init(const char *path)
 
 	cxl_pool.bdev = I_BDEV(inode);
 
-	// ATTEMPT: Try with 4 parameters - might need holder and size/length parameter
-	// Based on some kernel versions having: fs_dax_get_by_bdev(bdev, start_off, holder, size)
-	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off, &cxl_pool, cxl_pool.size);
+	// FIXED: For kernel 5.14, fs_dax_get_by_bdev takes 3 parameters:
+	// struct block_device *bdev, u64 *start_off, and void *holder
+	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off, &cxl_pool);
 	if (!cxl_pool.dax_dev) {
 		pr_err("cxl_alloc: Failed to get DAX device; is it configured for dax?\n");
 		filp_close(cxl_pool.file_handle, NULL);
