@@ -47,9 +47,6 @@ static struct {
 // Forward declaration for cxl_alloc_exit
 void cxl_alloc_exit(void);
 
-// Alternative DAX initialization code if the first fix doesn't work
-// Replace the cxl_alloc_init function with this version:
-
 int cxl_alloc_init(const char *path)
 {
 	struct cxl_block_header *initial_block;
@@ -76,13 +73,10 @@ int cxl_alloc_init(const char *path)
 
 	cxl_pool.bdev = I_BDEV(inode);
 
-	// Try different signatures based on your kernel version
-	// Option 1: No parameters except bdev
-	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev);
-	
-	// Option 2: If that doesn't work, you might need to omit start_off
-	// u64 start_off;
-	// cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off);
+	// CORRECTED: Based on your actual kernel headers
+	// fs_dax_get_by_bdev needs 3 parameters: bdev, start_off pointer, holder
+	u64 start_off;
+	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off, &cxl_pool);
 	
 	if (!cxl_pool.dax_dev) {
 		pr_err("cxl_alloc: Failed to get DAX device; is it configured for dax?\n");
@@ -95,9 +89,8 @@ int cxl_alloc_init(const char *path)
 	if (dax_direct_access(cxl_pool.dax_dev, 0, cxl_pool.size / PAGE_SIZE,
 			      DAX_ACCESS, &cxl_pool.addr, NULL) < 0) {
 		pr_err("cxl_alloc: Failed to map DAX device\n");
-		// Try different put function names if fs_put_dax doesn't work:
-		// put_dax(cxl_pool.dax_dev);  // Alternative 1
-		fs_put_dax(cxl_pool.dax_dev);   // Alternative 2 (most likely)
+		// CORRECTED: fs_put_dax needs 2 parameters: dax_dev and holder
+		fs_put_dax(cxl_pool.dax_dev, &cxl_pool);
 		filp_close(cxl_pool.file_handle, NULL);
 		return -EFAULT;
 	}
@@ -125,7 +118,7 @@ int cxl_alloc_init(const char *path)
 void cxl_alloc_exit(void)
 {
 	if (cxl_pool.dax_dev) {
-		fs_put_dax(cxl_pool.dax_dev);  // FIXED: Use fs_put_dax instead of dax_put
+		fs_put_dax(cxl_pool.dax_dev, &cxl_pool);  // CORRECTED: needs holder parameter
 		cxl_pool.dax_dev = NULL;
 	}
 	if (cxl_pool.file_handle && !IS_ERR(cxl_pool.file_handle)) {
