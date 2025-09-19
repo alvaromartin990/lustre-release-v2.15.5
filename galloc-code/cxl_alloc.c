@@ -44,7 +44,7 @@ static struct {
 	spinlock_t lock;
 } cxl_pool;
 
-// FIXED: Add forward declaration for cxl_alloc_exit to resolve implicit declaration error.
+// Forward declaration for cxl_alloc_exit
 void cxl_alloc_exit(void);
 
 int cxl_alloc_init(const char *path)
@@ -52,7 +52,7 @@ int cxl_alloc_init(const char *path)
 	struct cxl_block_header *initial_block;
 	struct cxl_free_block *free_node;
 	struct inode *inode;
-	u64 start_off; // For the extra argument
+	u64 start_off;
 
 	pr_info("cxl_alloc: Initializing with device %s\n", path);
 
@@ -74,8 +74,8 @@ int cxl_alloc_init(const char *path)
 
 	cxl_pool.bdev = I_BDEV(inode);
 
-	// FIXED: Provide the required start_off argument.
-	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off);
+	// FINAL FIX: Provide the third 'holder' argument.
+	cxl_pool.dax_dev = fs_dax_get_by_bdev(cxl_pool.bdev, &start_off, &cxl_pool);
 	if (!cxl_pool.dax_dev) {
 		pr_err("cxl_alloc: Failed to get DAX device; is it configured for dax?\n");
 		filp_close(cxl_pool.file_handle, NULL);
@@ -94,7 +94,7 @@ int cxl_alloc_init(const char *path)
 
 	if (cxl_pool.size < sizeof(struct cxl_block_header) + sizeof(struct cxl_free_block)) {
 		pr_err("cxl_alloc: CXL pool is too small\n");
-		cxl_alloc_exit(); // This call now works due to the forward declaration
+		cxl_alloc_exit();
 		return -EINVAL;
 	}
 
