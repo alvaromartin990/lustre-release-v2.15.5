@@ -2,6 +2,7 @@
 	"files.associations": {
 		"lustre_scrub.h": "c",
 		"typeinfo": "c",
-		"mman.h": "c"
+		"mman.h": "c",
+		"lustre_idl.h": "c"
 	}
 }

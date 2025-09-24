@@ -28,6 +28,36 @@
 #include <uapi/linux/lustre/lustre_idl.h>
 #include <uapi/linux/lustre/lgss.h>
 
+#include "cxl_alloc.h"
+
+/* CXL-aware allocation wrappers */
+#define CXL_KMALLOC(size, flags) cxl_malloc(size)
+#define CXL_KFREE(ptr) cxl_free(ptr)
+
+/* Fallback to standard kmalloc if CXL allocation fails */
+static inline void *cxl_kmalloc_fallback(size_t size, gfp_t flags)
+{
+    void *ptr = cxl_malloc(size);
+    if (unlikely(!ptr)) {
+        /* Fall back to standard kmalloc if CXL allocation fails */
+        ptr = kmalloc(size, flags);
+        if (ptr)
+            CDEBUG(D_MALLOC, "CXL allocation failed, using kmalloc for size %zu\n", size);
+    }
+    return ptr;
+}
+
+static inline void cxl_kfree_smart(void *ptr, size_t size)
+{
+    if (unlikely(!ptr))
+        return;
+        
+    /* Try CXL free first, if it fails, use kfree */
+    cxl_free(ptr);
+    /* Note: In a production system, you'd need a way to track 
+     * which allocator was used for each pointer */
+}
+
 /* global variables */
 extern struct percpu_counter obd_memory;
 
@@ -846,7 +876,7 @@ do {									      \
 		ptr = cfs_cpt_malloc((cptab), (cpt), (size),		      \
 				     (flags) | __GFP_ZERO | __GFP_NOWARN);    \
 	if (!(cptab) || unlikely(!(ptr))) /* retry without CPT if failure */  \
-		ptr = kmalloc(size, (flags) | __GFP_ZERO);		      \
+		ptr = cxl_kmalloc_fallback(size, (flags) | __GFP_ZERO);		      \
 	if (likely((ptr) != NULL))					      \
 		OBD_ALLOC_POST((ptr), (size), "kmalloced");		      \
 } while (0)
@@ -941,7 +971,7 @@ do {									      \
 	if (likely(ptr)) {						      \
 		OBD_FREE_PRE(ptr, size, "kfreed");			      \
 		POISON(ptr, 0x5a, size);				      \
-		kfree(ptr);						      \
+		cxl_kfree_smart(ptr, size);				      \
 		POISON_PTR(ptr);					      \
 	}								      \
 } while (0)

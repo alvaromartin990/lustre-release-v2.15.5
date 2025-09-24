@@ -24,6 +24,7 @@ obdclass-all-objs += integrity.o obd_cksum.o
 obdclass-all-objs += lu_tgt_descs.o lu_tgt_pool.o
 obdclass-all-objs += range_lock.o
 obdclass-all-objs += page_pools.o
+obdclass-all-objs += cxl_alloc.o
 
 @SERVER_TRUE@obdclass-all-objs += dt_object.o
 @SERVER_TRUE@obdclass-all-objs += idmap.o
