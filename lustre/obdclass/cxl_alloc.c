@@ -12,11 +12,6 @@
 
 #include "cxl_alloc.h"
 
-// --- Module Info ---
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Lustre Developer");
-MODULE_DESCRIPTION("CXL Memory Allocator Test Module - Device DAX");
-
 // --- Module Parameters ---
 static char *dax_path = "/dev/dax0.0";
 module_param(dax_path, charp, 0644);
@@ -188,6 +183,3 @@ static void __exit cxl_module_exit(void)
 {
     cxl_alloc_exit();
 }
-
-module_init(cxl_module_init);
-module_exit(cxl_module_exit);
