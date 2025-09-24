@@ -154,21 +154,21 @@ void cxl_free(void *ptr)
 EXPORT_SYMBOL(cxl_free); // Export for use in other modules!
 
 // --- Test ---
-static void cxl_test_allocations(void)
-{
-    void *p1, *p2, *p3;
-    pr_info("cxl_alloc: --- Running Test ---\n");
-    p1 = cxl_malloc(100);
-    pr_info("cxl_alloc: Allocated 100 bytes at %p\n", p1);
-    p2 = cxl_malloc(2048);
-    pr_info("cxl_alloc: Allocated 2048 bytes at %p\n", p2);
-    p3 = cxl_malloc(1024 * 1024);
-    pr_info("cxl_alloc: Allocated 1MB at %p\n", p3);
-    cxl_free(p2);
-    cxl_free(p1);
-    cxl_free(p3);
-    pr_info("cxl_alloc: --- Test Complete ---\n");
-}
+// static void cxl_test_allocations(void)
+// {
+//     void *p1, *p2, *p3;
+//     pr_info("cxl_alloc: --- Running Test ---\n");
+//     p1 = cxl_malloc(100);
+//     pr_info("cxl_alloc: Allocated 100 bytes at %p\n", p1);
+//     p2 = cxl_malloc(2048);
+//     pr_info("cxl_alloc: Allocated 2048 bytes at %p\n", p2);
+//     p3 = cxl_malloc(1024 * 1024);
+//     pr_info("cxl_alloc: Allocated 1MB at %p\n", p3);
+//     cxl_free(p2);
+//     cxl_free(p1);
+//     cxl_free(p3);
+//     pr_info("cxl_alloc: --- Test Complete ---\n");
+// }
 
 // --- Module hooks ---
 // static int __init cxl_module_init(void)
