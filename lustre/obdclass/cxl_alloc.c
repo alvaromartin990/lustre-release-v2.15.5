@@ -113,6 +113,11 @@ void *cxl_malloc(size_t size)
     unsigned long flags;
     size_t aligned_size = ALIGN(size, sizeof(void *));
 
+    // Return NULL if pool is not initialized
+    if (!cxl_pool.addr) {
+        return NULL;
+    }
+
     spin_lock_irqsave(&cxl_pool.lock, flags);
     list_for_each_entry(free_block, &cxl_pool.freelist, link) {
         hdr = (struct cxl_block_header *)free_block - 1;
@@ -132,7 +137,7 @@ void *cxl_malloc(size_t size)
 
     return ptr;
 }
-EXPORT_SYMBOL(cxl_malloc); // Export for use in other modules!
+EXPORT_SYMBOL(cxl_malloc);
 
 void cxl_free(void *ptr)
 {
@@ -141,6 +146,17 @@ void cxl_free(void *ptr)
     unsigned long flags;
 
     if (!ptr) return;
+
+    // Do nothing if pool is not initialized
+    if (!cxl_pool.addr) {
+        return;
+    }
+
+    // Check if pointer is within CXL pool range
+    if (ptr < cxl_pool.addr || 
+        ptr >= (cxl_pool.addr + cxl_pool.size)) {
+        return;  // Not a CXL allocation, don't try to free it
+    }
 
     hdr = (struct cxl_block_header *)ptr - 1;
     if (hdr->magic != CXL_BLOCK_MAGIC)
@@ -151,4 +167,30 @@ void cxl_free(void *ptr)
     list_add(&free_node->link, &cxl_pool.freelist);
     spin_unlock_irqrestore(&cxl_pool.lock, flags);
 }
-EXPORT_SYMBOL(cxl_free); // Export for use in other modules!
+EXPORT_SYMBOL(cxl_free);
+
+static int __init cxl_alloc_module_init(void)
+{
+    spin_lock_init(&cxl_pool.lock);
+    INIT_LIST_HEAD(&cxl_pool.freelist);
+    cxl_pool.addr = NULL;  // Mark as uninitialized
+    cxl_pool.size = 0;
+    
+    pr_info("cxl_alloc: Module loaded (CXL pool not initialized)\n");
+    return 0;
+}
+
+static void __exit cxl_alloc_module_exit(void)
+{
+    if (cxl_pool.addr) {
+        memunmap(cxl_pool.addr);
+    }
+    pr_info("cxl_alloc: Module unloaded\n");
+}
+
+module_init(cxl_alloc_module_init);
+module_exit(cxl_alloc_module_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("CXL memory allocator for Lustre");
+MODULE_AUTHOR("Alvarito");

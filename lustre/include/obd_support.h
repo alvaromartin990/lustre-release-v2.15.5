@@ -49,12 +49,10 @@ static inline void *cxl_kmalloc_fallback(size_t size, gfp_t flags)
 
 static inline void cxl_kfree_smart(void *ptr, size_t size)
 {
-    /* Try CXL free first, if it fails, use kfree */
+    /* cxl_free() will do nothing if pool uninitialized or ptr not in range */
     cxl_free(ptr);
-	if (unlikely(!ptr)) {
-		kfree(ptr);
-		CDEBUG(D_MALLOC, "CXL free failed, using kfree for size %zu\n", size);
-	}
+    /* For now, always use kfree as well since we're in fallback mode */
+    kfree(ptr);
 }
 
 /* global variables */
