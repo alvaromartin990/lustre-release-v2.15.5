@@ -45,64 +45,64 @@ static struct {
 } cxl_pool;
 
 // --- Allocator init ---
-int cxl_alloc_init(const char *path)
-{
-    struct cxl_block_header *initial_block;
-    struct cxl_free_block *free_node;
+// int cxl_alloc_init(const char *path)
+// {
+//     struct cxl_block_header *initial_block;
+//     struct cxl_free_block *free_node;
 
-    pr_info("cxl_alloc: Initializing with device %s\n", path);
+//     pr_info("cxl_alloc: Initializing with device %s\n", path);
 
-    spin_lock_init(&cxl_pool.lock);
-    INIT_LIST_HEAD(&cxl_pool.freelist);
+//     spin_lock_init(&cxl_pool.lock);
+//     INIT_LIST_HEAD(&cxl_pool.freelist);
 
-    if (dax_size_mb == 0) {
-        pr_err("cxl_alloc: dax_size_mb cannot be 0\n");
-        return -EINVAL;
-    }
+//     if (dax_size_mb == 0) {
+//         pr_err("cxl_alloc: dax_size_mb cannot be 0\n");
+//         return -EINVAL;
+//     }
 
-    cxl_pool.size = dax_size_mb << 20; // MB → bytes
+//     cxl_pool.size = dax_size_mb << 20; // MB → bytes
 
-    if (!dax_phys) {
-        pr_err("cxl_alloc: dax_phys must be provided (physical base address of DAX region)\n");
-        return -EINVAL;
-    }
+//     if (!dax_phys) {
+//         pr_err("cxl_alloc: dax_phys must be provided (physical base address of DAX region)\n");
+//         return -EINVAL;
+//     }
 
-    cxl_pool.addr = memremap(dax_phys, cxl_pool.size, MEMREMAP_WB);
-    if (!cxl_pool.addr) {
-        pr_err("cxl_alloc: memremap failed for phys=%lx size=%zu\n",
-               dax_phys, cxl_pool.size);
-        return -ENOMEM;
-    }
+//     cxl_pool.addr = memremap(dax_phys, cxl_pool.size, MEMREMAP_WB);
+//     if (!cxl_pool.addr) {
+//         pr_err("cxl_alloc: memremap failed for phys=%lx size=%zu\n",
+//                dax_phys, cxl_pool.size);
+//         return -ENOMEM;
+//     }
 
-    if (cxl_pool.size < sizeof(struct cxl_block_header) + sizeof(struct cxl_free_block)) {
-        pr_err("cxl_alloc: CXL pool is too small\n");
-        return -EINVAL;
-    }
+//     if (cxl_pool.size < sizeof(struct cxl_block_header) + sizeof(struct cxl_free_block)) {
+//         pr_err("cxl_alloc: CXL pool is too small\n");
+//         return -EINVAL;
+//     }
 
-    initial_block = (struct cxl_block_header *)cxl_pool.addr;
-    initial_block->magic = CXL_BLOCK_MAGIC;
-    initial_block->size = cxl_pool.size - sizeof(struct cxl_block_header);
+//     initial_block = (struct cxl_block_header *)cxl_pool.addr;
+//     initial_block->magic = CXL_BLOCK_MAGIC;
+//     initial_block->size = cxl_pool.size - sizeof(struct cxl_block_header);
 
-    free_node = (struct cxl_free_block *)(initial_block + 1);
-    list_add(&free_node->link, &cxl_pool.freelist);
+//     free_node = (struct cxl_free_block *)(initial_block + 1);
+//     list_add(&free_node->link, &cxl_pool.freelist);
 
-    pr_info("cxl_alloc: Initialized. Pool VA: %p, Size: %zu MB\n",
-            cxl_pool.addr, cxl_pool.size / (1024 * 1024));
+//     pr_info("cxl_alloc: Initialized. Pool VA: %p, Size: %zu MB\n",
+//             cxl_pool.addr, cxl_pool.size / (1024 * 1024));
 
-    return 0;
-}
-EXPORT_SYMBOL(cxl_alloc_init); // Export for use in other modules!
+//     return 0;
+// }
+// EXPORT_SYMBOL(cxl_alloc_init); // Export for use in other modules!
 
 // --- Allocator exit ---
-void cxl_alloc_exit(void)
-{
-    if (cxl_pool.addr) {
-        memunmap(cxl_pool.addr);
-        cxl_pool.addr = NULL;
-    }
-    pr_info("cxl_alloc: Allocator shut down.\n");
-}
-EXPORT_SYMBOL(cxl_alloc_exit); // Export for use in other modules!
+// void cxl_alloc_exit(void)
+// {
+//     if (cxl_pool.addr) {
+//         memunmap(cxl_pool.addr);
+//         cxl_pool.addr = NULL;
+//     }
+//     pr_info("cxl_alloc: Allocator shut down.\n");
+// }
+// EXPORT_SYMBOL(cxl_alloc_exit); // Export for use in other modules!
 
 // --- Allocation/free ---
 void *cxl_malloc(size_t size)
