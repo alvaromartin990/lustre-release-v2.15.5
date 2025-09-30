@@ -9,12 +9,12 @@
  *
  * Returns 0 on success, or a negative error code on failure.
  */
-int cxl_alloc_init(const char *dax_path);
+// int cxl_alloc_init(const char *dax_path);
 
 /**
  * cxl_alloc_exit() - Unmaps the DAX device and cleans up resources.
  */
-void cxl_alloc_exit(void);
+// void cxl_alloc_exit(void);
 
 /**
  * cxl_malloc() - Allocates a block of memory from the CXL pool.

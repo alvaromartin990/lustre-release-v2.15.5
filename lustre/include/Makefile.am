@@ -18,6 +18,7 @@ DIST_SUBDIRS = lustre uapi/linux/lustre
 EXTRA_DIST = \
 	cfs_hash.h \
 	cl_object.h \
+	cxl_alloc.h \
 	dt_object.h \
 	erasure_code.h \
 	llog_swab.h \
