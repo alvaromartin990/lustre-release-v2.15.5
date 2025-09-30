@@ -40,7 +40,7 @@ static inline void *cxl_kmalloc_fallback(size_t size, gfp_t flags)
     void *ptr = cxl_malloc(size);
     if (unlikely(!ptr)) {
         /* Fall back to standard kmalloc if CXL allocation fails */
-        ptr = kmalloc(size, flags);
+        ptr = kmalloc(size, (flags) | __GFP_ZERO);
         if (ptr)
             CDEBUG(D_MALLOC, "CXL allocation failed, using kmalloc for size %zu\n", size);
     }
@@ -49,13 +49,12 @@ static inline void *cxl_kmalloc_fallback(size_t size, gfp_t flags)
 
 static inline void cxl_kfree_smart(void *ptr, size_t size)
 {
-    if (unlikely(!ptr))
-        return;
-        
     /* Try CXL free first, if it fails, use kfree */
     cxl_free(ptr);
-    /* Note: In a production system, you'd need a way to track 
-     * which allocator was used for each pointer */
+	if (unlikely(!ptr)) {
+		kfree(ptr);
+		CDEBUG(D_MALLOC, "CXL free failed, using kfree for size %zu\n", size);
+	}
 }
 
 /* global variables */
