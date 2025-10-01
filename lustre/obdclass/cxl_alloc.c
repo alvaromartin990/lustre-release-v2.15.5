@@ -169,28 +169,6 @@ void cxl_free(void *ptr)
 }
 EXPORT_SYMBOL(cxl_free);
 
-static int __init cxl_alloc_module_init(void)
-{
-    spin_lock_init(&cxl_pool.lock);
-    INIT_LIST_HEAD(&cxl_pool.freelist);
-    cxl_pool.addr = NULL;  // Mark as uninitialized
-    cxl_pool.size = 0;
-    
-    pr_info("cxl_alloc: Module loaded (CXL pool not initialized)\n");
-    return 0;
-}
-
-static void __exit cxl_alloc_module_exit(void)
-{
-    if (cxl_pool.addr) {
-        memunmap(cxl_pool.addr);
-    }
-    pr_info("cxl_alloc: Module unloaded\n");
-}
-
-// module_init(cxl_alloc_module_init);
-// module_exit(cxl_alloc_module_exit);
-
 // MODULE_LICENSE("GPL");
 // MODULE_DESCRIPTION("CXL memory allocator for Lustre");
 // MODULE_AUTHOR("Alvarito");
