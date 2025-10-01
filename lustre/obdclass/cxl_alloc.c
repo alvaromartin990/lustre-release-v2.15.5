@@ -25,8 +25,6 @@ static unsigned long dax_phys = 0; // physical base address of the DAX region
 module_param(dax_phys, ulong, 0644);
 MODULE_PARM_DESC(dax_phys, "Physical base address of DAX region");
 
-static struct kobject *cxl_kobj;
-
 // --- Internal structures ---
 #define CXL_BLOCK_MAGIC 0xDABBADF00DCAFEFEULL
 
@@ -195,6 +193,19 @@ int cxl_pool_init(void)
     spin_lock_init(&cxl_pool.lock);
     INIT_LIST_HEAD(&cxl_pool.freelist);
 
+    // Create /sys/kernel/cxl_alloc
+    cxl_kobj = kobject_create_and_add("cxl_alloc", kernel_kobj);
+    if (!cxl_kobj) {
+        pr_warn("cxl_alloc: failed to create sysfs kobject\n");
+    }
+    
+    ret = sysfs_create_file(cxl_kobj, &cxl_stats_attr.attr);
+    if (ret) {
+        kobject_put(cxl_kobj);
+        pr_warn("cxl_alloc: failed to create sysfs stats file\n");
+        cxl_kobj = NULL;
+    }
+
     // now, we need to set size and addr
     //     daxctl list
     // [
@@ -259,14 +270,6 @@ int cxl_pool_init(void)
     free_node = (struct cxl_free_block *)(initial_block + 1);
     list_add(&free_node->link, &cxl_pool.freelist);
 
-    cxl_kobj = kobject_create_and_add("cxl_alloc", kernel_kobj);
-    if (!cxl_kobj) {
-        pr_warn("cxl_alloc: failed to create sysfs kobject\n");
-    } else {
-        if (sysfs_create_file(cxl_kobj, &cxl_stats_attr.attr))
-            pr_warn("cxl_alloc: failed to create sysfs stats file\n");
-    }
-
     pr_info("cxl_alloc: CXL pool initialized. VA=%p, Size=%zu MB (Phys=0x%lx)\n",
             cxl_pool.addr, cxl_pool.size / (1024 * 1024), cxl_phys_addr);
 
@@ -279,11 +282,8 @@ void cxl_pool_exit(void)
         memunmap(cxl_pool.addr);
     }
 
-    if (cxl_kobj) {
-        sysfs_remove_file(cxl_kobj, &cxl_stats_attr.attr);
-        kobject_put(cxl_kobj);
-        cxl_kobj = NULL;
-    }
+    sysfs_remove_file(cxl_kobj, &cxl_stats_attr.attr);
+    kobject_put(cxl_kobj);
 
     pr_info("cxl_alloc: CXL pool cleanup complete\n");
 }
