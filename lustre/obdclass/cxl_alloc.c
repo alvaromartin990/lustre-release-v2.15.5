@@ -176,12 +176,64 @@ EXPORT_SYMBOL(cxl_free);
 // In cxl_alloc.c, change these function signatures:
 int cxl_pool_init(void)
 {
+    struct cxl_block_header *initial_block;
+    struct cxl_free_block *free_node;
+    
+    pr_info("cxl_alloc: Attempting to initialize CXL pool\n");
+
     spin_lock_init(&cxl_pool.lock);
     INIT_LIST_HEAD(&cxl_pool.freelist);
-    cxl_pool.addr = NULL;  // Mark as uninitialized
-    cxl_pool.size = 0;
-    
-    pr_info("cxl_alloc: CXL pool initialized (no CXL device)\n");
+
+    // now, we need to set size and addr
+    //     daxctl list
+    // [
+    //   {
+    //     "chardev":"dax0.0",
+    //     "size":137438953472,
+    //     "target_node":4,
+    //     "align":2097152,
+    //     "mode":"devdax"
+    //   }
+    // ]      // size of the DAX region
+
+    unsigned long cxl_phys_addr = 0x1000000000;
+    size_t cxl_size = 137438953472; // 128 GiB
+
+    if (cxl_phys_addr == 0) {
+        pr_warn("cxl_alloc: No CXL physical address specified, using fallback\n");
+        cxl_pool.addr = NULL;
+        cxl_pool.size = 0;
+        return 0;  // Not an error, just no CXL
+    }
+
+    cxl_pool.size = cxl_size;
+    cxl_pool.addr = memremap(cxl_phys_addr, cxl_pool.size, MEMREMAP_WB);
+    if (!cxl_pool.addr) {
+        pr_err("cxl_alloc: memremap failed for phys=0x%lx size=%zu\n", cxl_phys_addr, cxl_pool.size);
+        cxl_pool.size = 0;
+        
+        return 0;
+    }
+
+    if (cxl_pool.size < sizeof(struct cxl_block_header) + sizeof(struct cxl_free_block)) {
+        pr_err("cxl_alloc: CXL pool too small\n");
+        memunmap(cxl_pool.addr);
+        cxl_pool.addr = NULL;
+        cxl_pool.size = 0;
+        return 0;
+    }
+
+    // Initialize the free list with one big block
+    initial_block = (struct cxl_block_header *)cxl_pool.addr;
+    initial_block->magic = CXL_BLOCK_MAGIC;
+    initial_block->size = cxl_pool.size - sizeof(struct cxl_block_header);
+
+    free_node = (struct cxl_free_block *)(initial_block + 1);
+    list_add(&free_node->link, &cxl_pool.freelist);
+
+    pr_info("cxl_alloc: CXL pool initialized. VA=%p, Size=%zu MB (Phys=0x%lx)\n",
+            cxl_pool.addr, cxl_pool.size / (1024 * 1024), cxl_phys_addr);
+
     return 0;
 }
 
