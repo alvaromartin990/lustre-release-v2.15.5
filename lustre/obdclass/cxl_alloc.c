@@ -12,10 +12,6 @@
 
 #include "cxl_alloc.h"
 
-#include <fcntl.h>   // For open() flags
-#include <string.h>  // For strcpy()
-#include <unistd.h>  // For close()
-
 // --- Module Parameters ---
 static char *dax_path = "/dev/dax0.0";
 module_param(dax_path, charp, 0644);
@@ -200,15 +196,16 @@ int cxl_pool_init(void)
     //   }
     // ]      // size of the DAX region
     
-    int fd = open(dax_path, O_RDONLY);
-    if (fd < 0) {
-        pr_warn("cxl_alloc: Failed to open DAX device %s\n", dax_path);
-        pr_warn("cxl_alloc: Using fallback\n");
+    // check whether or not we have a dax device at dax_path (kernel-level code for open)
+    struct file *filp = filp_open(dax_path, O_RDWR | O_CLOEXEC, 0);
+    if (IS_ERR(filp)) {
+        pr_warn("cxl_alloc: Could not open DAX device at %s, using fallback\n", dax_path);
         cxl_pool.addr = NULL;
         cxl_pool.size = 0;
         return 0;  // Not an error, just no CXL
     }
-
+    filp_close(filp, NULL);
+    
     unsigned long cxl_phys_addr = 0x1000000000;
     size_t cxl_size = 137438953472; // 128 GiB
 
