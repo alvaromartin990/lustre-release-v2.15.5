@@ -25,6 +25,8 @@ static unsigned long dax_phys = 0; // physical base address of the DAX region
 module_param(dax_phys, ulong, 0644);
 MODULE_PARM_DESC(dax_phys, "Physical base address of DAX region");
 
+static struct kobject *cxl_kobj;
+
 // --- Internal structures ---
 #define CXL_BLOCK_MAGIC 0xDABBADF00DCAFEFEULL
 
@@ -282,7 +284,7 @@ void cxl_pool_exit(void)
         kobject_put(cxl_kobj);
         cxl_kobj = NULL;
     }
-    
+
     pr_info("cxl_alloc: CXL pool cleanup complete\n");
 }
 
@@ -305,5 +307,3 @@ static ssize_t cxl_stats_show(struct kobject *kobj, struct kobj_attribute *attr,
         cxl_pool.addr ? "YES" : "NO (using fallback)");
 }
 static struct kobj_attribute cxl_stats_attr = __ATTR_RO(cxl_stats);
-
-static struct kobject *cxl_kobj;
