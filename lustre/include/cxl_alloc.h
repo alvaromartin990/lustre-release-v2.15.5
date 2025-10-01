@@ -30,4 +30,8 @@ void *cxl_malloc(size_t size);
  */
 void cxl_free(void *ptr);
 
+// Add these to cxl_alloc.h:
+int cxl_pool_init(void);
+void cxl_pool_exit(void);
+
 #endif /* CXL_ALLOC_H */

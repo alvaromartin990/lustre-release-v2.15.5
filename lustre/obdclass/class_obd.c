@@ -818,6 +818,11 @@ static int __init obdclass_init(void)
 		goto cleanup_class_handle;
 	}
 
+	rc = cxl_pool_init();
+    if (rc) {
+		return rc;
+	}
+
 	/* Default the dirty page cache cap to 1/2 of system memory.
 	 * For clients with less memory, a larger fraction is needed
 	 * for other purposes (mostly for BGL). */
@@ -962,6 +967,8 @@ static void __exit obdclass_exit(void)
 	llog_info_fini();
 	cl_global_fini();
 	lu_global_fini();
+
+	cxl_pool_exit();
 
 	obd_cleanup_caches();
 
