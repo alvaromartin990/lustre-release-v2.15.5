@@ -42,6 +42,9 @@ static struct {
     size_t size;
     struct list_head freelist;
     spinlock_t lock;
+    atomic64_t alloc_count;
+    atomic64_t free_count;
+    atomic64_t bytes_allocated;
 } cxl_pool;
 
 // --- Allocator init ---
@@ -132,6 +135,9 @@ void *cxl_malloc(size_t size)
         list_del(&found_block->link);
         hdr = (struct cxl_block_header *)found_block - 1;
         ptr = (void *)(hdr + 1);
+
+        atomic64_inc(&cxl_pool.alloc_count);
+        atomic64_add(aligned_size, &cxl_pool.bytes_allocated);
     }
     spin_unlock_irqrestore(&cxl_pool.lock, flags);
 
@@ -166,6 +172,9 @@ void cxl_free(void *ptr)
     spin_lock_irqsave(&cxl_pool.lock, flags);
     list_add(&free_node->link, &cxl_pool.freelist);
     spin_unlock_irqrestore(&cxl_pool.lock, flags);
+
+    atomic64_inc(&cxl_pool.free_count);
+    atomic64_sub(hdr->size, &cxl_pool.bytes_allocated);
 }
 EXPORT_SYMBOL(cxl_free);
 
@@ -207,6 +216,7 @@ int cxl_pool_init(void)
         return 0;  // Not an error, just no CXL
     }
     filp_close(filp, NULL);
+    pr_info("cxl_alloc: DAX device %s found\n", dax_path);
     
     unsigned long cxl_phys_addr = 0x1000000000;
     size_t cxl_size = 137438953472; // 128 GiB
@@ -217,6 +227,10 @@ int cxl_pool_init(void)
         cxl_pool.size = 0;
         return 0;  // Not an error, just no CXL
     }
+
+    atomic64_set(&cxl_pool.alloc_count, 0);
+    atomic64_set(&cxl_pool.free_count, 0);
+    atomic64_set(&cxl_pool.bytes_allocated, 0);
 
     cxl_pool.size = cxl_size;
     cxl_pool.addr = memremap(cxl_phys_addr, cxl_pool.size, MEMREMAP_WB);
@@ -243,6 +257,14 @@ int cxl_pool_init(void)
     free_node = (struct cxl_free_block *)(initial_block + 1);
     list_add(&free_node->link, &cxl_pool.freelist);
 
+    cxl_kobj = kobject_create_and_add("cxl_alloc", kernel_kobj);
+    if (!cxl_kobj) {
+        pr_warn("cxl_alloc: failed to create sysfs kobject\n");
+    } else {
+        if (sysfs_create_file(cxl_kobj, &cxl_stats_attr.attr))
+            pr_warn("cxl_alloc: failed to create sysfs stats file\n");
+    }
+
     pr_info("cxl_alloc: CXL pool initialized. VA=%p, Size=%zu MB (Phys=0x%lx)\n",
             cxl_pool.addr, cxl_pool.size / (1024 * 1024), cxl_phys_addr);
 
@@ -254,5 +276,34 @@ void cxl_pool_exit(void)
     if (cxl_pool.addr) {
         memunmap(cxl_pool.addr);
     }
+
+    if (cxl_kobj) {
+        sysfs_remove_file(cxl_kobj, &cxl_stats_attr.attr);
+        kobject_put(cxl_kobj);
+        cxl_kobj = NULL;
+    }
+    
     pr_info("cxl_alloc: CXL pool cleanup complete\n");
 }
+
+// Now, we need to provide the user with stats
+static ssize_t cxl_stats_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+    return sprintf(buf,
+        "CXL Pool Status:\n"
+        "  Address: %p\n"
+        "  Size: %zu MB\n"
+        "  Allocations: %lld\n"
+        "  Frees: %lld\n"
+        "  Bytes in use: %lld\n"
+        "  Active: %s\n",
+        cxl_pool.addr,
+        cxl_pool.size / (1024 * 1024),
+        atomic64_read(&cxl_pool.alloc_count),
+        atomic64_read(&cxl_pool.free_count),
+        atomic64_read(&cxl_pool.bytes_allocated),
+        cxl_pool.addr ? "YES" : "NO (using fallback)");
+}
+static struct kobj_attribute cxl_stats_attr = __ATTR_RO(cxl_stats);
+
+static struct kobject *cxl_kobj;
