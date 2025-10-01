@@ -197,7 +197,8 @@ int cxl_pool_init(void)
     // ]      // size of the DAX region
     
     // check whether or not we have a dax device at dax_path (kernel-level code for open)
-    pr_info("cxl_alloc: Checking for DAX device at %s\n", dax_path);
+    pr_warn("cxl_alloc: Checking for DAX device at %s\n", dax_path);
+    
     struct file *filp = filp_open(dax_path, O_RDWR | O_CLOEXEC, 0);
     if (IS_ERR(filp)) {
         pr_warn("cxl_alloc: Could not open DAX device at %s, using fallback\n", dax_path);
