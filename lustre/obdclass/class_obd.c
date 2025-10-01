@@ -818,9 +818,9 @@ static int __init obdclass_init(void)
 		goto cleanup_class_handle;
 	}
 
-	rc = cxl_pool_init();
-    if (rc) {
-		return rc;
+	err = cxl_pool_init();
+    if (err) {
+		return err;
 	}
 
 	/* Default the dirty page cache cap to 1/2 of system memory.
