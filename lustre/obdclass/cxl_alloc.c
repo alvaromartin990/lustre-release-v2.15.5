@@ -12,6 +12,10 @@
 
 #include "cxl_alloc.h"
 
+#include <linux/kobject.h>
+#include <linux/sysfs.h>
+
+
 // --- Module Parameters ---
 static char *dax_path = "/dev/dax0.0";
 module_param(dax_path, charp, 0644);
@@ -45,7 +49,11 @@ static struct {
     atomic64_t alloc_count;
     atomic64_t free_count;
     atomic64_t bytes_allocated;
+    atomic64_t fallback_count;  // Tracks kmalloc fallbacks
 } cxl_pool;
+
+// Add near top of file
+static struct kobject *cxl_kobj;
 
 // --- Allocator init ---
 // int cxl_alloc_init(const char *path)
@@ -193,19 +201,6 @@ int cxl_pool_init(void)
     spin_lock_init(&cxl_pool.lock);
     INIT_LIST_HEAD(&cxl_pool.freelist);
 
-    // Create /sys/kernel/cxl_alloc
-    cxl_kobj = kobject_create_and_add("cxl_alloc", kernel_kobj);
-    if (!cxl_kobj) {
-        pr_warn("cxl_alloc: failed to create sysfs kobject\n");
-    }
-    
-    ret = sysfs_create_file(cxl_kobj, &cxl_stats_attr.attr);
-    if (ret) {
-        kobject_put(cxl_kobj);
-        pr_warn("cxl_alloc: failed to create sysfs stats file\n");
-        cxl_kobj = NULL;
-    }
-
     // now, we need to set size and addr
     //     daxctl list
     // [
@@ -244,6 +239,7 @@ int cxl_pool_init(void)
     atomic64_set(&cxl_pool.alloc_count, 0);
     atomic64_set(&cxl_pool.free_count, 0);
     atomic64_set(&cxl_pool.bytes_allocated, 0);
+    atomic64_set(&cxl_pool.fallback_count, 0);
 
     cxl_pool.size = cxl_size;
     cxl_pool.addr = memremap(cxl_phys_addr, cxl_pool.size, MEMREMAP_WB);
@@ -273,37 +269,82 @@ int cxl_pool_init(void)
     pr_info("cxl_alloc: CXL pool initialized. VA=%p, Size=%zu MB (Phys=0x%lx)\n",
             cxl_pool.addr, cxl_pool.size / (1024 * 1024), cxl_phys_addr);
 
+    cxl_sysfs_init();
+
     return 0;
 }
 
 void cxl_pool_exit(void)
 {
+    cxl_sysfs_exit();
+
     if (cxl_pool.addr) {
         memunmap(cxl_pool.addr);
     }
-
-    sysfs_remove_file(cxl_kobj, &cxl_stats_attr.attr);
-    kobject_put(cxl_kobj);
 
     pr_info("cxl_alloc: CXL pool cleanup complete\n");
 }
 
 // Now, we need to provide the user with stats
-static ssize_t cxl_stats_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t stats_show(struct kobject *kobj, struct kobj_attribute *attr,
+                         char *buf)
 {
-    return sprintf(buf,
-        "CXL Pool Status:\n"
-        "  Address: %p\n"
-        "  Size: %zu MB\n"
-        "  Allocations: %lld\n"
-        "  Frees: %lld\n"
-        "  Bytes in use: %lld\n"
-        "  Active: %s\n",
-        cxl_pool.addr,
-        cxl_pool.size / (1024 * 1024),
-        atomic64_read(&cxl_pool.alloc_count),
-        atomic64_read(&cxl_pool.free_count),
-        atomic64_read(&cxl_pool.bytes_allocated),
-        cxl_pool.addr ? "YES" : "NO (using fallback)");
+    ssize_t len = 0;
+    
+    len += sprintf(buf + len, "CXL Allocator Statistics\n");
+    len += sprintf(buf + len, "========================\n");
+    len += sprintf(buf + len, "Pool address:     %p\n", cxl_pool.addr);
+    len += sprintf(buf + len, "Pool size:        %zu MB\n", 
+                   cxl_pool.size / (1024 * 1024));
+    len += sprintf(buf + len, "Total allocs:     %lld\n", 
+                   (long long)atomic64_read(&cxl_pool.alloc_count));
+    len += sprintf(buf + len, "Total frees:      %lld\n", 
+                   (long long)atomic64_read(&cxl_pool.free_count));
+    len += sprintf(buf + len, "Current usage:    %lld bytes\n", 
+                   (long long)atomic64_read(&cxl_pool.bytes_allocated));
+    len += sprintf(buf + len, "Fallback count:   %lld\n", 
+                   (long long)atomic64_read(&cxl_pool.fallback_count));
+    len += sprintf(buf + len, "Status:           %s\n",
+                   cxl_pool.addr ? "ACTIVE (using CXL)" : "INACTIVE (using kmalloc)");
+    
+    return len;
 }
-static struct kobj_attribute cxl_stats_attr = __ATTR_RO(cxl_stats);
+
+static struct kobj_attribute stats_attribute = __ATTR_RO(stats);
+
+static int cxl_sysfs_init(void)
+{
+    int ret;
+    
+    // Create /sys/kernel/cxl_allocator/
+    cxl_kobj = kobject_create_and_add("cxl_allocator", kernel_kobj);
+    if (!cxl_kobj) {
+        pr_err("cxl_alloc: Failed to create sysfs kobject\n");
+        return -ENOMEM;
+    }
+    
+    // Create /sys/kernel/cxl_allocator/stats
+    ret = sysfs_create_file(cxl_kobj, &stats_attribute.attr);
+    if (ret) {
+        pr_err("cxl_alloc: Failed to create sysfs file\n");
+        kobject_put(cxl_kobj);
+        return ret;
+    }
+    
+    pr_info("cxl_alloc: sysfs interface created at /sys/kernel/cxl_allocator/stats\n");
+    return 0;
+}
+
+static void cxl_sysfs_exit(void)
+{
+    if (cxl_kobj) {
+        sysfs_remove_file(cxl_kobj, &stats_attribute.attr);
+        kobject_put(cxl_kobj);
+    }
+}
+
+void cxl_track_fallback(void)
+{
+    atomic64_inc(&cxl_pool.fallback_count);
+}
+EXPORT_SYMBOL(cxl_track_fallback);

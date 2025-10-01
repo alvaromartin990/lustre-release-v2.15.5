@@ -41,8 +41,10 @@ static inline void *cxl_kmalloc_fallback(size_t size, gfp_t flags)
     if (unlikely(!ptr)) {
         /* Fall back to standard kmalloc if CXL allocation fails */
         ptr = kmalloc(size, (flags) | __GFP_ZERO);
-        if (ptr)
-            CDEBUG(D_MALLOC, "CXL allocation failed, using kmalloc for size %zu\n", size);
+        if (ptr) {
+			cxl_track_fallback();
+			CDEBUG(D_MALLOC, "CXL allocation failed, using kmalloc for size %zu\n", size);
+		}
     }
     return ptr;
 }
