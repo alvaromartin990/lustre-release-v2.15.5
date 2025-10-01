@@ -15,6 +15,8 @@ SUBDIRS = lustre uapi/linux/lustre
 
 DIST_SUBDIRS = lustre uapi/linux/lustre
 
+all-local:
+
 EXTRA_DIST = \
 	cfs_hash.h \
 	cl_object.h \
