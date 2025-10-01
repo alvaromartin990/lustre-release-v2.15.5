@@ -195,6 +195,15 @@ int cxl_pool_init(void)
     //     "mode":"devdax"
     //   }
     // ]      // size of the DAX region
+    
+    int fd = open(dax_path, O_RDONLY);
+    if (fd < 0) {
+        pr_warn("cxl_alloc: Failed to open DAX device %s\n", dax_path);
+        pr_warn("cxl_alloc: Using fallback\n");
+        cxl_pool.addr = NULL;
+        cxl_pool.size = 0;
+        return 0;  // Not an error, just no CXL
+    }
 
     unsigned long cxl_phys_addr = 0x1000000000;
     size_t cxl_size = 137438953472; // 128 GiB
