@@ -12,6 +12,10 @@
 
 #include "cxl_alloc.h"
 
+#include <fcntl.h>   // For open() flags
+#include <string.h>  // For strcpy()
+#include <unistd.h>  // For close()
+
 // --- Module Parameters ---
 static char *dax_path = "/dev/dax0.0";
 module_param(dax_path, charp, 0644);
