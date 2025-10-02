@@ -182,6 +182,7 @@ EXPORT_SYMBOL(cxl_track_fallback);
 // --- Allocation/free ---
 void *cxl_malloc(size_t size)
 {
+    pr_info("cxl_malloc: Requesting allocation of size %zu\n", size);
     struct cxl_block_header *hdr;
     struct cxl_free_block *free_block, *found_block = NULL;
     void *ptr = NULL;
@@ -190,6 +191,7 @@ void *cxl_malloc(size_t size)
 
     // Return NULL if pool is not initialized
     if (!cxl_pool.addr) {
+        pr_warn("cxl_malloc: Pool not initialized\n");
         return NULL;
     }
 
@@ -213,12 +215,15 @@ void *cxl_malloc(size_t size)
     }
     spin_unlock_irqrestore(&cxl_pool.lock, flags);
 
+    pr_info("cxl_malloc: Allocated %zu bytes at %p\n", size, ptr);
+
     return ptr;
 }
 EXPORT_SYMBOL(cxl_malloc);
 
 void cxl_free(void *ptr)
 {
+    pr_info("cxl_free: Requesting free of memory at %p\n", ptr);
     struct cxl_block_header *hdr;
     struct cxl_free_block *free_node;
     unsigned long flags;
