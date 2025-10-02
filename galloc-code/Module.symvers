@@ -1,0 +1,4 @@
+0x6aed0655	cxl_alloc_init	/home/labuser/lustre-release-v2.15.5/galloc-code/cxl_alloc	EXPORT_SYMBOL	
+0x9791f59d	cxl_alloc_exit	/home/labuser/lustre-release-v2.15.5/galloc-code/cxl_alloc	EXPORT_SYMBOL	
+0x7160d916	cxl_malloc	/home/labuser/lustre-release-v2.15.5/galloc-code/cxl_alloc	EXPORT_SYMBOL	
+0x83ae3fc2	cxl_free	/home/labuser/lustre-release-v2.15.5/galloc-code/cxl_alloc	EXPORT_SYMBOL	

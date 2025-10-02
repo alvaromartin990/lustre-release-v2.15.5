@@ -1,0 +1,21 @@
+LUSTRE := @top_srcdir@
+LUSTRE_LINUX := @LINUX@
+LUSTRE_LINUX_OBJ := @LINUX_OBJ@
+
+MODULES := cxl_alloc
+
+# CXL Allocator module
+cxl_alloc-objs := cxl_alloc.o
+
+# Export symbols for use by other modules
+EXPORT_SYMTAB = 1
+
+# Include paths
+ccflags-y := -I$(LUSTRE)/libcfs/include -I$(LUSTRE)/lnet/include -I$(LUSTRE)/lustre/include
+
+# Define module targets
+obj-m := $(patsubst %,%.o,$(MODULES))
+
+EXTRA_CFLAGS := $(LUSTRE_KERNEL_TEST)
+
+@INCLUDE_RULES@
