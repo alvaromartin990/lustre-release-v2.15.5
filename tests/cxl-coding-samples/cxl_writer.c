@@ -28,7 +28,7 @@ int main() {
         return 1;
     }
     
-    printf("✓ CXL memory mapped at %p\n", shared);
+    printf("CXL memory mapped at %p\n", shared);
     
     // Write test data
     shared->magic = CXL_MAGIC;
@@ -43,14 +43,14 @@ int main() {
     // accessing the CXL shared memory, preventing reordering or caching issues.
     cxl_write_barrier(shared, sizeof(cxl_shared_data_t));
     
-    printf("✓ Data written to CXL shared memory:\n");
+    printf("Data written to CXL shared memory:\n");
     printf("  Magic: 0x%lx\n", shared->magic);
     printf("  Writer: S%lu\n", shared->writer_id);
     printf("  Sequence: %lu\n", shared->sequence);
     printf("  Message: %s\n", shared->message);
     printf("  Timestamp: %lu\n", shared->timestamp);
     
-    printf("\n🚀 Ready for S7 to read! Press Enter to exit...");
+    printf("\nReady for S7 to read! Press Enter to exit...");
     getchar();
     
     // Cleanup

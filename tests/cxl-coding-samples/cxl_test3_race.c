@@ -2,8 +2,8 @@
  * @file cxl_test3_race.c
  * @brief Test 3: Concurrent Access Race Conditions on CXL Device
  *
- * This test program demonstrates and detects race conditions when multiple processes
- * concurrently access and modify shared memory mapped from a CXL (Compute Express Link) device.
+ * This test detects race conditions when multiple processes
+ * concurrently access and modify shared memory mapped from a CXL device.
  * It is designed to be run as separate instances (e.g., S6 and S7) to simulate concurrent writers.
  *
  * Key Features:
@@ -16,7 +16,6 @@
  *
  * Usage:
  *   ./cxl_test3_race <instance_id>
- *   - instance_id: Integer identifier for the test instance (e.g., 6 or 7).
  *
  * Main Components:
  * - cxl_test3_data_t: Shared structure for synchronization and statistics.
@@ -28,12 +27,8 @@
  * - Prints progress, race detection events, and final statistics including
  *   operation counts and data integrity check.
  *
- * Note:
- * - Intended for use on systems with CXL device support and appropriate permissions.
- * - Demonstrates the importance of proper synchronization in concurrent memory access.
  */
 // ===== TEST 3: Concurrent Access Race Conditions =====
-// Save as cxl_test3_race.c
 
 #define _GNU_SOURCE
 #include <fcntl.h>
@@ -184,9 +179,9 @@ int main(int argc, char *argv[]) {
     
     uint64_t expected = shared->s6_operations + shared->s7_operations;
     if (shared->race_counter == expected) {
-        printf("  ✅ NO DATA CORRUPTION detected\n");
+        printf("  NO DATA CORRUPTION detected\n");
     } else {
-        printf("  ❌ DATA CORRUPTION: %lu missing operations\n", 
+        printf("  DATA CORRUPTION: %lu missing operations\n", 
                expected - shared->race_counter);
     }
     

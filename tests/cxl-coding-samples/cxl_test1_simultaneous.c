@@ -24,17 +24,9 @@
  *   cxl_test1_data_t - Contains magic value, counters, writer ID, status string,
  *                      and timestamps for each operation.
  *
- * Synchronization:
- *   Uses x86 memory barriers (mfence, lfence) and cache line flushes (clflush)
- *   to ensure visibility and ordering of memory operations across CPUs.
- *
- * Dependencies:
- *   Requires a CXL device exposed as a DAX file (e.g., /dev/dax0.0).
- *   Tested on x86 platforms with support for required instructions.
  *
  */
 // ===== TEST 1: Simultaneous Read/Write Capabilities =====
-// Save as cxl_test1_simultaneous.c
 
 #define _GNU_SOURCE
 #include <fcntl.h>
@@ -70,7 +62,6 @@ typedef struct {
  * This function enforces a write memory barrier using an MFENCE instruction,
  * flushes the cache lines covering the specified memory region using CLFLUSH,
  * and then issues another MFENCE to ensure all writes are globally visible.
- * Useful for persistent memory operations or when strict ordering is required.
  */
 static inline void cxl_write_barrier(void *addr, size_t size) {
     __builtin_ia32_mfence();
@@ -84,7 +75,6 @@ static inline void cxl_write_barrier(void *addr, size_t size) {
  * cxl_read_barrier - Ensures read ordering for subsequent memory operations.
  *
  * This function enforces a read memory barrier using an LFENCE instruction,
- * preventing the CPU from reordering read operations before the barrier.
  * Useful for ensuring data consistency when reading from memory-mapped devices.
  */
 static inline void cxl_read_barrier(void) {
@@ -125,7 +115,7 @@ int main(int argc, char *argv[]) {
         cxl_write_barrier(shared, sizeof(cxl_test1_data_t));
     }
     
-    printf("✓ Starting simultaneous read/write test...\n");
+    printf("Starting simultaneous read/write test...\n");
     
     // Perform 100 operations mixing reads and writes
     for (int i = 0; i < NUM_OPERATIONS; i++) {
@@ -151,7 +141,7 @@ int main(int argc, char *argv[]) {
         usleep(100000);  // 100ms delay
     }
     
-    printf("\n📊 Final Results (S%d):\n", instance_id);
+    printf("\nFinal Results (S%d):\n", instance_id);
     printf("  Final Counter: %lu\n", shared->counter);
     printf("  Total Operations: %lu\n", shared->operation_count);
     printf("  Last Writer: S%lu\n", shared->writer_id);

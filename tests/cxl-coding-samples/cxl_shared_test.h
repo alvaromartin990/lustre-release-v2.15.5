@@ -10,7 +10,6 @@
  *
  * Structures:
  *   - cxl_shared_data_t: Used for sharing data between processes via CXL memory.
- *     Fields are marked volatile to ensure visibility across CPU caches.
  *     Includes magic, sequence, timestamp, message, and writer_id fields.
  *
  * Functions:

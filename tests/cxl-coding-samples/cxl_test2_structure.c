@@ -3,7 +3,7 @@
  * @brief Test program for shared data structure behavior using CXL memory.
  *
  * This test demonstrates how multiple processes can interact with a shared data structure
- * mapped to a CXL (Compute Express Link) device. The shared structure contains an array,
+ * mapped to a CXL device. The shared structure contains an array,
  * a sum of its elements, modification metadata, and an operation log. Each process modifies
  * a portion of the array, updates the sum, and logs its actions, ensuring consistency via
  * memory barriers and cache flushes.
@@ -21,9 +21,6 @@
  * Usage:
  *   ./cxl_test2_structure <instance_id>
  *
- * Dependencies:
- *   - Requires a CXL device exposed as /dev/dax0.0.
- *   - Must be run on a system supporting x86 cache flush instructions.
  *
  * Structure Fields:
  *   - magic: Magic number to validate initialization.
@@ -37,11 +34,6 @@
  *   - Uses mfence and clflush instructions for write barriers.
  *   - Uses lfence for read barriers.
  *
- * Error Handling:
- *   - Reports errors for device open, memory mapping, and unmapping failures.
- *
- * Author: [Your Name]
- * Date: [Date]
  */
 // ===== TEST 2: Shared Data Structure Behavior =====
 // Save as cxl_test2_structure.c
@@ -117,7 +109,7 @@ int main(int argc, char *argv[]) {
     
     // Initialize structure on first access
     if (shared->magic != CXL_MAGIC) {
-        printf("🏗️  Initializing shared structure...\n");
+        printf("Initializing shared structure...\n");
         shared->magic = CXL_MAGIC;
         shared->array_sum = 0;
         shared->modification_count = 0;
@@ -126,10 +118,10 @@ int main(int argc, char *argv[]) {
         }
         shared->array_sum = calculate_sum(shared->array, ARRAY_SIZE);
         cxl_write_barrier(shared, sizeof(cxl_test2_data_t));
-        printf("✓ Structure initialized\n");
+        printf("Structure initialized\n");
     }
     
-    printf("🔍 Testing shared structure access...\n");
+    printf("Testing shared structure access...\n");
     
     for (int round = 0; round < 10; round++) {
         cxl_read_barrier();
@@ -140,7 +132,7 @@ int main(int argc, char *argv[]) {
         
         printf("Round %d: Stored sum=%lu, Calculated sum=%lu %s\n", 
                round, read_sum, calculated_sum, 
-               (read_sum == calculated_sum) ? "✓" : "❌ INCONSISTENT!");
+               (read_sum == calculated_sum) ? "✓" : "INCONSISTENT!");
         
         // Modify part of the array
         int start_idx = (instance_id * 100 + round * 10) % ARRAY_SIZE;
@@ -162,10 +154,10 @@ int main(int argc, char *argv[]) {
         
         cxl_write_barrier(shared, sizeof(cxl_test2_data_t));
         
-        sleep(1);
+        sleep(1); // ~~~~
     }
     
-    printf("\n📊 Final Structure State:\n");
+    printf("\nFinal Structure State:\n");
     printf("  Array Sum: %lu\n", shared->array_sum);
     printf("  Last Modifier: S%lu\n", shared->last_modifier);
     printf("  Total Modifications: %lu\n", shared->modification_count);

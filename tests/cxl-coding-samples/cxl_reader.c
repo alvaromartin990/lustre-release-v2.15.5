@@ -27,18 +27,18 @@ int main() {
         return 1;
     }
     
-    printf("✓ CXL memory mapped at %p\n", shared);
-    printf("⏳ Waiting for data from S6...\n");
+    printf("CXL memory mapped at %p\n", shared);
+    printf("Waiting for data from S6...\n");
     
     // Poll for data with timeout
     int attempts = 0;
-    const int max_attempts = 30;  // 30 seconds timeout
+    const int max_attempts = 30;  // 30 seconds timeout ~~~
     
     while (attempts < max_attempts) {
         cxl_read_barrier();  // Ensure fresh read from CXL
         
         if (shared->magic == CXL_MAGIC && shared->sequence > 0) {
-            printf("\n🎉 SUCCESS! Data received from S6:\n");
+            printf("\nSUCCESS! Data received from S6:\n");
             printf("  Magic: 0x%lx (valid)\n", shared->magic);
             printf("  Writer: S%lu\n", shared->writer_id);
             printf("  Sequence: %lu\n", shared->sequence);
@@ -47,10 +47,10 @@ int main() {
             
             // Write response back to S6
             shared->sequence = 2;
-            strcpy((char*)shared->message, "ACK from S7 - CXL communication works!");
+            strcpy((char*)shared->message, "Hello from S7 - CXL communication works!");
             cxl_write_barrier(shared, sizeof(cxl_shared_data_t));
             
-            printf("\n✓ Response sent back to S6\n");
+            printf("\nResponse sent back to S6\n");
             break;
         }
         
@@ -61,7 +61,7 @@ int main() {
     }
     
     if (attempts >= max_attempts) {
-        printf("\n❌ Timeout: No data received from S6\n");
+        printf("\nTimeout: No data received from S6\n");
         printf("Current memory state:\n");
         printf("  Magic: 0x%lx (expected: 0x%lx)\n", shared->magic, CXL_MAGIC);
         printf("  Sequence: %lu\n", shared->sequence);
