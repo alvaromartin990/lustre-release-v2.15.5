@@ -53,8 +53,11 @@ static inline void cxl_kfree_smart(void *ptr, size_t size)
 {
     /* cxl_free() will do nothing if pool uninitialized or ptr not in range */
     cxl_free(ptr);
-    /* For now, always use kfree as well since we're in fallback mode */
-    kfree(ptr);
+	
+	// fallback to kfree if cxl_free fails
+	if (ptr) {
+		kfree(ptr);
+	}
 }
 
 /* global variables */

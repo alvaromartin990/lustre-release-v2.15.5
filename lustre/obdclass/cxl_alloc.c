@@ -104,22 +104,43 @@ MODULE_PARM_DESC(dax_phys, "Physical base address of DAX region");
 // --- Internal structures ---
 #define CXL_BLOCK_MAGIC 0xDABBADF00DCAFEFEULL
 
+/**
+ * struct cxl_block_header - Header for each allocated/free block
+ * @magic: Magic number to identify valid blocks
+ * @size: Size of the block in bytes (excluding header)
+ */
 struct cxl_block_header {
     u64 magic;
     size_t size;
 };
 
+/**
+ * struct cxl_free_block - Node for free block linked list
+ * @link: List head for linking free blocks
+ */
 struct cxl_free_block {
     struct list_head link;
 };
 
+/*
+* struct cxl_pool - Represents the CXL memory pool
+* @addr: Base virtual address of the CXL memory region
+* @size: Size of the CXL memory region in bytes
+* @freelist: Linked list of free blocks
+* @lock: Spinlock to protect access to the freelist     
+* @alloc_count: Total number of allocations made
+* @free_count: Total number of frees made
+* @bytes_allocated: Current total bytes allocated
+* @fallback_count: Number of times allocation fell back to kmalloc
+* @flush_count: Number of cache flush operations performed
+*/
 static struct {
     void *addr;
     size_t size;
     struct list_head freelist;
     spinlock_t lock;
-    atomic64_t alloc_count;
-    atomic64_t free_count;
+    atomic64_t alloc_count; // Tracks cxl_allocs
+    atomic64_t free_count; // Tracks cxl_frees
     atomic64_t bytes_allocated;
     atomic64_t fallback_count;  // Tracks kmalloc fallbacks
     atomic64_t flush_count;  // Track number of flush operations
@@ -169,7 +190,7 @@ static int cxl_sysfs_init(void)
         return -ENOMEM;
     }
     
-    // Create at /sys/kernel/cxl_allocator/stats
+    // Create at /sys/kernel/cxl_allocator/stats ~ cat /sys/kernel/cxl_allocator/stats
     ret = sysfs_create_file(cxl_kobj, &stats_attribute.attr);
     if (ret) {
         pr_err("cxl_alloc: Failed to create sysfs file\n");
@@ -196,66 +217,6 @@ void cxl_track_fallback(void)
 }
 EXPORT_SYMBOL(cxl_track_fallback);
 
-// --- Allocator init ---
-// int cxl_alloc_init(const char *path)
-// {
-//     struct cxl_block_header *initial_block;
-//     struct cxl_free_block *free_node;
-
-//     pr_info("cxl_alloc: Initializing with device %s\n", path);
-
-//     spin_lock_init(&cxl_pool.lock);
-//     INIT_LIST_HEAD(&cxl_pool.freelist);
-
-//     if (dax_size_mb == 0) {
-//         pr_err("cxl_alloc: dax_size_mb cannot be 0\n");
-//         return -EINVAL;
-//     }
-
-//     cxl_pool.size = dax_size_mb << 20; // MB → bytes
-
-//     if (!dax_phys) {
-//         pr_err("cxl_alloc: dax_phys must be provided (physical base address of DAX region)\n");
-//         return -EINVAL;
-//     }
-
-//     cxl_pool.addr = memremap(dax_phys, cxl_pool.size, MEMREMAP_WB);
-//     if (!cxl_pool.addr) {
-//         pr_err("cxl_alloc: memremap failed for phys=%lx size=%zu\n",
-//                dax_phys, cxl_pool.size);
-//         return -ENOMEM;
-//     }
-
-//     if (cxl_pool.size < sizeof(struct cxl_block_header) + sizeof(struct cxl_free_block)) {
-//         pr_err("cxl_alloc: CXL pool is too small\n");
-//         return -EINVAL;
-//     }
-
-//     initial_block = (struct cxl_block_header *)cxl_pool.addr;
-//     initial_block->magic = CXL_BLOCK_MAGIC;
-//     initial_block->size = cxl_pool.size - sizeof(struct cxl_block_header);
-
-//     free_node = (struct cxl_free_block *)(initial_block + 1);
-//     list_add(&free_node->link, &cxl_pool.freelist);
-
-//     pr_info("cxl_alloc: Initialized. Pool VA: %p, Size: %zu MB\n",
-//             cxl_pool.addr, cxl_pool.size / (1024 * 1024));
-
-//     return 0;
-// }
-// EXPORT_SYMBOL(cxl_alloc_init); // Export for use in other modules!
-
-// --- Allocator exit ---
-// void cxl_alloc_exit(void)
-// {
-//     if (cxl_pool.addr) {
-//         memunmap(cxl_pool.addr);
-//         cxl_pool.addr = NULL;
-//     }
-//     pr_info("cxl_alloc: Allocator shut down.\n");
-// }
-// EXPORT_SYMBOL(cxl_alloc_exit); // Export for use in other modules!
-
 // --- Allocation/free ---
 void *cxl_malloc(size_t size)
 {
@@ -265,7 +226,7 @@ void *cxl_malloc(size_t size)
     struct cxl_free_block *free_block, *found_block = NULL;
     void *ptr = NULL;
     unsigned long flags;
-    size_t aligned_size = ALIGN(size, sizeof(void *));
+    size_t aligned_size = ALIGN(size, sizeof(void *)); // Align to pointer size
 
     // Return NULL if pool is not initialized
     if (!cxl_pool.addr) {
@@ -273,11 +234,14 @@ void *cxl_malloc(size_t size)
         return NULL;
     }
 
-    spin_lock_irqsave(&cxl_pool.lock, flags); // Protect freelist
+    spin_lock_irqsave(&cxl_pool.lock, flags); // Protect freelist from concurrent access
     
-    /* Search for a suitable free block */
+    /* Search for a suitable free block:
+    * It iterates the kernel linked list looking for the first block available that fits the request.
+    * To do so: a valid magic and a size at least as large as the aligned request.
+    */
     list_for_each_entry(free_block, &cxl_pool.freelist, link) {
-        hdr = (struct cxl_block_header *)free_block - 1;
+        hdr = (struct cxl_block_header *)free_block - 1; // Compute header pointer address of the candidate block
 
         /* Invalidate header cache to see updates from other hosts */
 		cxl_invalidate_region(hdr, sizeof(struct cxl_block_header));
@@ -302,7 +266,7 @@ void *cxl_malloc(size_t size)
 
         /*
 		 * CRITICAL: Mark block as allocated by updating header
-		 * and flush to ensure visibility across hosts
+		 * and flush to ensure visibility across hosts (cacheline.h)
 		 */
 		hdr->magic = CXL_BLOCK_MAGIC;  // Reconfirm magic - they may have changed
 		cxl_flush_and_sfence(hdr, sizeof(struct cxl_block_header));
@@ -320,7 +284,9 @@ EXPORT_SYMBOL(cxl_malloc);
 void cxl_free(void *ptr)
 {
     pr_info("cxl_free: Requesting free of memory at %p\n", ptr);
-    
+    // The goal of this function is to return a previously allocated block 
+    // to the CXL-backed pool and update local accounting and cross-host visibility.
+
     struct cxl_block_header *hdr;
     struct cxl_free_block *free_node;
     unsigned long flags;
@@ -338,10 +304,10 @@ void cxl_free(void *ptr)
         return;  // Not a CXL allocation, don't try to free it
     }
 
-    hdr = (struct cxl_block_header *)ptr - 1;
+    hdr = (struct cxl_block_header *)ptr - 1; // computes the block header 
 
     /* Invalidate to see current state */
-	cxl_invalidate_region(hdr, sizeof(struct cxl_block_header));
+	cxl_invalidate_region(hdr, sizeof(struct cxl_block_header)); // to observe any remote updates
 
     if (hdr->magic != CXL_BLOCK_MAGIC)
         return; 
