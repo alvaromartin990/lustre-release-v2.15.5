@@ -104,7 +104,7 @@ MODULE_PARM_DESC(dax_phys, "Physical base address of DAX region");
 
 // --- Internal structures ---
 #define CXL_BLOCK_MAGIC 0xDABBADF00DCAFEFEULL
-#define CXL_VMALLOC_MAGIC 0xCXL0CAFE
+#define CXL_VMALLOC_MAGIC 0xC0CAFE00DCAFEFEULL
 
 /**
  * struct cxl_block_header - Header for each allocated/free block
@@ -369,7 +369,7 @@ void *cxl_vmalloc(size_t size, gfp_t flags)
         return ptr;
     }
 
-    spin_lock_irqsave(&cxl_pool.lock, flags); // Protect freelist from concurrent access
+    spin_lock_irqsave(&cxl_pool.lock, irq_flags); // Protect freelist from concurrent access
 
     /* Search for a suitable free block */
     list_for_each_entry(free_block, &cxl_pool.freelist, link) {
