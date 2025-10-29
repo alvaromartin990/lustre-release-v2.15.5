@@ -468,6 +468,16 @@ void cxl_vfree(void *ptr)
 }
 EXPORT_SYMBOL(cxl_vfree);
 
+bool is_cxl_vmalloc_addr(void *ptr)
+{
+    if (!cxl_pool.addr)
+        return false;
+        
+    return (ptr >= cxl_pool.addr && 
+            ptr < (cxl_pool.addr + cxl_pool.size));
+}
+EXPORT_SYMBOL(is_cxl_vmalloc_addr);
+
 // --- Allocator Initialization ---
 int cxl_pool_init(void)
 {

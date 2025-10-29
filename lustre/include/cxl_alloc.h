@@ -33,6 +33,14 @@ void *cxl_vmalloc(size_t size, gfp_t flags);
 void cxl_vfree(void *ptr);
 
 /**
+ * is_cxl_vmalloc_addr() - Check if an address is from CXL vmalloc
+ * @ptr: Address to check
+ *
+ * Return: true if address is from CXL pool, false otherwise
+ */
+bool is_cxl_vmalloc_addr(void *ptr);
+
+/**
  * cxl_pool_init() - Initialize the CXL memory pool
  *
  * Maps the DAX device and initializes the allocator. Can be called
