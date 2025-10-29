@@ -957,7 +957,7 @@ do {                                                                          \
 do {									      \
 	OBD_CPT_ALLOC_GFP(ptr, cptab, cpt, size, GFP_NOFS | __GFP_NOWARN);    \
 	if (ptr == NULL)                                                      \
-		ptr = cxl_vmalloc(size);				      \
+		ptr = cxl_vmalloc(size, GFP_NOFS | __GFP_NOWARN);				      \
 } while (0)
 
 #ifdef CONFIG_DEBUG_SLAB
