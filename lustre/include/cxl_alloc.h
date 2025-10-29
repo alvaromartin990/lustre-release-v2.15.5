@@ -18,6 +18,21 @@ void *cxl_malloc(size_t size);
 void cxl_free(void *ptr);
 
 /**
+ * cxl_vmalloc() - Allocates a large block of memory from the CXL pool.
+ * @size: The number of bytes to allocate.
+ * @flags: GFP flags for allocation behavior.
+ *
+ * Returns a pointer to the allocated memory or NULL on failure.
+ */
+void *cxl_vmalloc(size_t size, gfp_t flags);
+
+/**
+ * cxl_vfree() - Frees a block of memory allocated by cxl_vmalloc().
+ * @ptr: A pointer to a block previously allocated by cxl_vmalloc().
+ */
+void cxl_vfree(void *ptr);
+
+/**
  * cxl_pool_init() - Initialize the CXL memory pool
  *
  * Maps the DAX device and initializes the allocator. Can be called
