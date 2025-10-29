@@ -30,6 +30,8 @@
 
 #include "cxl_alloc.h"
 
+// no need for cxl vmalloc nor cxl vfree fallbacks as they were already implemented within cxl_alloc.c
+
 /* CXL-aware allocation wrappers */
 #define CXL_KMALLOC(size, flags) cxl_malloc(size)
 #define CXL_KFREE(ptr) cxl_free(ptr)
@@ -907,16 +909,25 @@ do {									      \
  * (and particularly to not set __GFP_FS, which is likely to cause some
  * deadlock situations in our code).
  */
+
 #define __OBD_VMALLOC_VERBOSE(ptr, cptab, cpt, size)			      \
 do {									      \
-	(ptr) = cptab == NULL ?						      \
-		__ll_vmalloc(size, GFP_NOFS | __GFP_HIGHMEM | __GFP_ZERO) :   \
-		cfs_cpt_vzalloc(cptab, cpt, size);			      \
+	if (cptab) {							      \
+		(ptr) = cfs_cpt_vzalloc((cptab), (cpt), (size));	      \
+		if (unlikely((ptr) == NULL))				      \
+			(ptr) = cxl_vmalloc(size);			      \
+	} else {							      \
+		/* Prefer CXL-backed vmalloc, fall back to __ll_vmalloc */  \
+		(ptr) = cxl_vmalloc(size);				      \
+		if (unlikely((ptr) == NULL))				      \
+			(ptr) = __ll_vmalloc((size),			      \
+						 GFP_NOFS | __GFP_HIGHMEM | __GFP_ZERO); \
+	}								      \
 	if (unlikely((ptr) == NULL)) {                                        \
 		CERROR("vmalloc of '" #ptr "' (%d bytes) failed\n",           \
-		       (int)(size));                                          \
+			   (int)(size));                                          \
 		CERROR("%llu total bytes allocated by Lustre, %lld by LNET\n",\
-		       obd_memory_sum(), libcfs_kmem_read());\
+			   obd_memory_sum(), libcfs_kmem_read());               \
 	} else {                                                              \
 		OBD_ALLOC_POST(ptr, size, "vmalloced");                       \
 	}                                                                     \
@@ -934,7 +945,7 @@ do {                                                                          \
 		ptr = NULL;                                                   \
 	else								      \
 		OBD_ALLOC_GFP(ptr, size, GFP_NOFS | __GFP_NOWARN |	      \
-			      (((size) > PAGE_SIZE) ? __GFP_NORETRY : 0));    \
+				  (((size) > PAGE_SIZE) ? __GFP_NORETRY : 0));    \
 	if (ptr == NULL)                                                      \
 		OBD_VMALLOC(ptr, size);                                       \
 } while (0)
@@ -946,7 +957,7 @@ do {                                                                          \
 do {									      \
 	OBD_CPT_ALLOC_GFP(ptr, cptab, cpt, size, GFP_NOFS | __GFP_NOWARN);    \
 	if (ptr == NULL)                                                      \
-		OBD_CPT_VMALLOC(ptr, cptab, cpt, size);			      \
+		ptr = cxl_vmalloc(size);				      \
 } while (0)
 
 #ifdef CONFIG_DEBUG_SLAB
@@ -987,14 +998,24 @@ do {									\
 	}								\
 } while (0)
 
+/*
+ * MODIFIED: OBD_FREE_LARGE now handles both CXL vmalloc and regular vmalloc
+ * It checks if the address is from CXL pool or regular vmalloc
+ */
 #define OBD_FREE_LARGE(ptr, size)					      \
 do {									      \
 	if (is_vmalloc_addr(ptr)) {					      \
 		OBD_FREE_PRE(ptr, size, "vfreed");			      \
 		POISON(ptr, 0x5a, size);				      \
+		cxl_vfree(ptr);					      \
+		POISON_PTR(ptr);					      \
+	} else if (is_vmalloc_addr(ptr)) {
+		OBD_FREE_PRE(ptr, size, "vfreed");			      \
+		POISON(ptr, 0x5a, size);				      \
 		libcfs_vfree_atomic(ptr);				      \
 		POISON_PTR(ptr);					      \
-	} else {							      \
+	} else {
+		// regular free
 		OBD_FREE(ptr, size);					      \
 	}                                                                     \
 } while (0)
