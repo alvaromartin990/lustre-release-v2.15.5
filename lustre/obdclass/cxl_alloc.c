@@ -235,6 +235,10 @@ void *cxl_malloc(size_t size)
     }
 
     spin_lock_irqsave(&cxl_pool.lock, flags); // Protect freelist from concurrent access
+
+
+    // Dr. Ren adds memory barrier to ensure all writes complete
+    // __asm__ __volatile__("" ::: "memory");
     
     /* Search for a suitable free block:
     * It iterates the kernel linked list looking for the first block available that fits the request.
@@ -270,6 +274,8 @@ void *cxl_malloc(size_t size)
 		 */
 		hdr->magic = CXL_BLOCK_MAGIC;  // Reconfirm magic - they may have changed
 		cxl_flush_and_sfence(hdr, sizeof(struct cxl_block_header));
+        // Dr. Ren uses mfence here
+        // cxl_flush_and_mfence(found_block, sizeof(struct cxl_free_block));
 		atomic64_inc(&cxl_pool.flush_count);
     }
     // Release lock and return
@@ -330,6 +336,137 @@ void cxl_free(void *ptr)
 	atomic64_sub(hdr->size, &cxl_pool.bytes_allocated);
 }
 EXPORT_SYMBOL(cxl_free);
+
+void *cxl_vmalloc(size_t size)
+{
+    pr_info("cxl_vmalloc: Requesting allocation of size %zu\n", size);
+
+    struct cxl_block_header *hdr;
+    struct cxl_free_block *free_block, *found_block = NULL;
+    void *ptr = NULL;
+    unsigned long flags;
+    size_t aligned_size;
+
+    // The problem here is making sure that we align to page size so the allocation works (fits)
+    // For very large allocations, align to page boundary
+    if (size > PAGE_SIZE) {
+        aligned_size = PAGE_ALIGN(size);
+    } else {
+        aligned_size = ALIGN(size, sizeof(void *));
+    }
+
+    // check pool initialized
+    if (!cxl_pool.addr) {
+        pr_warn("cxl_vmalloc: Pool not initialized, falling back to vmalloc\n");
+        ptr = vmalloc(size);
+        if (ptr)
+            atomic64_inc(&cxl_pool.vmalloc_fallback_count);
+        return ptr;
+    }
+
+    spin_lock_irqsave(&cxl_pool.lock, flags); // Protect freelist from concurrent access
+
+    /* Search for a suitable free block */
+    list_for_each_entry(free_block, &cxl_pool.freelist, link) {
+        hdr = (struct cxl_block_header *)free_block - 1;
+
+        /* Invalidate header cache to see updates from other hosts */
+        cxl_invalidate_region(hdr, sizeof(struct cxl_block_header));
+
+        if (hdr->magic != CXL_BLOCK_MAGIC && hdr->magic != CXL_VMALLOC_MAGIC)
+            continue;
+        if (hdr->size >= aligned_size) {
+            found_block = free_block;
+            break;
+        }
+    }
+
+    // if found, remove from freelist and return
+    if (found_block) {
+        list_del(&found_block->link);
+        hdr = (struct cxl_block_header *)found_block - 1;
+        hdr->is_vmalloc = true;  // Mark as vmalloc-style allocation
+        ptr = (void *)(hdr + 1);
+
+        /* Update statistics */
+        atomic64_inc(&cxl_pool.vmalloc_count);
+        atomic64_add(aligned_size, &cxl_pool.bytes_allocated);
+
+        /* Mark block as allocated and flush for cross-host visibility */
+        hdr->magic = CXL_VMALLOC_MAGIC;
+        cxl_flush_and_sfence(hdr, sizeof(struct cxl_block_header)); // critical!!
+        atomic64_inc(&cxl_pool.flush_count);
+    }
+
+    spin_unlock_irqrestore(&cxl_pool.lock, flags);
+
+    /* If CXL allocation failed, fall back to system vmalloc */
+    if (!ptr) {
+        pr_info("cxl_vmalloc: CXL allocation failed, falling back to vmalloc\n");
+        ptr = vmalloc(size);
+        if (ptr)
+            atomic64_inc(&cxl_pool.vmalloc_fallback_count);
+    } else {
+        pr_info("cxl_vmalloc: Allocated %zu bytes at %p from CXL\n", size, ptr);
+    }
+
+    return ptr;
+}
+EXPORT_SYMBOL(cxl_vmalloc);
+
+void cxl_vfree(void *ptr)
+{
+    if (!ptr)
+        return;
+
+    pr_info("cxl_vfree: Freeing memory at %p\n", ptr);
+
+    struct cxl_block_header *hdr;
+    struct cxl_free_block *free_node;
+    unsigned long flags;
+
+    // Check if this is a CXL allocation
+    if (cxl_pool.addr && 
+        ptr >= cxl_pool.addr && 
+        ptr < (cxl_pool.addr + cxl_pool.size)) {
+        
+        /* This is a CXL allocation */
+        hdr = (struct cxl_block_header *)ptr - 1;
+        
+        /* Invalidate to see current state */
+        cxl_invalidate_region(hdr, sizeof(struct cxl_block_header)); // custom function for using fencing from cacheline.h
+        
+        if (hdr->magic != CXL_VMALLOC_MAGIC && hdr->magic != CXL_BLOCK_MAGIC) {
+            pr_warn("cxl_vfree: Invalid magic number at %p\n", ptr);
+            return;
+        }
+        free_node = (struct cxl_free_block *)ptr;
+        
+        spin_lock_irqsave(&cxl_pool.lock, flags);
+        list_add(&free_node->link, &cxl_pool.freelist);
+        spin_unlock_irqrestore(&cxl_pool.lock, flags);
+
+        /* Mark as free and flush for cross-host visibility */
+        hdr->magic = CXL_BLOCK_MAGIC;  // Reset to free block magic
+        hdr->is_vmalloc = false;
+
+        cxl_flush_and_sfence(free_node, sizeof(struct cxl_free_block)); // this first flush and sfence are critical to ensure freelist update is visible
+        cxl_flush_and_sfence(hdr, sizeof(struct cxl_block_header)); // this second flush and sfence are critical to ensure header update is visible
+        atomic64_add(2, &cxl_pool.flush_count);
+        
+        /* Update statistics */
+        atomic64_inc(&cxl_pool.free_count);
+        atomic64_sub(hdr->size, &cxl_pool.bytes_allocated);
+        
+        pr_info("cxl_vfree: Freed CXL memory at %p\n", ptr);
+    } else {
+        /* Not a CXL allocation, use standard vfree */
+        pr_info("cxl_vfree: Freeing non-CXL memory at %p using vfree\n", ptr);
+        vfree(ptr); 
+        pr_info("cxl_vfree: Freed system vmalloc memory at %p\n", ptr);
+    }
+}
+EXPORT_SYMBOL(cxl_vfree);
 
 // --- Allocator Initialization ---
 int cxl_pool_init(void)
