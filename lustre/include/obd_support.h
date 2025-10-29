@@ -1009,7 +1009,7 @@ do {									      \
 		POISON(ptr, 0x5a, size);				      \
 		cxl_vfree(ptr);					      \
 		POISON_PTR(ptr);					      \
-	} else if (is_vmalloc_atomic_addr(ptr)) {			      \
+	} else if (is_vmalloc_addr(ptr)) {			      \
 		OBD_FREE_PRE(ptr, size, "vfreed");			      \
 		POISON(ptr, 0x5a, size);				      \
 		libcfs_vfree_atomic(ptr);				      \
