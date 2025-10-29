@@ -1009,16 +1009,16 @@ do {									      \
 		POISON(ptr, 0x5a, size);				      \
 		cxl_vfree(ptr);					      \
 		POISON_PTR(ptr);					      \
-	} else if (is_vmalloc_addr(ptr)) {
+	} else if (is_vmalloc_atomic_addr(ptr)) {			      \
 		OBD_FREE_PRE(ptr, size, "vfreed");			      \
 		POISON(ptr, 0x5a, size);				      \
 		libcfs_vfree_atomic(ptr);				      \
 		POISON_PTR(ptr);					      \
-	} else {
-		// regular free
+	} else {							      \
 		OBD_FREE(ptr, size);					      \
 	}                                                                     \
 } while (0)
+
 
 #define OBD_FREE_PTR_ARRAY_LARGE(ptr, n)			\
 	OBD_FREE_LARGE(ptr, (n) * sizeof(*(ptr)))
