@@ -337,7 +337,7 @@ void cxl_free(void *ptr)
 }
 EXPORT_SYMBOL(cxl_free);
 
-void *cxl_vmalloc(size_t size)
+void *cxl_vmalloc(size_t size, gfp_t flags)
 {
     pr_info("cxl_vmalloc: Requesting allocation of size %zu\n", size);
 

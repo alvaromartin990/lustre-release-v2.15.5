@@ -911,14 +911,14 @@ do {									      \
  */
 
 #define __OBD_VMALLOC_VERBOSE(ptr, cptab, cpt, size)			      \
-do {									      \
+do {								      \
 	if (cptab) {							      \
 		(ptr) = cfs_cpt_vzalloc((cptab), (cpt), (size));	      \
 		if (unlikely((ptr) == NULL))				      \
-			(ptr) = cxl_vmalloc(size);			      \
+			(ptr) = cxl_vmalloc(size, GFP_NOFS | __GFP_HIGHMEM | __GFP_ZERO);			      \
 	} else {							      \
 		/* Prefer CXL-backed vmalloc, fall back to __ll_vmalloc */  \
-		(ptr) = cxl_vmalloc(size);				      \
+		(ptr) = cxl_vmalloc(size, GFP_NOFS | __GFP_HIGHMEM | __GFP_ZERO);				      \
 		if (unlikely((ptr) == NULL))				      \
 			(ptr) = __ll_vmalloc((size),			      \
 						 GFP_NOFS | __GFP_HIGHMEM | __GFP_ZERO); \
