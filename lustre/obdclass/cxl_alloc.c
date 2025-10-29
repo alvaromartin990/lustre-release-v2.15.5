@@ -12,6 +12,7 @@
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
 #include <asm/barrier.h>   // For memory barriers
+#include <linux/types.h>  // for bool
 
 #include "cxl_alloc.h"
 
@@ -103,6 +104,7 @@ MODULE_PARM_DESC(dax_phys, "Physical base address of DAX region");
 
 // --- Internal structures ---
 #define CXL_BLOCK_MAGIC 0xDABBADF00DCAFEFEULL
+#define CXL_VMALLOC_MAGIC 0xCXL0CAFE
 
 /**
  * struct cxl_block_header - Header for each allocated/free block
@@ -112,6 +114,7 @@ MODULE_PARM_DESC(dax_phys, "Physical base address of DAX region");
 struct cxl_block_header {
     u64 magic;
     size_t size;
+    bool is_vmalloc;
 };
 
 /**
@@ -144,6 +147,8 @@ static struct {
     atomic64_t bytes_allocated;
     atomic64_t fallback_count;  // Tracks kmalloc fallbacks
     atomic64_t flush_count;  // Track number of flush operations
+    atomic64_t vmalloc_count; // Tracks vmalloc allocations
+    atomic64_t vmalloc_fallback_count; // Tracks vmalloc fallbacks
 } cxl_pool;
 
 // --- sysfs interface --- this will helps userspace monitor the allocator
@@ -344,7 +349,7 @@ void *cxl_vmalloc(size_t size, gfp_t flags)
     struct cxl_block_header *hdr;
     struct cxl_free_block *free_block, *found_block = NULL;
     void *ptr = NULL;
-    unsigned long flags;
+    unsigned long irq_flags;
     size_t aligned_size;
 
     // The problem here is making sure that we align to page size so the allocation works (fits)
