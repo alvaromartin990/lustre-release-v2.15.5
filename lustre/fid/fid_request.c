@@ -420,35 +420,67 @@ void seq_client_init(struct lu_client_seq *seq,
 }
 EXPORT_SYMBOL(seq_client_init);
 
+/* 
+The fid_request.c file contains the core functions needed to support 
+the FID client functionality. 
+
+The module entry/exit points are fid_init() and fid_exit(), 
+but these functions just call debugfs_create_dir(...) and 
+debugfs_remove_recursive(...) to add/remove the necessary 
+debugfs entries. 
+
+The real initialization starts in the client_fid_init function. 
+This function is registered as part of the OBD operations 
+(struct obd_ops) to be invoked by the MDC and OSP subsystems. 
+The function’s main responsibility is to allocate memory for a 
+lu_client_seq structure which is then passed to seq_client_init(..) 
+(an abbreviated version of which is shown in Source Code 26) where 
+the structure is initialized. The cleanup routine starts in client_fid_fini(..) 
+which then calls seq_client_fini(..). These two functions decrement 
+the appropriate reference counts on other structures and free up the 
+memory allocated to the lu_client_seq structure. 
+*/
 int client_fid_init(struct obd_device *obd,
 		    struct obd_export *exp, enum lu_cli_type type)
 {
-	struct client_obd *cli = &obd->u.cli;
+	// OBD device needs a FID client, so initialize it by calling this function!
+	struct client_obd *cli = &obd->u.cli; // Get pointer to client_obd structure
 	char *prefix;
 	int rc = 0;
 	ENTRY;
 
-	down_write(&cli->cl_seq_rwsem);
-	OBD_ALLOC_PTR(cli->cl_seq);
-	if (!cli->cl_seq)
-		GOTO(out, rc = -ENOMEM);
+	printk(KERN_ALERT "client_fid_init called for obd device: %s\n", obd->obd_name);
 
-	OBD_ALLOC(prefix, MAX_OBD_NAME + 5);
+	down_write(&cli->cl_seq_rwsem); // Acquire write lock on cl_seq_rwsem to ensure exclusive access
+	OBD_ALLOC_PTR(cli->cl_seq); // Allocate memory for lu_client_seq structure
+	
+	// what's the diff between cli, cl_seq_rwsem, and cl_seq?
+	// cli is the client_obd structure for this OBD device
+	// cl_seq_rwsem is the read-write semaphore protecting access to cl_seq
+	// cl_seq is the pointer to the lu_client_seq structure for this client
+
+	if (!cli->cl_seq) {
+		printk(KERN_ALERT "Failed to allocate memory for lu_client_seq\n");
+		GOTO(out, rc = -ENOMEM);
+	}
+	
+	OBD_ALLOC(prefix, MAX_OBD_NAME + 5); // Allocate temporary string for naming
 	if (!prefix)
 		GOTO(out, rc = -ENOMEM);
 
-	snprintf(prefix, MAX_OBD_NAME + 5, "cli-%s", obd->obd_name);
+	snprintf(prefix, MAX_OBD_NAME + 5, "cli-%s", obd->obd_name); // prints "cli-" followed by obd name into prefix
 
 	/* Init client side sequence-manager */
-	seq_client_init(cli->cl_seq, exp, type, prefix, NULL);
+	seq_client_init(cli->cl_seq, exp, type, prefix, NULL); // pass lu_client_seq structure into seq_client_init for initialization
 	OBD_FREE(prefix, MAX_OBD_NAME + 5);
 
 out:
 	if (rc && cli->cl_seq) {
 		OBD_FREE_PTR(cli->cl_seq);
+		printk(KERN_ALERT "Freed memory for lu_client_seq due to error during initialization\n");
 		cli->cl_seq = NULL;
 	}
-	up_write(&cli->cl_seq_rwsem);
+	up_write(&cli->cl_seq_rwsem); // Release write lock on cl_seq_rwsem after mem has been freed up and struct initialized
 
 	RETURN(rc);
 }

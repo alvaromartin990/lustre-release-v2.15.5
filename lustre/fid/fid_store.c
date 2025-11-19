@@ -202,7 +202,7 @@ int seq_store_init(struct lu_server_seq *seq,
 	attr.la_mode = S_IFREG | 0666;
 	dof.dof_type = DFT_REGULAR;
 
-	dt_obj = dt_find_or_create(env, dt, &fid, &dof, &attr);
+	dt_obj = dt_find_or_create(env, dt, &fid, &dof, &attr); // In the future, our goal is to store this into cxl memory
 	if (!IS_ERR(dt_obj)) {
 		seq->lss_obj = dt_obj;
 		seq->lss_dev = dt;

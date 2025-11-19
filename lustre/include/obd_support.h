@@ -884,6 +884,7 @@ do {									      \
 	if (likely((ptr) != NULL))					      \
 		OBD_ALLOC_POST((ptr), (size), "kmalloced");		      \
 } while (0)
+// first identify the data object goes into cxl memory - which of them go into cxl meomory 
 
 #define OBD_ALLOC_GFP(ptr, size, gfp_mask)				      \
 	__OBD_MALLOC_VERBOSE(ptr, NULL, 0, size, gfp_mask)

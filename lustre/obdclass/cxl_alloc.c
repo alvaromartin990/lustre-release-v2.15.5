@@ -292,6 +292,25 @@ void *cxl_malloc(size_t size)
 }
 EXPORT_SYMBOL(cxl_malloc);
 
+
+// distinguish by type
+// those from mdt to mem to persistent storage
+// others are not relevant 
+// the onces that go into persistent storage - only move the actual inode, not all of them
+// the allocation is being done across differnt files - inode object must be allocated differntly, not all of them 
+// not every instruction kmalloc/malloc/vmalloc needs to be replaced by cxl malloc
+
+// step 1
+// find the data object really is file metadata need to be persist in storage
+// find inode create or the function in charge of doing so
+// find where it uses malloc
+    // replace that with cxl_malloc - no flushing or fencing in this one
+
+// step 2 - go back to where the inode has been crated
+// write inode code must contain the cxl flushing and fencing
+
+
+
 void cxl_free(void *ptr)
 {
     pr_info("cxl_free: Requesting free of memory at %p\n", ptr);

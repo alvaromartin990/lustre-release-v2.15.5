@@ -38,6 +38,7 @@ struct fld_cache *fld_cache_init(const char *name, int cache_size,
 	LASSERT(name != NULL);
 	LASSERT(cache_threshold < cache_size);
 
+	printk(KERN_ALERT "Creating FLD cache: %s, size: %d, threshold: %d\n", name, cache_size, cache_threshold);
 	OBD_ALLOC_PTR(cache);
 	if (cache == NULL)
 		RETURN(ERR_PTR(-ENOMEM));
@@ -48,12 +49,17 @@ struct fld_cache *fld_cache_init(const char *name, int cache_size,
 	cache->fci_cache_count = 0;
 	rwlock_init(&cache->fci_lock);
 
+	// In case of using a CXL device, we might want to allocate this struct in CXL memory.
+	
+	printk(KERN_ALERT "Using strscpy, within fld_cache_init, to copy name to cache->fci_name\n");
 	strscpy(cache->fci_name, name, sizeof(cache->fci_name));
 
 	cache->fci_cache_size = cache_size;
 	cache->fci_threshold = cache_threshold;
 
 	/* Init fld cache info. */
+	// In case of using a CXL device, we might want to allocate this struct in CXL memory.
+	printk(KERN_ALERT "Using memset, within fld_cache_init, to zero out cache->fci_stat\n");
 	memset(&cache->fci_stat, 0, sizeof(cache->fci_stat));
 
 	CDEBUG(D_INFO, "%s: FLD cache - Size: %d, Threshold: %d\n",
