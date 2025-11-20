@@ -40,17 +40,23 @@ struct fld_cache *fld_cache_init(const char *name, int cache_size,
 	LASSERT(name != NULL);
 	LASSERT(cache_threshold < cache_size);
 
-	printk(KERN_ALERT "Creating FLD cache: %s, size: %d, threshold: %d\n", name, cache_size, cache_threshold);
-	printk(KERN_ALERT "FLD cache struct size: %zu bytes\n", sizeof(struct fld_cache));
+	printk(KERN_ALERT "FLD_CACHE: Creating FLD cache: %s, size: %d, threshold: %d\n", name, cache_size, cache_threshold);
+	printk(KERN_ALERT "FLD_CACHE: FLD cache struct size: %zu bytes\n", sizeof(struct fld_cache));
+	printk(KERN_ALERT "FLD_CACHE: Safe Testing Mode Enabled\n");
 	
 	/* Allocate FLD cache structure using mmap-backed DRAM */
-	cache = (struct fld_cache *)vm_mmap(NULL, 0, sizeof(struct fld_cache),
-					    PROT_READ | PROT_WRITE,
-					    MAP_PRIVATE | MAP_ANONYMOUS, 0);
-	if (IS_ERR(cache)) {
-		printk(KERN_ALERT "Failed to mmap FLD cache structure\n");
-		RETURN(cache);
-	}
+	u64 start_cache = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache mmap_alloc fld_cache size=%zu time=%llu\n", 
+	       sizeof(struct fld_cache), start_cache);
+	// cache = (struct fld_cache *)vm_mmap(NULL, 0, sizeof(struct fld_cache), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	OBD_ALLOC_PTR(cache);
+	u64 end_cache = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache mmap_alloc fld_cache duration=%llu time=%llu\n",
+	       end_cache - start_cache, end_cache);
+	// if (IS_ERR(cache)) {
+	// 	printk(KERN_ALERT "Failed to mmap FLD cache structure\n");
+	// 	RETURN(cache);
+	// }
 	printk(KERN_ALERT "FLD cache mmap allocated at %p, size %zu bytes\n", cache, sizeof(struct fld_cache));
 	
 	/* Clear the mmap'd memory */
@@ -77,7 +83,7 @@ struct fld_cache *fld_cache_init(const char *name, int cache_size,
 
 	CDEBUG(D_INFO, "%s: FLD cache - Size: %d, Threshold: %d\n",
 	       cache->fci_name, cache_size, cache_threshold);
-	printk(KERN_ALERT "FLD cache init complete: %s at %p, max_entries=%d\n", 
+	printk(KERN_ALERT "FLD_CACHE: FLD cache init complete: %s at %p, max_entries=%d\n", 
 	       cache->fci_name, cache, cache_size);
 
 	RETURN(cache);
@@ -95,11 +101,16 @@ void fld_cache_fini(struct fld_cache *cache)
 	CDEBUG(D_INFO, "  Cache reqs: %llu\n", cache->fci_stat.fst_cache);
 	CDEBUG(D_INFO, "  Total reqs: %llu\n", cache->fci_stat.fst_count);
 
-	printk(KERN_ALERT "FLD cache cleanup: %s, final_entries=%d\n", 
+	printk(KERN_ALERT "FLD_CACHE: FLD cache cleanup: %s, final_entries=%d\n", 
 	       cache->fci_name, cache->fci_cache_count);
 	/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
+	u64 start_cache_unmap = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache munmap fld_cache size=%zu time=%llu\n",
+	       sizeof(struct fld_cache), start_cache_unmap);
 	vm_munmap((unsigned long)cache, sizeof(struct fld_cache));
-	printk(KERN_ALERT "FLD cache %p unmapped (%zu bytes)\n", cache, sizeof(struct fld_cache));
+	u64 end_cache_unmap = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache munmap fld_cache duration=%llu time=%llu\n",
+	       end_cache_unmap - start_cache_unmap, end_cache_unmap);
 }
 
 /**
@@ -111,9 +122,15 @@ static void fld_cache_entry_delete(struct fld_cache *cache,
 	list_del(&node->fce_list);
 	list_del(&node->fce_lru);
 	cache->fci_cache_count--;
-	printk(KERN_ALERT "FLD entry deleted: %p, cache_count now %d\n", node, cache->fci_cache_count);
+	printk(KERN_ALERT "FLD_CACHE: FLD entry deleted: %p, cache_count now %d\n", node, cache->fci_cache_count);
 	/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
+	u64 start_entry_unmap = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache entry_delete munmap fld_cache_entry size=%zu time=%llu\n",
+	       sizeof(struct fld_cache_entry), start_entry_unmap);
 	vm_munmap((unsigned long)node, sizeof(struct fld_cache_entry));
+	u64 end_entry_unmap = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache entry_delete munmap fld_cache_entry duration=%llu time=%llu\n",
+	       end_entry_unmap - start_entry_unmap, end_entry_unmap);
 }
 
 /**
@@ -268,9 +285,15 @@ static void fld_cache_punch_hole(struct fld_cache *cache,
 
 	ENTRY;
 	/* Allocate cache entry using mmap-backed DRAM */
+	u64 start_punch = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache punch_hole mmap_alloc fld_cache_entry size=%zu time=%llu\n", 
+	       sizeof(struct fld_cache_entry), start_punch);
 	fldt = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
 						 PROT_READ | PROT_WRITE,
 						 MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	u64 end_punch = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache punch_hole mmap_alloc fld_cache_entry duration=%llu time=%llu\n",
+	       end_punch - start_punch, end_punch);
 	if (IS_ERR(fldt)) {
 		printk(KERN_ALERT "FLD punch_hole mmap failed, freeing f_new %p\n", f_new);
 		vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
@@ -376,16 +399,22 @@ struct fld_cache_entry
 
 	LASSERT(lu_seq_range_is_sane(range));
 
-	printk(KERN_ALERT "FLD entry_create: entry_size=%zu bytes\n", sizeof(struct fld_cache_entry));
+	printk(KERN_ALERT "FLD_CACHE: FLD entry_create: entry_size=%zu bytes\n", sizeof(struct fld_cache_entry));
 	/* Allocate cache entry using mmap-backed DRAM */
+	u64 start_create = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache entry_create mmap_alloc fld_cache_entry size=%zu time=%llu\n", 
+	       sizeof(struct fld_cache_entry), start_create);
 	f_new = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
 						  PROT_READ | PROT_WRITE,
 						  MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	u64 end_create = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache entry_create mmap_alloc fld_cache_entry duration=%llu time=%llu\n",
+	       end_create - start_create, end_create);
 	if (IS_ERR(f_new)) {
 		printk(KERN_ALERT "Failed to mmap FLD cache entry\n");
 		RETURN(f_new);
 	}
-	printk(KERN_ALERT "FLD entry created: %p (%zu bytes), seq_range [%llu-%llu]\n", 
+	printk(KERN_ALERT "FLD_CACHE: FLD entry created: %p (%zu bytes), seq_range [%llu-%llu]\n", 
 	       f_new, sizeof(struct fld_cache_entry), range->lsr_start, range->lsr_end);
 	
 	/* Clear the mmap'd memory and initialize */
@@ -515,7 +544,7 @@ int fld_cache_lookup(struct fld_cache *cache,
 
 	cache->fci_stat.fst_count++;
 	if ((cache->fci_stat.fst_count % 100) == 0) {
-		printk(KERN_ALERT "FLD lookup stats: %s total_reqs=%llu cache_hits=%llu entries=%d\n",
+		printk(KERN_ALERT "FLD_CACHE: FLD lookup stats: %s total_reqs=%llu cache_hits=%llu entries=%d\n",
 		       cache->fci_name, cache->fci_stat.fst_count, 
 		       cache->fci_stat.fst_cache, cache->fci_cache_count);
 	}

@@ -235,7 +235,7 @@ void *cxl_malloc(size_t size)
 
     // Return NULL if pool is not initialized
     if (!cxl_pool.addr) {
-        pr_warn("cxl_malloc: Pool not initialized\n");
+        // pr_warn("cxl_malloc: Pool not initialized\n");
         return NULL;
     }
 
@@ -381,7 +381,7 @@ void *cxl_vmalloc(size_t size, gfp_t flags)
 
     // check pool initialized
     if (!cxl_pool.addr) {
-        pr_warn("cxl_vmalloc: Pool not initialized, falling back to vmalloc\n");
+        // pr_warn("cxl_vmalloc: Pool not initialized, falling back to vmalloc\n");
         ptr = vmalloc(size);
         if (ptr)
             atomic64_inc(&cxl_pool.vmalloc_fallback_count);
