@@ -456,9 +456,16 @@ int client_fid_init(struct obd_device *obd,
 	down_write(&cli->cl_seq_rwsem); // Acquire write lock on cl_seq_rwsem to ensure exclusive access
 	
 	// Allocate memory for lu_client_seq structure using mmap-backed DRAM
-	cli->cl_seq = (struct lu_client_seq *)vm_mmap(NULL, 0, sizeof(struct lu_client_seq),
-							      PROT_READ | PROT_WRITE,
-							      MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	u64 start_time = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_START: fid_request mmap_alloc lu_client_seq size=%zu time=%llu\n", 
+	       sizeof(struct lu_client_seq), start_time);
+	// cli->cl_seq = (struct lu_client_seq *)vm_mmap(NULL, 0, sizeof(struct lu_client_seq),
+	// 						      PROT_READ | PROT_WRITE,
+	// 						      MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	OBD_ALLOC_PTR(cli->cl_seq);
+	u64 end_time = ktime_get_ns();
+	printk(KERN_ALERT "DRAM_TIMING_END: fid_request mmap_alloc lu_client_seq duration=%llu time=%llu\n",
+	       end_time - start_time, end_time);
 	if (IS_ERR(cli->cl_seq)) {
 		printk(KERN_ALERT "Failed to mmap memory for lu_client_seq\n");
 		cli->cl_seq = NULL;
@@ -483,8 +490,13 @@ int client_fid_init(struct obd_device *obd,
 
 out:
 	if (rc && cli->cl_seq) {
+		u64 start_unmap = ktime_get_ns();
+		printk(KERN_ALERT "DRAM_TIMING_START: fid_request munmap lu_client_seq size=%zu time=%llu\n",
+		       sizeof(struct lu_client_seq), start_unmap);
 		vm_munmap((unsigned long)cli->cl_seq, sizeof(struct lu_client_seq));
-		printk(KERN_ALERT "Unmapped memory for lu_client_seq due to error during initialization\n");
+		u64 end_unmap = ktime_get_ns();
+		printk(KERN_ALERT "DRAM_TIMING_END: fid_request munmap lu_client_seq duration=%llu time=%llu\n",
+		       end_unmap - start_unmap, end_unmap);
 		cli->cl_seq = NULL;
 	}
 	up_write(&cli->cl_seq_rwsem); // Release write lock on cl_seq_rwsem after mem has been freed up and struct initialized
@@ -501,7 +513,13 @@ int client_fid_fini(struct obd_device *obd)
 	down_write(&cli->cl_seq_rwsem);
 	if (cli->cl_seq) {
 		seq_client_fini(cli->cl_seq);
+		u64 start_fini_unmap = ktime_get_ns();
+		printk(KERN_ALERT "DRAM_TIMING_START: fid_request fini_munmap lu_client_seq size=%zu time=%llu\n",
+		       sizeof(struct lu_client_seq), start_fini_unmap);
 		vm_munmap((unsigned long)cli->cl_seq, sizeof(struct lu_client_seq));
+		u64 end_fini_unmap = ktime_get_ns();
+		printk(KERN_ALERT "DRAM_TIMING_END: fid_request fini_munmap lu_client_seq duration=%llu time=%llu\n",
+		       end_fini_unmap - start_fini_unmap, end_fini_unmap);
 		cli->cl_seq = NULL;
 	}
 	up_write(&cli->cl_seq_rwsem);
