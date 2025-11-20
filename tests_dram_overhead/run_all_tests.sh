@@ -4,6 +4,11 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LUSTRE_MOUNT="/mnt/lustre"
+# Fallback to tmp for testing if Lustre not available
+if [ ! -d "$LUSTRE_MOUNT" ] || [ ! -w "$LUSTRE_MOUNT" ]; then
+    LUSTRE_MOUNT="/tmp"
+    echo "Warning: Using $LUSTRE_MOUNT instead of Lustre for testing"
+fi
 RESULTS_DIR="$SCRIPT_DIR/results_$(date +%Y%m%d_%H%M%S)"
 SUMMARY_FILE="$RESULTS_DIR/test_summary.txt"
 
@@ -79,7 +84,7 @@ function run_test() {
         # Move CSV result file if it exists
         for csv_file in *.csv; do
             if [ -f "$csv_file" ] && [[ "$csv_file" == *"results.csv" ]]; then
-                mv "$csv_file" "${test_name}_${csv_file}"
+                mv "$csv_file" "${test_name}_results.csv"
             fi
         done
         
@@ -108,9 +113,9 @@ function generate_combined_results() {
     local combined_csv="combined_results.csv"
     echo "test_name,timestamp,operation,iteration,latency_ns,details,errors" > "$combined_csv"
     
-    for csv_file in *_*results.csv; do
+    for csv_file in *_results.csv; do
         if [ -f "$csv_file" ]; then
-            local test_name=$(echo "$csv_file" | sed 's/_.*results.csv$//')
+            local test_name=$(echo "$csv_file" | sed 's/_results.csv$//')
             # Skip header and add test name prefix
             tail -n +2 "$csv_file" | sed "s/^/$test_name,/" >> "$combined_csv"
         fi
@@ -129,9 +134,9 @@ function print_summary_statistics() {
     echo "" >> "$SUMMARY_FILE"
     echo "=== SUMMARY STATISTICS ===" >> "$SUMMARY_FILE"
     
-    for csv_file in *_*results.csv; do
+    for csv_file in *_results.csv; do
         if [ -f "$csv_file" ]; then
-            local test_name=$(echo "$csv_file" | sed 's/_.*results.csv$//')
+            local test_name=$(echo "$csv_file" | sed 's/_results.csv$//')
             echo "" >> "$SUMMARY_FILE"
             echo "--- $test_name ---" >> "$SUMMARY_FILE"
             

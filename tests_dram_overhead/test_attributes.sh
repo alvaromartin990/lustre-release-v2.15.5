@@ -3,6 +3,11 @@
 set -e
 
 LUSTRE_MOUNT="/mnt/lustre"
+# Fallback to tmp for testing if Lustre not available
+if [ ! -d "$LUSTRE_MOUNT" ] || [ ! -w "$LUSTRE_MOUNT" ]; then
+    LUSTRE_MOUNT="/tmp"
+    echo "Warning: Using $LUSTRE_MOUNT instead of Lustre for testing"
+fi
 TEST_DIR="$LUSTRE_MOUNT/dram_test_attrs"
 NUM_FILES=200
 NUM_ATTR_OPS=1000

@@ -313,6 +313,13 @@ def main():
     df = load_combined_results(results_dir)
     print(f"Loaded {len(df)} data points from {df['test_name'].nunique()} test types")
     
+    if len(df) == 0:
+        print("No test data found. Check that:")
+        print("1. Test scripts completed successfully")
+        print("2. CSV files were generated")
+        print("3. Combined results file exists")
+        sys.exit(1)
+    
     # Generate plots
     print("Generating latency distribution plots...")
     plot_latency_distributions(df, output_dir)
