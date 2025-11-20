@@ -225,7 +225,7 @@ EXPORT_SYMBOL(cxl_track_fallback);
 // --- Allocation/free ---
 void *cxl_malloc(size_t size)
 {
-    pr_info("cxl_malloc: Requesting allocation of size %zu\n", size);
+    // pr_info("cxl_malloc: Requesting allocation of size %zu\n", size);
     
     struct cxl_block_header *hdr;
     struct cxl_free_block *free_block, *found_block = NULL;
@@ -286,7 +286,7 @@ void *cxl_malloc(size_t size)
     // Release lock and return
     spin_unlock_irqrestore(&cxl_pool.lock, flags); 
 
-    pr_info("cxl_malloc: Allocated %zu bytes at %p\n", size, ptr);
+    // pr_info("cxl_malloc: Allocated %zu bytes at %p\n", size, ptr);
 
     return ptr;
 }
@@ -313,7 +313,7 @@ EXPORT_SYMBOL(cxl_malloc);
 
 void cxl_free(void *ptr)
 {
-    pr_info("cxl_free: Requesting free of memory at %p\n", ptr);
+    // pr_info("cxl_free: Requesting free of memory at %p\n", ptr);
     // The goal of this function is to return a previously allocated block 
     // to the CXL-backed pool and update local accounting and cross-host visibility.
 
@@ -363,7 +363,7 @@ EXPORT_SYMBOL(cxl_free);
 
 void *cxl_vmalloc(size_t size, gfp_t flags)
 {
-    pr_info("cxl_vmalloc: Requesting allocation of size %zu\n", size);
+    // pr_info("cxl_vmalloc: Requesting allocation of size %zu\n", size);
 
     struct cxl_block_header *hdr;
     struct cxl_free_block *free_block, *found_block = NULL;
@@ -443,7 +443,7 @@ void cxl_vfree(void *ptr)
     if (!ptr)
         return;
 
-    pr_info("cxl_vfree: Freeing memory at %p\n", ptr);
+    // pr_info("cxl_vfree: Freeing memory at %p\n", ptr);
 
     struct cxl_block_header *hdr;
     struct cxl_free_block *free_node;
