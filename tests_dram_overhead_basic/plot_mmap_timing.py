@@ -24,10 +24,17 @@ def load_timing_data(filename="mmap_timing_results.csv"):
         with open(filename, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                if row['duration_ns'].strip() and row['duration_ns'] != 'duration_ns':
+                # Skip empty rows or header duplicates
+                if not row['duration_ns'].strip():
+                    continue
+                try:
                     row['duration_ns'] = float(row['duration_ns'])
-                    row['size_bytes'] = int(row['size_bytes']) if row['size_bytes'] else 0
+                    row['size_bytes'] = int(row['size_bytes']) if row['size_bytes'].strip() else 0
                     data.append(row)
+                except (ValueError, TypeError) as e:
+                    print(f"Skipping invalid row: {row} - {e}")
+                    continue
+        print(f"Debug: Loaded {len(data)} rows from CSV")
         return data
     except FileNotFoundError:
         print(f"Error: {filename} not found")
