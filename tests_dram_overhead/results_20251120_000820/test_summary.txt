@@ -1,0 +1,34 @@
+Test run started at Thu Nov 20 12:08:20 AM EST 2025
+Lustre mount point: /mnt/lustre
+Results directory: /home/cc/lustre-release-v2.15.5/tests_dram_overhead/results_20251120_000820
+
+Test: file_creation
+Started: Thu Nov 20 12:08:20 AM EST 2025
+Completed: Thu Nov 20 12:11:08 AM EST 2025
+Duration: 168s
+Status: SUCCESS
+
+Test: attributes
+Started: Thu Nov 20 12:11:10 AM EST 2025
+Completed: Thu Nov 20 12:14:49 AM EST 2025
+Duration: 219s
+Status: SUCCESS
+
+Test: lookups
+Started: Thu Nov 20 12:14:51 AM EST 2025
+Completed: Thu Nov 20 12:28:47 AM EST 2025
+Duration: 836s
+Status: SUCCESS
+
+
+=== SUMMARY STATISTICS ===
+
+--- combined ---
+Total operations: 0
+Total errors: 0
+
+--- lookups ---
+Total operations: 0
+Total errors: 0
+
+Test run completed at Thu Nov 20 12:28:49 AM EST 2025
