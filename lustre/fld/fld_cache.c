@@ -504,7 +504,8 @@ int fld_cache_insert(struct fld_cache *cache,
 	if (rc) {
 		printk(KERN_ALERT "FLD cache_insert failed, freeing entry %p\n", flde);
 		/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
-		vm_munmap((unsigned long)flde, sizeof(struct fld_cache_entry));
+		// vm_munmap((unsigned long)flde, sizeof(struct fld_cache_entry));
+		OBD_FREE_PTR(flde);
 	} else {
 		printk(KERN_ALERT "FLD cache_insert success: cache %s now has %d entries\n", 
 		       cache->fci_name, cache->fci_cache_count);
