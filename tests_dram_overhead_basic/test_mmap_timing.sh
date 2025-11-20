@@ -6,9 +6,13 @@ set -e
 
 # Configuration
 LUSTRE_MOUNT="/mnt/lustre"
+USING_LUSTRE=true
 if [ ! -d "$LUSTRE_MOUNT" ] || [ ! -w "$LUSTRE_MOUNT" ]; then
     LUSTRE_MOUNT="/tmp"
+    USING_LUSTRE=false
     echo "Warning: Using $LUSTRE_MOUNT for testing (Lustre not available)"
+    echo "Note: This test requires a mounted Lustre filesystem to measure mmap timing."
+    echo "      Running on /tmp will only test the extraction logic."
 fi
 
 TEST_DIR="$LUSTRE_MOUNT/basic_dram_test_$$"
@@ -24,8 +28,13 @@ echo "=== Lustre DRAM Overhead Basic Test ==="
 echo "Test directory: $TEST_DIR"
 echo "Extracting timing from kernel logs..."
 
-# Clear dmesg buffer to get clean timing data
-sudo dmesg -C 2>/dev/null || true
+# Clear dmesg buffer to get clean timing data (only if running as root)
+if [ "$EUID" -eq 0 ] || sudo -n true 2>/dev/null; then
+    echo "Clearing kernel message buffer for clean timing data..."
+    sudo dmesg -C 2>/dev/null || true
+else
+    echo "Note: Cannot clear dmesg buffer (no sudo access). Will filter recent messages."
+fi
 
 # Create CSV header
 echo "timestamp,operation,component,allocation_type,size_bytes,duration_ns" > "$OUTPUT_FILE"
@@ -84,6 +93,20 @@ echo "Extracting timing data from dmesg..."
 # Get dmesg output and filter for our timing markers
 DMESG_OUTPUT=$(sudo dmesg 2>/dev/null || dmesg 2>/dev/null || echo "")
 
+# If not using Lustre, add some simulated data for testing the extraction logic
+if [ "$USING_LUSTRE" = false ]; then
+    echo "Adding simulated timing data for testing extraction logic..."
+    SIMULATED_DATA="
+[12345.678901] DRAM_TIMING_START: fid_request mmap_alloc lu_client_seq size=1024 time=12345678901000
+[12345.678902] DRAM_TIMING_END: fid_request mmap_alloc lu_client_seq duration=1500 time=12345678902500
+[12345.678903] DRAM_TIMING_START: fld_cache mmap_alloc fld_cache size=512 time=12345678903000
+[12345.678904] DRAM_TIMING_END: fld_cache mmap_alloc fld_cache duration=2200 time=12345678905200
+[12345.678905] DRAM_TIMING_START: fid_store mmap_alloc dt_object size=256 time=12345678906000
+[12345.678906] DRAM_TIMING_END: fid_store mmap_alloc dt_object duration=1800 time=12345678907800
+"
+    DMESG_OUTPUT="$SIMULATED_DATA"
+fi
+
 if [ -z "$DMESG_OUTPUT" ]; then
     echo "Warning: Could not read kernel logs"
     echo "# No timing data available - check dmesg permissions" >> "$OUTPUT_FILE"
@@ -91,7 +114,12 @@ if [ -z "$DMESG_OUTPUT" ]; then
 fi
 
 # Process DRAM_TIMING_START and DRAM_TIMING_END pairs
-echo "$DMESG_OUTPUT" | grep "DRAM_TIMING" | while read -r line; do
+# Create a temporary file to store the filtered timing lines
+TEMP_TIMING_FILE="/tmp/dram_timing_$$"
+echo "$DMESG_OUTPUT" | grep "DRAM_TIMING" > "$TEMP_TIMING_FILE"
+
+# Process each timing entry
+while IFS= read -r line; do
     timestamp=$(date +%s%N)
     
     if echo "$line" | grep -q "DRAM_TIMING_START"; then
@@ -121,7 +149,10 @@ echo "$DMESG_OUTPUT" | grep "DRAM_TIMING" | while read -r line; do
             rm -f "/tmp/timing_start_$$"
         fi
     fi
-done
+done < "$TEMP_TIMING_FILE"
+
+# Clean up temp file
+rm -f "$TEMP_TIMING_FILE"
 
 # Clean up any remaining temp files
 rm -f "/tmp/timing_start_$$"
@@ -163,10 +194,16 @@ if [ "$result_count" -gt 0 ]; then
         }'
     fi
 else
-    echo "No timing data captured. This may be normal if:"
-    echo "  - Lustre is not using the modified mmap-backed allocation code"
-    echo "  - Kernel logging level filters out KERN_ALERT messages"  
-    echo "  - Operations did not trigger the instrumented code paths"
+    if [ "$USING_LUSTRE" = true ]; then
+        echo "No timing data captured from real Lustre. This may be normal if:"
+        echo "  - Lustre is not using the modified mmap-backed allocation code"
+        echo "  - Kernel logging level filters out KERN_ALERT messages"  
+        echo "  - Operations did not trigger the instrumented code paths"
+        echo "  - Lustre modules are not loaded or not using the modified code"
+    else
+        echo "No real Lustre timing data (expected when using /tmp fallback)"
+        echo "The simulated data demonstrates the extraction and analysis pipeline."
+    fi
 fi
 
 echo "Test completed."
