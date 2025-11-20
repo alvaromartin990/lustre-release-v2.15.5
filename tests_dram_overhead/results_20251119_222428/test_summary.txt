@@ -1,0 +1,82 @@
+Test run started at Wed Nov 19 10:24:28 PM EST 2025
+Lustre mount point: /mnt/lustre
+Results directory: /home/cc/lustre-release-v2.15.5/tests_dram_overhead/results_20251119_222428
+
+Test: file_creation
+Started: Wed Nov 19 10:24:28 PM EST 2025
+Completed: Wed Nov 19 10:27:46 PM EST 2025
+Duration: 198s
+Status: SUCCESS
+
+Test: directory_creation
+Started: Wed Nov 19 10:27:48 PM EST 2025
+Completed: Wed Nov 19 10:31:05 PM EST 2025
+Duration: 197s
+Status: SUCCESS
+
+Test: attributes
+Started: Wed Nov 19 10:31:07 PM EST 2025
+Completed: Wed Nov 19 10:34:03 PM EST 2025
+Duration: 176s
+Status: SUCCESS
+
+Test: lookups
+Started: Wed Nov 19 10:34:05 PM EST 2025
+Completed: Wed Nov 19 10:47:10 PM EST 2025
+Duration: 785s
+Status: SUCCESS
+
+Test: fid_stress
+Started: Wed Nov 19 10:47:12 PM EST 2025
+Completed: Wed Nov 19 10:56:46 PM EST 2025
+Duration: 574s
+Status: SUCCESS
+
+Test: fld_cache
+Started: Wed Nov 19 10:56:48 PM EST 2025
+Completed: Wed Nov 19 11:11:38 PM EST 2025
+Duration: 890s
+Status: SUCCESS
+
+Test: repeated_metadata
+Started: Wed Nov 19 11:11:40 PM EST 2025
+Completed: Wed Nov 19 11:26:27 PM EST 2025
+Duration: 887s
+Status: SUCCESS
+
+
+=== SUMMARY STATISTICS ===
+
+--- combined ---
+Total operations: 0
+Total errors: 0
+
+--- repeated ---
+Total operations: 0
+Total errors: 0
+
+--- repeated ---
+Total operations: 0
+Total errors: 0
+
+--- repeated ---
+Total operations: 0
+Total errors: 0
+
+--- repeated ---
+Total operations: 0
+Total errors: 0
+
+--- repeated ---
+Total operations: 0
+Total errors: 0
+
+--- repeated ---
+Total operations: 0
+Total errors: 0
+
+--- repeated ---
+Total operations: 0
+Total errors: 0
+
+Test run completed at Wed Nov 19 11:26:29 PM EST 2025

@@ -1,0 +1,16 @@
+Starting attribute operations overhead test at Wed Nov 19 10:31:07 PM EST 2025
+Lustre mount: /mnt/lustre
+Test directory: /mnt/lustre/dram_test_attrs
+Setting up test files...
+Testing stat() operations...
+Stat operations: 67883ms total, 67883μs avg
+Testing extended attributes...
+Extended attribute operations completed
+Testing chmod/chown operations...
+Permission/timestamp operations completed
+Testing directory listing operations...
+Directory listing operations completed
+
+=== Attribute Operations Test Results ===
+Results saved to: attributes_results.csv
+
