@@ -107,7 +107,8 @@ void fld_cache_fini(struct fld_cache *cache)
 	u64 start_cache_unmap = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache munmap fld_cache size=%zu time=%llu\n",
 	       sizeof(struct fld_cache), start_cache_unmap);
-	vm_munmap((unsigned long)cache, sizeof(struct fld_cache));
+	// vm_munmap((unsigned long)cache, sizeof(struct fld_cache));
+	OBD_FREE_PTR(cache);
 	u64 end_cache_unmap = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache munmap fld_cache duration=%llu time=%llu\n",
 	       end_cache_unmap - start_cache_unmap, end_cache_unmap);
@@ -127,7 +128,8 @@ static void fld_cache_entry_delete(struct fld_cache *cache,
 	u64 start_entry_unmap = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache entry_delete munmap fld_cache_entry size=%zu time=%llu\n",
 	       sizeof(struct fld_cache_entry), start_entry_unmap);
-	vm_munmap((unsigned long)node, sizeof(struct fld_cache_entry));
+	// vm_munmap((unsigned long)node, sizeof(struct fld_cache_entry));
+	OBD_FREE_PTR(node);
 	u64 end_entry_unmap = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache entry_delete munmap fld_cache_entry duration=%llu time=%llu\n",
 	       end_entry_unmap - start_entry_unmap, end_entry_unmap);
@@ -288,15 +290,17 @@ static void fld_cache_punch_hole(struct fld_cache *cache,
 	u64 start_punch = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache punch_hole mmap_alloc fld_cache_entry size=%zu time=%llu\n", 
 	       sizeof(struct fld_cache_entry), start_punch);
-	fldt = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
-						 PROT_READ | PROT_WRITE,
-						 MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	// fldt = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
+	// 					 PROT_READ | PROT_WRITE,
+	// 					 MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	OBD_ALLOC_GFP(fldt, sizeof(*fldt), GFP_ATOMIC);
 	u64 end_punch = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache punch_hole mmap_alloc fld_cache_entry duration=%llu time=%llu\n",
 	       end_punch - start_punch, end_punch);
 	if (IS_ERR(fldt)) {
 		printk(KERN_ALERT "FLD punch_hole mmap failed, freeing f_new %p\n", f_new);
-		vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
+		// vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
+		OBD_FREE_PTR(f_new);
 		EXIT;
 		/* overlap is not allowed, so dont mess up list. */
 		return;
@@ -348,7 +352,8 @@ static void fld_cache_overlap_handle(struct fld_cache *cache,
 						new_end);
 
 		/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
-		vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
+		// vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
+		OBD_FREE_PTR(f_new);
 		fld_fix_new_list(cache);
 
 	} else if (new_start <= f_curr->fce_range.lsr_start &&
@@ -359,7 +364,8 @@ static void fld_cache_overlap_handle(struct fld_cache *cache,
 
 		f_curr->fce_range = *range;
 		/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
-		vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
+		// vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
+		OBD_FREE_PTR(f_new);
 		fld_fix_new_list(cache);
 
 	} else if (f_curr->fce_range.lsr_start < new_start &&
@@ -404,9 +410,8 @@ struct fld_cache_entry
 	u64 start_create = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache entry_create mmap_alloc fld_cache_entry size=%zu time=%llu\n", 
 	       sizeof(struct fld_cache_entry), start_create);
-	f_new = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
-						  PROT_READ | PROT_WRITE,
-						  MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	// f_new = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	OBD_ALLOC_PTR(f_new);
 	u64 end_create = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache entry_create mmap_alloc fld_cache_entry duration=%llu time=%llu\n",
 	       end_create - start_create, end_create);
@@ -418,7 +423,7 @@ struct fld_cache_entry
 	       f_new, sizeof(struct fld_cache_entry), range->lsr_start, range->lsr_end);
 	
 	/* Clear the mmap'd memory and initialize */
-	memset(f_new, 0, sizeof(struct fld_cache_entry));
+	// memset(f_new, 0, sizeof(struct fld_cache_entry));
 	f_new->fce_range = *range;
 	RETURN(f_new);
 }
