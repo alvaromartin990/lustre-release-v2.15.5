@@ -20,6 +20,8 @@
 #include <linux/err.h>
 #include <linux/module.h>
 #include <linux/delay.h>
+#include <linux/mm.h>
+#include <linux/mman.h>
 #include <obd.h>
 #include <obd_class.h>
 #include <obd_support.h>
@@ -452,8 +454,11 @@ int client_fid_init(struct obd_device *obd,
 	printk(KERN_ALERT "client_fid_init called for obd device: %s\n", obd->obd_name);
 
 	down_write(&cli->cl_seq_rwsem); // Acquire write lock on cl_seq_rwsem to ensure exclusive access
-	OBD_ALLOC_PTR(cli->cl_seq); // Allocate memory for lu_client_seq structure
 	
+	// Allocate memory for lu_client_seq structure using mmap-backed DRAM
+	cli->cl_seq = (struct lu_client_seq *)vm_mmap(NULL, 0, sizeof(struct lu_client_seq),
+							      PROT_READ | PROT_WRITE,
+							      MAP_PRIVATE | MAP_ANONYMOUS, 0);
 	if (IS_ERR(cli->cl_seq)) {
 		printk(KERN_ALERT "Failed to mmap memory for lu_client_seq\n");
 		cli->cl_seq = NULL;
@@ -464,11 +469,6 @@ int client_fid_init(struct obd_device *obd,
 	// cli is the client_obd structure for this OBD device
 	// cl_seq_rwsem is the read-write semaphore protecting access to cl_seq
 	// cl_seq is the pointer to the lu_client_seq structure for this client
-
-	if (!cli->cl_seq) {
-		printk(KERN_ALERT "Failed to allocate memory for lu_client_seq\n");
-		GOTO(out, rc = -ENOMEM);
-	}
 
 	
 	OBD_ALLOC(prefix, MAX_OBD_NAME + 5); // Allocate temporary string for naming
@@ -483,8 +483,8 @@ int client_fid_init(struct obd_device *obd,
 
 out:
 	if (rc && cli->cl_seq) {
-		OBD_FREE_PTR(cli->cl_seq);
-		printk(KERN_ALERT "Freed memory for lu_client_seq due to error during initialization\n");
+		vm_munmap((unsigned long)cli->cl_seq, sizeof(struct lu_client_seq));
+		printk(KERN_ALERT "Unmapped memory for lu_client_seq due to error during initialization\n");
 		cli->cl_seq = NULL;
 	}
 	up_write(&cli->cl_seq_rwsem); // Release write lock on cl_seq_rwsem after mem has been freed up and struct initialized
@@ -501,7 +501,7 @@ int client_fid_fini(struct obd_device *obd)
 	down_write(&cli->cl_seq_rwsem);
 	if (cli->cl_seq) {
 		seq_client_fini(cli->cl_seq);
-		OBD_FREE_PTR(cli->cl_seq);
+		vm_munmap((unsigned long)cli->cl_seq, sizeof(struct lu_client_seq));
 		cli->cl_seq = NULL;
 	}
 	up_write(&cli->cl_seq_rwsem);

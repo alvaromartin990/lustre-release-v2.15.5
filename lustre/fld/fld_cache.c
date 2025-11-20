@@ -21,6 +21,8 @@
 #include <libcfs/libcfs.h>
 #include <linux/module.h>
 #include <linux/math64.h>
+#include <linux/mm.h>
+#include <linux/mman.h>
 #include <obd_support.h>
 #include <lustre_fld.h>
 #include "fld_internal.h"
@@ -39,9 +41,20 @@ struct fld_cache *fld_cache_init(const char *name, int cache_size,
 	LASSERT(cache_threshold < cache_size);
 
 	printk(KERN_ALERT "Creating FLD cache: %s, size: %d, threshold: %d\n", name, cache_size, cache_threshold);
-	OBD_ALLOC_PTR(cache);
-	if (cache == NULL)
-		RETURN(ERR_PTR(-ENOMEM));
+	printk(KERN_ALERT "FLD cache struct size: %zu bytes\n", sizeof(struct fld_cache));
+	
+	/* Allocate FLD cache structure using mmap-backed DRAM */
+	cache = (struct fld_cache *)vm_mmap(NULL, 0, sizeof(struct fld_cache),
+					    PROT_READ | PROT_WRITE,
+					    MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	if (IS_ERR(cache)) {
+		printk(KERN_ALERT "Failed to mmap FLD cache structure\n");
+		RETURN(cache);
+	}
+	printk(KERN_ALERT "FLD cache mmap allocated at %p, size %zu bytes\n", cache, sizeof(struct fld_cache));
+	
+	/* Clear the mmap'd memory */
+	memset(cache, 0, sizeof(struct fld_cache));
 
 	INIT_LIST_HEAD(&cache->fci_entries_head);
 	INIT_LIST_HEAD(&cache->fci_lru);
@@ -64,6 +77,8 @@ struct fld_cache *fld_cache_init(const char *name, int cache_size,
 
 	CDEBUG(D_INFO, "%s: FLD cache - Size: %d, Threshold: %d\n",
 	       cache->fci_name, cache_size, cache_threshold);
+	printk(KERN_ALERT "FLD cache init complete: %s at %p, max_entries=%d\n", 
+	       cache->fci_name, cache, cache_size);
 
 	RETURN(cache);
 }
@@ -80,7 +95,11 @@ void fld_cache_fini(struct fld_cache *cache)
 	CDEBUG(D_INFO, "  Cache reqs: %llu\n", cache->fci_stat.fst_cache);
 	CDEBUG(D_INFO, "  Total reqs: %llu\n", cache->fci_stat.fst_count);
 
-	OBD_FREE_PTR(cache);
+	printk(KERN_ALERT "FLD cache cleanup: %s, final_entries=%d\n", 
+	       cache->fci_name, cache->fci_cache_count);
+	/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
+	vm_munmap((unsigned long)cache, sizeof(struct fld_cache));
+	printk(KERN_ALERT "FLD cache %p unmapped (%zu bytes)\n", cache, sizeof(struct fld_cache));
 }
 
 /**
@@ -92,7 +111,9 @@ static void fld_cache_entry_delete(struct fld_cache *cache,
 	list_del(&node->fce_list);
 	list_del(&node->fce_lru);
 	cache->fci_cache_count--;
-	OBD_FREE_PTR(node);
+	printk(KERN_ALERT "FLD entry deleted: %p, cache_count now %d\n", node, cache->fci_cache_count);
+	/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
+	vm_munmap((unsigned long)node, sizeof(struct fld_cache_entry));
 }
 
 /**
@@ -175,6 +196,9 @@ static inline void fld_cache_entry_add(struct fld_cache *cache,
 	list_add(&f_new->fce_lru, &cache->fci_lru);
 
 	cache->fci_cache_count++;
+	printk(KERN_ALERT "FLD entry_add: %p added, cache_count=%d, est_footprint=%zu bytes\n",
+	       f_new, cache->fci_cache_count, 
+	       cache->fci_cache_count * sizeof(struct fld_cache_entry) + sizeof(struct fld_cache));
 	fld_fix_new_list(cache);
 }
 
@@ -206,6 +230,9 @@ static int fld_cache_shrink(struct fld_cache *cache)
 
 	CDEBUG(D_INFO, "%s: FLD cache - Shrunk by %d entries\n",
 	       cache->fci_name, num);
+	printk(KERN_ALERT "FLD cache_shrink: %s evicted %d entries, remaining=%d, est_footprint=%zu bytes\n",
+	       cache->fci_name, num, cache->fci_cache_count,
+	       cache->fci_cache_count * sizeof(struct fld_cache_entry) + sizeof(struct fld_cache));
 
 	RETURN(0);
 }
@@ -240,13 +267,20 @@ static void fld_cache_punch_hole(struct fld_cache *cache,
 	struct fld_cache_entry *fldt;
 
 	ENTRY;
-	OBD_ALLOC_GFP(fldt, sizeof(*fldt), GFP_ATOMIC);
-	if (!fldt) {
-		OBD_FREE_PTR(f_new);
+	/* Allocate cache entry using mmap-backed DRAM */
+	fldt = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
+						 PROT_READ | PROT_WRITE,
+						 MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	if (IS_ERR(fldt)) {
+		printk(KERN_ALERT "FLD punch_hole mmap failed, freeing f_new %p\n", f_new);
+		vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
 		EXIT;
 		/* overlap is not allowed, so dont mess up list. */
 		return;
 	}
+	printk(KERN_ALERT "FLD punch_hole: allocated fldt %p (%zu bytes)\n", fldt, sizeof(struct fld_cache_entry));
+	/* Clear the mmap'd memory */
+	memset(fldt, 0, sizeof(struct fld_cache_entry));
 	/*  break f_curr RANGE into three RANGES:
 	 *        f_curr, f_new , fldt
 	 */
@@ -290,7 +324,8 @@ static void fld_cache_overlap_handle(struct fld_cache *cache,
 		f_curr->fce_range.lsr_end = max(f_curr->fce_range.lsr_end,
 						new_end);
 
-		OBD_FREE_PTR(f_new);
+		/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
+		vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
 		fld_fix_new_list(cache);
 
 	} else if (new_start <= f_curr->fce_range.lsr_start &&
@@ -300,7 +335,8 @@ static void fld_cache_overlap_handle(struct fld_cache *cache,
 		 */
 
 		f_curr->fce_range = *range;
-		OBD_FREE_PTR(f_new);
+		/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
+		vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
 		fld_fix_new_list(cache);
 
 	} else if (f_curr->fce_range.lsr_start < new_start &&
@@ -340,10 +376,20 @@ struct fld_cache_entry
 
 	LASSERT(lu_seq_range_is_sane(range));
 
-	OBD_ALLOC_PTR(f_new);
-	if (!f_new)
-		RETURN(ERR_PTR(-ENOMEM));
-
+	printk(KERN_ALERT "FLD entry_create: entry_size=%zu bytes\n", sizeof(struct fld_cache_entry));
+	/* Allocate cache entry using mmap-backed DRAM */
+	f_new = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
+						  PROT_READ | PROT_WRITE,
+						  MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	if (IS_ERR(f_new)) {
+		printk(KERN_ALERT "Failed to mmap FLD cache entry\n");
+		RETURN(f_new);
+	}
+	printk(KERN_ALERT "FLD entry created: %p (%zu bytes), seq_range [%llu-%llu]\n", 
+	       f_new, sizeof(struct fld_cache_entry), range->lsr_start, range->lsr_end);
+	
+	/* Clear the mmap'd memory and initialize */
+	memset(f_new, 0, sizeof(struct fld_cache_entry));
 	f_new->fce_range = *range;
 	RETURN(f_new);
 }
@@ -397,9 +443,12 @@ int fld_cache_insert_nolock(struct fld_cache *cache,
 		prev = head;
 
 	CDEBUG(D_INFO, "insert range "DRANGE"\n", PRANGE(&f_new->fce_range));
+	printk(KERN_ALERT "FLD insert_nolock: adding entry %p, cache_count will be %d\n", 
+	       f_new, cache->fci_cache_count + 1);
 	/* Add new entry to cache and lru list. */
 	fld_cache_entry_add(cache, f_new, prev);
 out:
+	printk(KERN_ALERT "FLD insert_nolock complete: cache_count=%d\n", cache->fci_cache_count);
 	RETURN(0);
 }
 
@@ -413,11 +462,19 @@ int fld_cache_insert(struct fld_cache *cache,
 	if (IS_ERR(flde))
 		RETURN(PTR_ERR(flde));
 
+	printk(KERN_ALERT "FLD cache_insert: attempting insert of %p into cache %s\n", 
+	       flde, cache->fci_name);
 	write_lock(&cache->fci_lock);
 	rc = fld_cache_insert_nolock(cache, flde);
 	write_unlock(&cache->fci_lock);
-	if (rc)
-		OBD_FREE_PTR(flde);
+	if (rc) {
+		printk(KERN_ALERT "FLD cache_insert failed, freeing entry %p\n", flde);
+		/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
+		vm_munmap((unsigned long)flde, sizeof(struct fld_cache_entry));
+	} else {
+		printk(KERN_ALERT "FLD cache_insert success: cache %s now has %d entries\n", 
+		       cache->fci_name, cache->fci_cache_count);
+	}
 
 	RETURN(rc);
 }
@@ -457,6 +514,11 @@ int fld_cache_lookup(struct fld_cache *cache,
 	head = &cache->fci_entries_head;
 
 	cache->fci_stat.fst_count++;
+	if ((cache->fci_stat.fst_count % 100) == 0) {
+		printk(KERN_ALERT "FLD lookup stats: %s total_reqs=%llu cache_hits=%llu entries=%d\n",
+		       cache->fci_name, cache->fci_stat.fst_count, 
+		       cache->fci_stat.fst_cache, cache->fci_cache_count);
+	}
 	list_for_each_entry(flde, head, fce_list) {
 		if (flde->fce_range.lsr_start > seq) {
 			if (prev != NULL)
