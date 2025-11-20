@@ -22,8 +22,6 @@
 #include <obd_support.h>
 #include <lustre_fid.h>
 #include <lustre_fld.h>
-#include <linux/mm.h>
-#include <linux/mman.h>
 #include "fid_internal.h"
 
 static struct lu_buf *seq_store_buf(struct seq_thread_info *info)
@@ -183,38 +181,37 @@ int seq_store_init(struct lu_server_seq *seq,
 		   const struct lu_env *env,
 		   struct dt_device *dt)
 {
+	struct dt_object *dt_obj;
+	struct lu_fid fid;
+	struct lu_attr attr;
+	struct dt_object_format dof;
 	const char *name;
-	size_t mmap_size;
 	int rc;
 	ENTRY;
 
 	name = seq->lss_type == LUSTRE_SEQ_SERVER ?
 		LUSTRE_SEQ_SRV_NAME : LUSTRE_SEQ_CTL_NAME;
 
-	/* Calculate size needed for sequence storage simulation in DRAM */
-	mmap_size = sizeof(struct dt_object) + sizeof(struct lu_seq_range);
+	if (seq->lss_type == LUSTRE_SEQ_SERVER)
+		lu_local_obj_fid(&fid, FID_SEQ_SRV_OID);
+	else
+		lu_local_obj_fid(&fid, FID_SEQ_CTL_OID);
 
-	/* Allocate mmap-backed DRAM instead of persistent storage */
-	seq->lss_obj = (struct dt_object *)vm_mmap(NULL, 0, mmap_size,
-							   PROT_READ | PROT_WRITE,
-							   MAP_PRIVATE | MAP_ANONYMOUS, 0);
-	if (IS_ERR(seq->lss_obj)) {
-		CERROR("%s: Can't mmap memory for \"%s\" obj %d\n",
-		       seq->lss_name, name, (int)PTR_ERR(seq->lss_obj));
-		rc = PTR_ERR(seq->lss_obj);
-		seq->lss_obj = NULL;
-		RETURN(rc);
+	memset(&attr, 0, sizeof(attr));
+	attr.la_valid = LA_MODE;
+	attr.la_mode = S_IFREG | 0666;
+	dof.dof_type = DFT_REGULAR;
+
+	dt_obj = dt_find_or_create(env, dt, &fid, &dof, &attr); // In the future, our goal is to store this into cxl memory
+	if (!IS_ERR(dt_obj)) {
+		seq->lss_obj = dt_obj;
+		seq->lss_dev = dt;
+		rc = 0;
+	} else {
+		CERROR("%s: Can't find \"%s\" obj %d\n",
+		       seq->lss_name, name, (int)PTR_ERR(dt_obj));
+		rc = PTR_ERR(dt_obj);
 	}
-
-	/* Store the mmap size for later munmap */
-	*((size_t *)((char *)seq->lss_obj + sizeof(struct dt_object))) = mmap_size;
-
-	/* Set device pointer for compatibility */
-	seq->lss_dev = dt;
-	rc = 0;
-
-	CDEBUG(D_INFO, "%s: Allocated mmap-backed DRAM for \"%s\" obj\n",
-	       seq->lss_name, name);
 
 	RETURN(rc);
 }
@@ -224,14 +221,8 @@ void seq_store_fini(struct lu_server_seq *seq, const struct lu_env *env)
 	ENTRY;
 
 	if (seq->lss_obj) {
-		if (!IS_ERR(seq->lss_obj)) {
-			/* Retrieve the mmap size stored during init */
-			size_t mmap_size = *((size_t *)((char *)seq->lss_obj + sizeof(struct dt_object)));
-			
-			/* Unmap the mmap-backed DRAM instead of dt_object_put */
-			vm_munmap((unsigned long)seq->lss_obj, mmap_size);
-			CDEBUG(D_INFO, "%s: Unmapped mmap-backed DRAM storage\n", seq->lss_name);
-		}
+		if (!IS_ERR(seq->lss_obj))
+			dt_object_put(env, seq->lss_obj);
 		seq->lss_obj = NULL;
 	}
 
