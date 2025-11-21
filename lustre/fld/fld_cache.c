@@ -291,8 +291,8 @@ static void fld_cache_punch_hole(struct fld_cache *cache,
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache punch_hole mmap_alloc fld_cache_entry size=%zu time=%llu\n", 
 	       sizeof(struct fld_cache_entry), start_punch);
 	// fldt = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
-						 PROT_READ | PROT_WRITE,
-						 MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	// 					 PROT_READ | PROT_WRITE,
+	// 					 MAP_PRIVATE | MAP_ANONYMOUS, 0);
 	OBD_ALLOC_GFP(fldt, sizeof(*fldt), GFP_ATOMIC);
 	u64 end_punch = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache punch_hole mmap_alloc fld_cache_entry duration=%llu time=%llu\n",
