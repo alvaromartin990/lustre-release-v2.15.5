@@ -128,8 +128,8 @@ static void fld_cache_entry_delete(struct fld_cache *cache,
 	u64 start_entry_unmap = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache entry_delete munmap fld_cache_entry size=%zu time=%llu\n",
 	       sizeof(struct fld_cache_entry), start_entry_unmap);
-	vm_munmap((unsigned long)node, sizeof(struct fld_cache_entry));
-	// OBD_FREE_PTR(node);
+	// vm_munmap((unsigned long)node, sizeof(struct fld_cache_entry));
+	OBD_FREE_PTR(node);
 	u64 end_entry_unmap = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache entry_delete munmap fld_cache_entry duration=%llu time=%llu\n",
 	       end_entry_unmap - start_entry_unmap, end_entry_unmap);
@@ -290,10 +290,10 @@ static void fld_cache_punch_hole(struct fld_cache *cache,
 	u64 start_punch = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache punch_hole mmap_alloc fld_cache_entry size=%zu time=%llu\n", 
 	       sizeof(struct fld_cache_entry), start_punch);
-	// fldt = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
-	// 					 PROT_READ | PROT_WRITE,
-	// 					 MAP_PRIVATE | MAP_ANONYMOUS, 0);
-	OBD_ALLOC_GFP(fldt, sizeof(*fldt), GFP_ATOMIC);
+	fldt = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
+						 PROT_READ | PROT_WRITE,
+						 MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	// OBD_ALLOC_GFP(fldt, sizeof(*fldt), GFP_ATOMIC);
 	u64 end_punch = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache punch_hole mmap_alloc fld_cache_entry duration=%llu time=%llu\n",
 	       end_punch - start_punch, end_punch);
@@ -410,8 +410,8 @@ struct fld_cache_entry
 	u64 start_create = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache entry_create mmap_alloc fld_cache_entry size=%zu time=%llu\n", 
 	       sizeof(struct fld_cache_entry), start_create);
-	f_new = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0);
-	// OBD_ALLOC_PTR(f_new);
+	// f_new = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	OBD_ALLOC_PTR(f_new);
 	u64 end_create = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache entry_create mmap_alloc fld_cache_entry duration=%llu time=%llu\n",
 	       end_create - start_create, end_create);
