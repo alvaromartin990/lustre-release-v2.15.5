@@ -290,10 +290,10 @@ static void fld_cache_punch_hole(struct fld_cache *cache,
 	u64 start_punch = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache punch_hole mmap_alloc fld_cache_entry size=%zu time=%llu\n", 
 	       sizeof(struct fld_cache_entry), start_punch);
-	fldt = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
+	// fldt = (struct fld_cache_entry *)vm_mmap(NULL, 0, sizeof(struct fld_cache_entry),
 						 PROT_READ | PROT_WRITE,
 						 MAP_PRIVATE | MAP_ANONYMOUS, 0);
-	// OBD_ALLOC_GFP(fldt, sizeof(*fldt), GFP_ATOMIC);
+	OBD_ALLOC_GFP(fldt, sizeof(*fldt), GFP_ATOMIC);
 	u64 end_punch = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache punch_hole mmap_alloc fld_cache_entry duration=%llu time=%llu\n",
 	       end_punch - start_punch, end_punch);
@@ -352,8 +352,8 @@ static void fld_cache_overlap_handle(struct fld_cache *cache,
 						new_end);
 
 		/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
-		// vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
-		OBD_FREE_PTR(f_new);
+		vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
+		// OBD_FREE_PTR(f_new);
 		fld_fix_new_list(cache);
 
 	} else if (new_start <= f_curr->fce_range.lsr_start &&
@@ -364,8 +364,8 @@ static void fld_cache_overlap_handle(struct fld_cache *cache,
 
 		f_curr->fce_range = *range;
 		/* Unmap the mmap-backed DRAM instead of OBD_FREE_PTR */
-		// vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
-		OBD_FREE_PTR(f_new);
+		vm_munmap((unsigned long)f_new, sizeof(struct fld_cache_entry));
+		// OBD_FREE_PTR(f_new);
 		fld_fix_new_list(cache);
 
 	} else if (f_curr->fce_range.lsr_start < new_start &&
