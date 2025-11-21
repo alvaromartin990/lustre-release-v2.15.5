@@ -48,15 +48,15 @@ struct fld_cache *fld_cache_init(const char *name, int cache_size,
 	u64 start_cache = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache mmap_alloc fld_cache size=%zu time=%llu\n", 
 	       sizeof(struct fld_cache), start_cache);
-	// cache = (struct fld_cache *)vm_mmap(NULL, 0, sizeof(struct fld_cache), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0);
-	OBD_ALLOC_PTR(cache);
+	cache = (struct fld_cache *)vm_mmap(NULL, 0, sizeof(struct fld_cache), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0);
+	//OBD_ALLOC_PTR(cache);
 	u64 end_cache = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache mmap_alloc fld_cache duration=%llu time=%llu\n",
 	       end_cache - start_cache, end_cache);
-	// if (IS_ERR(cache)) {
-	// 	printk(KERN_ALERT "Failed to mmap FLD cache structure\n");
-	// 	RETURN(cache);
-	// }
+	if (IS_ERR(cache)) {
+		printk(KERN_ALERT "Failed to mmap FLD cache structure\n");
+		RETURN(cache);
+	}
 	printk(KERN_ALERT "FLD cache mmap allocated at %p, size %zu bytes\n", cache, sizeof(struct fld_cache));
 	
 	/* Clear the mmap'd memory */
@@ -107,8 +107,8 @@ void fld_cache_fini(struct fld_cache *cache)
 	u64 start_cache_unmap = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_START: fld_cache munmap fld_cache size=%zu time=%llu\n",
 	       sizeof(struct fld_cache), start_cache_unmap);
-	// vm_munmap((unsigned long)cache, sizeof(struct fld_cache));
-	OBD_FREE_PTR(cache);
+	vm_munmap((unsigned long)cache, sizeof(struct fld_cache));
+	// OBD_FREE_PTR(cache);
 	u64 end_cache_unmap = ktime_get_ns();
 	printk(KERN_ALERT "DRAM_TIMING_END: fld_cache munmap fld_cache duration=%llu time=%llu\n",
 	       end_cache_unmap - start_cache_unmap, end_cache_unmap);
