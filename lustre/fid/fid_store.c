@@ -25,7 +25,9 @@
 #include <linux/mm.h>
 #include <linux/mman.h>
 #include "fid_internal.h"
+#include "fid_cxl_alloc.h"
 
+#if 0
 static struct lu_buf *seq_store_buf(struct seq_thread_info *info)
 {
 	struct lu_buf *buf;
@@ -77,72 +79,42 @@ static int seq_update_cb_add(struct thandle *th, struct lu_server_seq *seq)
 		OBD_FREE_PTR(ccb);
 	return rc;
 }
+#endif
 
 /* This function implies that caller takes care about locking. */
 int seq_store_update(const struct lu_env *env, struct lu_server_seq *seq,
 		     struct lu_seq_range *out, int sync)
 {
-	struct dt_device *dt_dev = lu2dt_dev(seq->lss_obj->do_lu.lo_dev);
 	struct seq_thread_info *info;
-	struct thandle *th;
-	loff_t pos = 0;
-	int rc;
-
-	if (dt_dev->dd_rdonly)
-		RETURN(0);
+	int rc = 0;
 
 	info = lu_context_key_get(&env->le_ctx, &seq_thread_key);
 	LASSERT(info != NULL);
 
-	th = dt_trans_create(env, dt_dev);
-	if (IS_ERR(th))
-		RETURN(PTR_ERR(th));
-
 	/* Store ranges in le format. */
 	range_cpu_to_le(&info->sti_space, &seq->lss_space);
 
-	rc = dt_declare_record_write(env, seq->lss_obj,
-				     seq_store_buf(info), 0, th);
-	if (rc)
+	/* Write directly to CXL memory */
+	if (seq->lss_obj) {
+		// Why memcpy instead of fid_cxl_alloc? 
+		// fid_cxl_alloc is used for allocation, not for writing.
+		// https://stackoverflow.com/questions/1536006/what-is-the-difference-between-memset-and-memcpy-in-c
+		memcpy((void *)seq->lss_obj, &info->sti_space, sizeof(struct lu_seq_range)); // memcpy is used for writing by copying the data from one location to another
+		// copies the first sizeof(struct lu_seq_range) bytes of the memory area src to memory area dest
+		
+		/* Flush and fence to ensure persistence */
+		flush_region_and_sfence((void *)seq->lss_obj, sizeof(struct lu_seq_range));
+	} else {
+		rc = -EINVAL;
 		GOTO(exit, rc);
-
-	if (out) {
-		rc = fld_declare_server_create(env,
-					       seq->lss_site->ss_server_fld,
-					       out, th);
-		if (rc)
-			GOTO(exit, rc);
 	}
 
-	rc = dt_trans_start_local(env, dt_dev, th);
-	if (rc)
-		GOTO(exit, rc);
+	// if (out) {
+	// 	pr_info("[CXL_FID]: Updating FLD server\n");
+	// 	rc = fld_server_create(env, seq->lss_site->ss_server_fld, out, NULL);
+	// }
 
-	rc = dt_record_write(env, seq->lss_obj, seq_store_buf(info), &pos, th);
-	if (rc) {
-		CERROR("%s: Can't write space data, rc %d\n",
-		       seq->lss_name, rc);
-		GOTO(exit, rc);
-	} else if (out) {
-		rc = fld_server_create(env, seq->lss_site->ss_server_fld, out,
-				       th);
-		if (rc) {
-			CERROR("%s: Can't Update fld database, rc %d\n",
-				seq->lss_name, rc);
-			GOTO(exit, rc);
-		}
-	}
-	/*
-	 * next sequence update will need sync until this update is committed
-	 * in case of sync operation this is not needed obviously
-	 */
-	if (!sync)
-		/* if callback can't be added then sync always */
-		sync = !!seq_update_cb_add(th, seq);
-
-	th->th_sync |= sync;
 exit:
-	dt_trans_stop(env, dt_dev, th);
 	return rc;
 }
 
@@ -154,26 +126,25 @@ int seq_store_read(struct lu_server_seq *seq,
 		   const struct lu_env *env)
 {
 	struct seq_thread_info *info;
-	loff_t pos = 0;
 	int rc;
 	ENTRY;
 
 	info = lu_context_key_get(&env->le_ctx, &seq_thread_key);
 	LASSERT(info != NULL);
 
-	rc = dt_read(env, seq->lss_obj, seq_store_buf(info), &pos);
-
-	if (rc == sizeof(info->sti_space)) {
+	/* Read directly from CXL memory */
+	if (seq->lss_obj) {
+		/* Invalidate cache region to ensure we read latest data from CXL */
+		invalidate_region(seq->lss_obj, sizeof(struct lu_seq_range));
+		
+		memcpy(&info->sti_space, (void *)seq->lss_obj, sizeof(struct lu_seq_range));
+		
 		range_le_to_cpu(&seq->lss_space, &info->sti_space);
 		CDEBUG(D_INFO, "%s: Space - "DRANGE"\n",
 		       seq->lss_name, PRANGE(&seq->lss_space));
 		rc = 0;
-	} else if (rc == 0) {
-		rc = -ENODATA;
-	} else if (rc > 0) {
-		CERROR("%s: Read only %d bytes of %d\n", seq->lss_name,
-		       rc, (int)sizeof(info->sti_space));
-		rc = -EIO;
+	} else {
+		rc = -EINVAL;
 	}
 
 	RETURN(rc);
@@ -183,38 +154,44 @@ int seq_store_init(struct lu_server_seq *seq,
 		   const struct lu_env *env,
 		   struct dt_device *dt)
 {
-	const char *name;
-	size_t mmap_size;
 	int rc;
 	ENTRY;
 
-	name = seq->lss_type == LUSTRE_SEQ_SERVER ?
-		LUSTRE_SEQ_SRV_NAME : LUSTRE_SEQ_CTL_NAME;
-
-	/* Calculate size needed for sequence storage simulation in DRAM */
-	mmap_size = sizeof(struct dt_object) + sizeof(struct lu_seq_range);
-
-	/* Allocate mmap-backed DRAM instead of persistent storage */
-	seq->lss_obj = (struct dt_object *)vm_mmap(NULL, 0, mmap_size,
-							   PROT_READ | PROT_WRITE,
-							   MAP_PRIVATE | MAP_ANONYMOUS, 0);
-	if (IS_ERR(seq->lss_obj)) {
-		CERROR("%s: Can't mmap memory for \"%s\" obj %d\n",
-		       seq->lss_name, name, (int)PTR_ERR(seq->lss_obj));
-		rc = PTR_ERR(seq->lss_obj);
-		seq->lss_obj = NULL;
+	/* Initialize CXL if needed */
+	rc = fid_cxl_init();
+	if (rc)
 		RETURN(rc);
+
+	/* Allocate space for the sequence range in CXL */
+	seq->lss_obj = (struct dt_object *)fid_cxl_alloc(sizeof(struct lu_seq_range));
+	if (!seq->lss_obj) {
+		CERROR("%s: Can't allocate CXL memory for sequence range\n",
+		       seq->lss_name);
+		RETURN(-ENOMEM);
 	}
 
-	/* Store the mmap size for later munmap */
-	*((size_t *)((char *)seq->lss_obj + sizeof(struct dt_object))) = mmap_size;
+	/* Initialize the memory with 0 if it's new, or trust it's persistent.
+	 * For this implementation, assume we might need to read it.
+	 * If it's a fresh allocation, it might be garbage or zero.
+	 * We'll assume the caller handles initialization via seq_store_update if needed,
+	 * or we should zero it here.
+	 */
+	pr_info("[CXL_FID]: Initializing sequence range in CXL memory\n");
 
-	/* Set device pointer for compatibility */
+	// https://stackoverflow.com/questions/1536006/what-is-the-difference-between-memset-and-memcpy-in-c
+	// memset is used for writing with memset to ensure it's initialized
+	memset(seq->lss_obj, 0, sizeof(struct lu_seq_range)); // write with memset to ensure it's initialized - it will zero the memory
+	flush_region_and_sfence(seq->lss_obj, sizeof(struct lu_seq_range)); // we need to flush the cache and fence to ensure persistence
+
+
 	seq->lss_dev = dt;
 	rc = 0;
 
-	CDEBUG(D_INFO, "%s: Allocated mmap-backed DRAM for \"%s\" obj\n",
-	       seq->lss_name, name);
+	CDEBUG(D_INFO, "%s: Allocated CXL memory for sequence storage at %p\n",
+	       seq->lss_name, seq->lss_obj);
+
+	/* Register this as the Sequence Controller root */
+	fid_cxl_set_seq_ctrl(seq->lss_obj);
 
 	RETURN(rc);
 }
@@ -222,16 +199,10 @@ int seq_store_init(struct lu_server_seq *seq,
 void seq_store_fini(struct lu_server_seq *seq, const struct lu_env *env)
 {
 	ENTRY;
+	pr_info("[CXL_FID]: Finalizing sequence range in CXL memory\n");
 
 	if (seq->lss_obj) {
-		if (!IS_ERR(seq->lss_obj)) {
-			/* Retrieve the mmap size stored during init */
-			size_t mmap_size = *((size_t *)((char *)seq->lss_obj + sizeof(struct dt_object)));
-			
-			/* Unmap the mmap-backed DRAM instead of dt_object_put */
-			vm_munmap((unsigned long)seq->lss_obj, mmap_size);
-			CDEBUG(D_INFO, "%s: Unmapped mmap-backed DRAM storage\n", seq->lss_name);
-		}
+		fid_cxl_free(seq->lss_obj, sizeof(struct lu_seq_range));
 		seq->lss_obj = NULL;
 	}
 

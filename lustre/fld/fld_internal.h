@@ -56,7 +56,7 @@ struct fld_cache_entry {
 	struct list_head	fce_lru;
 	struct list_head	fce_list;
 	/* fld cache entries are sorted on range->lsr_start field. */
-	struct lu_seq_range	fce_range;
+	struct lu_seq_range	*fce_data;
 };
 
 struct fld_cache {

@@ -28,7 +28,9 @@
 #include <lustre_fid.h>
 /* mdc RPC locks */
 #include <lustre_mdc.h>
+
 #include "fid_internal.h"
+#include "fid_cxl_alloc.h"
 
 struct dentry *seq_debugfs_dir;
 
@@ -129,14 +131,17 @@ out_req:
 }
 
 /* Request sequence-controller node to allocate new super-sequence. */
+/* This function is used to allocate a new super-sequence. */
 int seq_client_alloc_super(struct lu_client_seq *seq,
 			   const struct lu_env *env)
 {
 	int rc;
 	ENTRY;
 
-	mutex_lock(&seq->lcs_mutex);
+	pr_info("[CXL_FID]: seq_client_alloc_super\n");
 
+	mutex_lock(&seq->lcs_mutex);
+	// if seq->lcs_srv is not null, it means we are using the server
 	if (seq->lcs_srv) {
 #ifdef HAVE_SEQ_SERVER
 		LASSERT(env != NULL);
@@ -145,6 +150,48 @@ int seq_client_alloc_super(struct lu_client_seq *seq,
 		rc = 0;
 #endif
 	} else {
+		/* Try to allocate directly from CXL first */
+		struct lu_seq_range *ctrl_range = fid_cxl_get_seq_ctrl();
+		if (ctrl_range) {
+			/* 
+			 * We found the controller state in CXL.
+			 * We need to atomically allocate a chunk.
+			 * For simplicity, we assume we can lock the whole structure via the CXL header lock
+			 * or we need a specific lock for this.
+			 * fid_cxl_alloc.h provides cxl_lock/unlock for the header, but not for arbitrary objects.
+			 * However, we can use the header lock as a coarse-grained lock for now 
+			 * since we don't have a dedicated lock object.
+			 * Ideally, lu_seq_range in CXL would have a lock field.
+			 */
+			struct cxl_alloc_header *header = (struct cxl_alloc_header *)fid_cxl_base(); // this gives us the base address of the CXL memory region
+			cxl_lock(header); // lock the header
+			
+			invalidate_region(ctrl_range, sizeof(*ctrl_range)); // invalidate the cache line
+			
+			if (!lu_seq_range_is_exhausted(ctrl_range)) {
+				/* Carve out a chunk */
+				/* Default super width is usually large, e.g. 1024 or more */
+				/* We'll use a safe default or derive from lcs_width if appropriate */
+				__u64 width = seq->lcs_width; 
+				if (width == 0) width = 1024; // Fallback
+				
+				// if the controller range is not exhausted, we can allocate a chunk
+				if (ctrl_range->lsr_end - ctrl_range->lsr_start > width) {
+					seq->lcs_space = *ctrl_range;
+					seq->lcs_space.lsr_end = ctrl_range->lsr_start + width;
+					
+					// Update controller
+					ctrl_range->lsr_start += width;
+					flush_region_and_sfence(ctrl_range, sizeof(*ctrl_range));
+					
+					rc = 0;
+					cxl_unlock(header);
+					goto out;
+				}
+			}
+			cxl_unlock(header);
+		}
+
 		/*
 		 * Check whether the connection to seq controller has been
 		 * setup (lcs_exp != NULL)
@@ -157,17 +204,22 @@ int seq_client_alloc_super(struct lu_client_seq *seq,
 		rc = seq_client_rpc(seq, &seq->lcs_space,
 				    SEQ_ALLOC_SUPER, "super");
 	}
+out:
 	mutex_unlock(&seq->lcs_mutex);
 	RETURN(rc);
 }
 
 /* Request sequence-controller node to allocate new meta-sequence. */
+/* This function is used to allocate a new meta-sequence. */
 static int seq_client_alloc_meta(const struct lu_env *env,
 				 struct lu_client_seq *seq)
 {
 	int rc;
 	ENTRY;
 
+	pr_info("[CXL_FID]: seq_client_alloc_meta\n");
+
+	// if seq->lcs_srv is not null, it means we are using the server
 	if (seq->lcs_srv) {
 #ifdef HAVE_SEQ_SERVER
 		LASSERT(env);
@@ -176,6 +228,33 @@ static int seq_client_alloc_meta(const struct lu_env *env,
 		rc = 0;
 #endif
 	} else {
+		/* Try to allocate directly from CXL first */
+		struct lu_seq_range *ctrl_range = fid_cxl_get_seq_ctrl(); // get the controller range
+		if (ctrl_range) {
+			struct cxl_alloc_header *header = (struct cxl_alloc_header *)fid_cxl_base(); // get the base address of the CXL memory region
+			cxl_lock(header); // lock the header
+			
+			invalidate_region(ctrl_range, sizeof(*ctrl_range)); // invalidate the cache line
+			
+			if (!lu_seq_range_is_exhausted(ctrl_range)) {
+				__u64 width = seq->lcs_width; 
+				if (width == 0) width = 1024; 
+				
+				if (ctrl_range->lsr_end - ctrl_range->lsr_start > width) {
+					seq->lcs_space = *ctrl_range;
+					seq->lcs_space.lsr_end = ctrl_range->lsr_start + width;
+					
+					/* Update controller */
+					ctrl_range->lsr_start += width;
+					flush_region_and_sfence(ctrl_range, sizeof(*ctrl_range));
+					
+					cxl_unlock(header);
+					RETURN(0);
+				}
+			}
+			cxl_unlock(header);
+		}
+
 		do {
 			/*
 			 * If meta server return -EINPROGRESS or EAGAIN,
@@ -455,19 +534,10 @@ int client_fid_init(struct obd_device *obd,
 
 	down_write(&cli->cl_seq_rwsem); // Acquire write lock on cl_seq_rwsem to ensure exclusive access
 	
-	// Allocate memory for lu_client_seq structure using mmap-backed DRAM
-	u64 start_time = ktime_get_ns();
-	printk(KERN_ALERT "DRAM_TIMING_START: fid_request mmap_alloc lu_client_seq size=%zu time=%llu\n", 
-	       sizeof(struct lu_client_seq), start_time);
-	// cli->cl_seq = (struct lu_client_seq *)vm_mmap(NULL, 0, sizeof(struct lu_client_seq),
-	// 						      PROT_READ | PROT_WRITE,
-	// 						      MAP_PRIVATE | MAP_ANONYMOUS, 0);
-	OBD_ALLOC_PTR(cli->cl_seq);
-	u64 end_time = ktime_get_ns();
-	printk(KERN_ALERT "DRAM_TIMING_END: fid_request mmap_alloc lu_client_seq duration=%llu time=%llu\n",
-	       end_time - start_time, end_time);
-	if (IS_ERR(cli->cl_seq)) {
-		printk(KERN_ALERT "Failed to mmap memory for lu_client_seq\n");
+	// Allocate memory for lu_client_seq structure using CXL shared memory
+	cli->cl_seq = (struct lu_client_seq *)fid_cxl_alloc(sizeof(struct lu_client_seq));
+	if (!cli->cl_seq) {
+		printk(KERN_ALERT "Failed to allocate CXL memory for lu_client_seq\n");
 		cli->cl_seq = NULL;
 		GOTO(out, rc = -ENOMEM);
 	}
@@ -490,13 +560,8 @@ int client_fid_init(struct obd_device *obd,
 
 out:
 	if (rc && cli->cl_seq) {
-		u64 start_unmap = ktime_get_ns();
-		printk(KERN_ALERT "DRAM_TIMING_START: fid_request munmap lu_client_seq size=%zu time=%llu\n",
-		       sizeof(struct lu_client_seq), start_unmap);
-		vm_munmap((unsigned long)cli->cl_seq, sizeof(struct lu_client_seq));
-		u64 end_unmap = ktime_get_ns();
-		printk(KERN_ALERT "DRAM_TIMING_END: fid_request munmap lu_client_seq duration=%llu time=%llu\n",
-		       end_unmap - start_unmap, end_unmap);
+		// Free up CXL memory allocated for lu_client_seq structure
+		fid_cxl_free(cli->cl_seq, sizeof(struct lu_client_seq));
 		cli->cl_seq = NULL;
 	}
 	up_write(&cli->cl_seq_rwsem); // Release write lock on cl_seq_rwsem after mem has been freed up and struct initialized
@@ -505,6 +570,10 @@ out:
 }
 EXPORT_SYMBOL(client_fid_init);
 
+/*
+ * This function is called when the OBD device is being cleaned up.
+ * It releases the memory allocated for the lu_client_seq structure.
+ */
 int client_fid_fini(struct obd_device *obd)
 {
 	struct client_obd *cli = &obd->u.cli;
@@ -512,14 +581,8 @@ int client_fid_fini(struct obd_device *obd)
 
 	down_write(&cli->cl_seq_rwsem);
 	if (cli->cl_seq) {
-		seq_client_fini(cli->cl_seq);
-		u64 start_fini_unmap = ktime_get_ns();
-		printk(KERN_ALERT "DRAM_TIMING_START: fid_request fini_munmap lu_client_seq size=%zu time=%llu\n",
-		       sizeof(struct lu_client_seq), start_fini_unmap);
-		vm_munmap((unsigned long)cli->cl_seq, sizeof(struct lu_client_seq));
-		u64 end_fini_unmap = ktime_get_ns();
-		printk(KERN_ALERT "DRAM_TIMING_END: fid_request fini_munmap lu_client_seq duration=%llu time=%llu\n",
-		       end_fini_unmap - start_fini_unmap, end_fini_unmap);
+		seq_client_fini(cli->cl_seq); // Free up memory allocated for lu_client_seq structure
+		fid_cxl_free(cli->cl_seq, sizeof(struct lu_client_seq)); // Free up CXL memory allocated for lu_client_seq structure
 		cli->cl_seq = NULL;
 	}
 	up_write(&cli->cl_seq_rwsem);
