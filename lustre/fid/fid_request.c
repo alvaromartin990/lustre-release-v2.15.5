@@ -30,7 +30,7 @@
 #include <lustre_mdc.h>
 
 #include "fid_internal.h"
-#include "fid_cxl_alloc.h"
+#include <fid_cxl_alloc.h>
 
 struct dentry *seq_debugfs_dir;
 
@@ -138,6 +138,7 @@ int seq_client_alloc_super(struct lu_client_seq *seq,
 	int rc;
 	ENTRY;
 
+	pr_info("[CXL_FID]: reached %s:%d\n", __func__, __LINE__);
 	pr_info("[CXL_FID]: seq_client_alloc_super\n");
 
 	mutex_lock(&seq->lcs_mutex);
@@ -217,6 +218,7 @@ static int seq_client_alloc_meta(const struct lu_env *env,
 	int rc;
 	ENTRY;
 
+	pr_info("[CXL_FID]: reached %s:%d\n", __func__, __LINE__);
 	pr_info("[CXL_FID]: seq_client_alloc_meta\n");
 
 	// if seq->lcs_srv is not null, it means we are using the server
@@ -373,6 +375,8 @@ int seq_client_alloc_fid(const struct lu_env *env,
 {
 	int rc;
 	ENTRY;
+
+	pr_info("[CXL_FID]: reached %s:%d struct lu_fid %zu\n", __func__, __LINE__, sizeof(struct lu_fid));
 
 	LASSERT(seq != NULL);
 	LASSERT(fid != NULL);
@@ -534,11 +538,10 @@ int client_fid_init(struct obd_device *obd,
 
 	down_write(&cli->cl_seq_rwsem); // Acquire write lock on cl_seq_rwsem to ensure exclusive access
 	
-	// Allocate memory for lu_client_seq structure using CXL shared memory
-	cli->cl_seq = (struct lu_client_seq *)fid_cxl_alloc(sizeof(struct lu_client_seq));
+	/* Allocate memory for lu_client_seq structure - tries CXL first, OBD fallback */
+	cli->cl_seq = (struct lu_client_seq *)fid_cxl_alloc_hybrid(sizeof(struct lu_client_seq));
 	if (!cli->cl_seq) {
-		printk(KERN_ALERT "Failed to allocate CXL memory for lu_client_seq\n");
-		cli->cl_seq = NULL;
+		printk(KERN_ALERT "Failed to allocate memory for lu_client_seq\n");
 		GOTO(out, rc = -ENOMEM);
 	}
 	
@@ -560,8 +563,8 @@ int client_fid_init(struct obd_device *obd,
 
 out:
 	if (rc && cli->cl_seq) {
-		// Free up CXL memory allocated for lu_client_seq structure
-		fid_cxl_free(cli->cl_seq, sizeof(struct lu_client_seq));
+		/* Free using hybrid - auto-detects CXL vs OBD */
+		fid_cxl_free_hybrid(cli->cl_seq, sizeof(struct lu_client_seq));
 		cli->cl_seq = NULL;
 	}
 	up_write(&cli->cl_seq_rwsem); // Release write lock on cl_seq_rwsem after mem has been freed up and struct initialized
@@ -581,8 +584,9 @@ int client_fid_fini(struct obd_device *obd)
 
 	down_write(&cli->cl_seq_rwsem);
 	if (cli->cl_seq) {
-		seq_client_fini(cli->cl_seq); // Free up memory allocated for lu_client_seq structure
-		fid_cxl_free(cli->cl_seq, sizeof(struct lu_client_seq)); // Free up CXL memory allocated for lu_client_seq structure
+		seq_client_fini(cli->cl_seq);
+		/* Free using hybrid - auto-detects CXL vs OBD */
+		fid_cxl_free_hybrid(cli->cl_seq, sizeof(struct lu_client_seq));
 		cli->cl_seq = NULL;
 	}
 	up_write(&cli->cl_seq_rwsem);

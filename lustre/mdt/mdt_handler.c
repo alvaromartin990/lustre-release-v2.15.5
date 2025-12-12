@@ -48,6 +48,7 @@
 #include <lustre_crypto.h>
 
 #include "mdt_internal.h"
+#include <fid_cxl_alloc.h>
 
 #if OBD_OCD_VERSION(3, 0, 53, 0) > LUSTRE_VERSION_CODE
 static int mdt_max_mod_rpcs_per_client_set(const char *val,
@@ -5786,9 +5787,12 @@ static int mdt_seq_init(const struct lu_env *env, struct mdt_device *mdt)
 	ss = mdt_seq_site(mdt);
 	/* init sequence controller server(MDT0) */
 	if (ss->ss_node_id == 0) {
-		OBD_ALLOC_PTR(ss->ss_control_seq);
+		ss->ss_control_seq = (struct lu_server_seq *)fid_cxl_alloc_hybrid(sizeof(struct lu_server_seq));
 		if (ss->ss_control_seq == NULL)
 			RETURN(-ENOMEM);
+			
+		memset(ss->ss_control_seq, 0, sizeof(struct lu_server_seq));
+		flush_region_and_sfence(ss->ss_control_seq, sizeof(struct lu_server_seq));
 
 		rc = seq_server_init(env, ss->ss_control_seq, mdt->mdt_bottom,
 				     mdt_obd_name(mdt), LUSTRE_SEQ_CONTROLLER,
@@ -5798,9 +5802,16 @@ static int mdt_seq_init(const struct lu_env *env, struct mdt_device *mdt)
 	}
 
 	/* Init normal sequence server */
-	OBD_ALLOC_PTR(ss->ss_server_seq);
+	ss->ss_server_seq = (struct lu_server_seq *)fid_cxl_alloc_hybrid(sizeof(struct lu_server_seq));
 	if (ss->ss_server_seq == NULL)
 		GOTO(out_seq_fini, rc = -ENOMEM);
+	
+	/* Initialize CXL memory to 0 to mimic kzalloc behavior for first-time use */
+	/* Note: If persistent, we might not want to zero? But seq_server_init re-inits most things. */
+	/* Ideally we check if it was recovered, but fid_cxl_alloc is just an allocator here. */
+	/* For safety we zero it to avoid garbage pointers. */
+	memset(ss->ss_server_seq, 0, sizeof(struct lu_server_seq));
+	flush_region_and_sfence(ss->ss_server_seq, sizeof(struct lu_server_seq));
 
 	rc = seq_server_init(env, ss->ss_server_seq, mdt->mdt_bottom,
 			     mdt_obd_name(mdt), LUSTRE_SEQ_SERVER, ss, true);

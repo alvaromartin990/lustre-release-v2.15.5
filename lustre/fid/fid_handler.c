@@ -25,6 +25,8 @@
 #include <obd_support.h>
 #include <lustre_req_layout.h>
 #include <lustre_fid.h>
+#include <cacheline.h>
+#include <fid_cxl_alloc.h>
 #include "fid_internal.h"
 
 /* Assigns client to sequence controller node. */
@@ -331,26 +333,69 @@ restart:
 	} else {
 		__u64 last_seq;
 
-		rc = dt_last_seq_get(env, seq->lss_dev, &last_seq);
-		if (!rc) {
-			if (last_seq + 1 >= space->lsr_end) {
-				LCONSOLE_INFO("%s: On disk last known sequence %#llx beyond super-sequence "
-					      DRANGE", getting new super-sequence\n",
-					      seq->lss_name, last_seq,
-					      PRANGE(space));
-				space->lsr_start = space->lsr_end;
-				GOTO(restart, rc);
+		/*
+		 * CXL Storage Path: When using CXL shared memory for sequence
+		 * storage, lss_dev is NULL (set in seq_store_init). In this case,
+		 * we skip the dt_last_seq_get() call since there's no dt_device.
+		 * The sequence state is maintained in CXL memory directly.
+		 *
+		 * DT Storage Path: When lss_dev is set, use traditional dt_device
+		 * operations to get the last sequence from disk.
+		 */
+		if (seq->lss_dev) {
+			/* Traditional DT storage path */
+			rc = dt_last_seq_get(env, seq->lss_dev, &last_seq);
+			if (!rc) {
+				if (last_seq + 1 >= space->lsr_end) {
+					LCONSOLE_INFO("%s: On disk last known sequence %#llx beyond super-sequence "
+						      DRANGE", getting new super-sequence\n",
+						      seq->lss_name, last_seq,
+						      PRANGE(space));
+					space->lsr_start = space->lsr_end;
+					GOTO(restart, rc);
+				}
+				if (last_seq >= space->lsr_start) {
+					LCONSOLE_INFO("%s: On disk last known sequence %#llx within super-sequence "
+						      DRANGE", updating super-sequence\n",
+						      seq->lss_name, last_seq,
+						      PRANGE(space));
+					space->lsr_start = last_seq + 1;
+				}
 			}
-			if (last_seq >= space->lsr_start) {
-				LCONSOLE_INFO("%s: On disk last known sequence %#llx within super-sequence "
-					      DRANGE", updating super-sequence\n",
-					      seq->lss_name, last_seq,
-					      PRANGE(space));
-				space->lsr_start = last_seq + 1;
-			}
+		} else if (seq->lss_obj) {
+			/*
+			 * CXL storage path: lss_dev is NULL but lss_obj points
+			 * to CXL shared memory. The sequence state is stored
+			 * persistently in CXL memory.
+			 *
+			 * Invalidate the CXL region to ensure we read the latest
+			 * data that may have been written by another node in the
+			 * shared CXL memory pool.
+			 */
+			CDEBUG(D_INFO, "%s: Using CXL storage for sequence\n",
+			       seq->lss_name);
+
+			/* Invalidate CXL cache to get fresh data from shared memory */
+			invalidate_region((void *)seq->lss_obj,
+					  sizeof(struct lu_seq_range));
+
+			/*
+			 * The space (lss_space) was already read from CXL via
+			 * seq_store_read() during initialization. We proceed
+			 * with allocation from the current state. The update
+			 * will be flushed to CXL in seq_store_update().
+			 */
+			rc = 0;
+		} else {
+			CERROR("%s: Neither lss_dev nor lss_obj set\n",
+			       seq->lss_name);
+			rc = -EINVAL;
 		}
-		range_alloc(out, space, seq->lss_width);
-		rc = seq_store_update(env, seq, NULL, 1);
+
+		if (rc == 0) {
+			range_alloc(out, space, seq->lss_width);
+			rc = seq_store_update(env, seq, NULL, 1);
+		}
 	}
 
 	if (rc != 0) {
@@ -389,6 +434,7 @@ static int seq_server_handle(struct lu_site *site,
 	struct dt_device *dev;
 	ENTRY;
 
+	pr_info("[CXL_FID]: reached %s:%d\n", __func__, __LINE__);
 	ss_site = lu_site2seq(site);
 
 	switch (opc) {
@@ -400,8 +446,9 @@ static int seq_server_handle(struct lu_site *site,
 			RETURN(rc);
 		}
 
-		dev = lu2dt_dev(ss_site->ss_server_seq->lss_obj->do_lu.lo_dev);
-		if (dev->dd_rdonly)
+		dev = ss_site->ss_server_seq->lss_dev;
+		/* Skip read-only check if using CXL storage (lss_dev is NULL) */
+		if (dev && dev->dd_rdonly)
 			RETURN(-EROFS);
 
 		rc = seq_server_alloc_meta(ss_site->ss_server_seq, out, env);
@@ -414,11 +461,12 @@ static int seq_server_handle(struct lu_site *site,
 			RETURN(rc);
 		}
 
-		dev = lu2dt_dev(ss_site->ss_control_seq->lss_obj->do_lu.lo_dev);
-		if (dev->dd_rdonly)
+		dev = ss_site->ss_control_seq->lss_dev;
+		/* Skip read-only check if using CXL storage (lss_dev is NULL) */
+		if (dev && dev->dd_rdonly)
 			RETURN(-EROFS);
 
-		rc = seq_server_alloc_super(ss_site->ss_control_seq, out, env);
+		 rc = seq_server_alloc_super(ss_site->ss_control_seq, out, env);
 		break;
 	default:
 		rc = -EINVAL;
@@ -435,7 +483,11 @@ static int seq_handler(struct tgt_session_info *tsi)
 	int			 rc;
 	__u32			*opc;
 
+
+
 	ENTRY;
+
+	pr_info("[CXL_FID]: reached %s:%d\n", __func__, __LINE__);
 
 	LASSERT(!(lustre_msg_get_flags(tgt_ses_req(tsi)->rq_reqmsg) & MSG_REPLAY));
 	site = tsi->tsi_exp->exp_obd->obd_lu_dev->ld_site;
@@ -476,15 +528,23 @@ LU_CONTEXT_KEY_DEFINE(seq, LCT_MD_THREAD | LCT_DT_THREAD);
 
 static void seq_server_debugfs_fini(struct lu_server_seq *seq)
 {
-	debugfs_remove_recursive(seq->lss_debugfs_entry);
+	if (!seq)
+		return;
+		
+	if (seq->lss_debugfs_entry)
+		debugfs_remove_recursive(seq->lss_debugfs_entry);
 }
 
 static void seq_server_debugfs_init(struct lu_server_seq *seq)
 {
 	ENTRY;
 
+	pr_info("[CXL_FID]: seq_server_debugfs_init for %s (seq=%p)\n", seq->lss_name, seq);
+
 	seq->lss_debugfs_entry = debugfs_create_dir(seq->lss_name,
 						    seq_debugfs_dir);
+
+	pr_info("[CXL_FID]: Created debugfs entry at %p for %s\n", seq->lss_debugfs_entry, seq->lss_name);
 
 	ldebugfs_add_vars(seq->lss_debugfs_entry,
 			  seq_server_debugfs_list, seq);
@@ -501,6 +561,9 @@ int seq_server_init(const struct lu_env *env, struct lu_server_seq *seq,
 {
 	int rc, is_srv = (type == LUSTRE_SEQ_SERVER);
 	ENTRY;
+
+	pr_info("[CXL_FID]: seq_server_init starting for %s (seq=%p, type=%d)\n", 
+		prefix, seq, type);
 
 	LASSERT(dev != NULL);
 	LASSERT(prefix != NULL);
@@ -521,6 +584,7 @@ int seq_server_init(const struct lu_env *env, struct lu_server_seq *seq,
 	seq->lss_cli = NULL;
 	seq->lss_type = type;
 	seq->lss_site = ss;
+	seq->lss_debugfs_entry = NULL; /* Explicitly initialize to NULL */
 	lu_seq_range_init(&seq->lss_space);
 
 	lu_seq_range_init(&seq->lss_lowater_set);
@@ -569,12 +633,16 @@ int seq_server_init(const struct lu_env *env, struct lu_server_seq *seq,
 			lu_seq_range_is_sane(&seq->lss_space));
 	}
 
+	pr_info("[CXL_FID]: About to initialize debugfs for %s\n", seq->lss_name);
 	seq_server_debugfs_init(seq);
+	pr_info("[CXL_FID]: seq_server_init completed successfully for %s\n", seq->lss_name);
 
 	EXIT;
 out:
-	if (rc)
+	if (rc) {
+		pr_info("[CXL_FID]: seq_server_init failed with rc=%d, calling fini\n", rc);
 		seq_server_fini(seq, env);
+	}
 	return rc;
 }
 EXPORT_SYMBOL(seq_server_init);
@@ -584,9 +652,20 @@ void seq_server_fini(struct lu_server_seq *seq,
 {
 	ENTRY;
 
+	pr_info("[CXL_FID]: seq_server_fini called (seq=%p)\n", seq);
+
+	if (!seq) {
+		pr_warn("[CXL_FID]: seq_server_fini called with NULL seq!\n");
+		return;
+	}
+
+	pr_info("[CXL_FID]: Calling seq_server_debugfs_fini for %s\n", seq->lss_name);
 	seq_server_debugfs_fini(seq);
+	
+	pr_info("[CXL_FID]: Calling seq_store_fini for %s\n", seq->lss_name);
 	seq_store_fini(seq, env);
 
+	pr_info("[CXL_FID]: seq_server_fini completed for %s\n", seq->lss_name);
 	EXIT;
 }
 EXPORT_SYMBOL(seq_server_fini);
@@ -598,13 +677,15 @@ int seq_site_fini(const struct lu_env *env, struct seq_server_site *ss)
 
 	if (ss->ss_server_seq) {
 		seq_server_fini(ss->ss_server_seq, env);
-		OBD_FREE_PTR(ss->ss_server_seq);
+		/* Hybrid free auto-detects CXL vs OBD memory */
+		fid_cxl_free_hybrid(ss->ss_server_seq, sizeof(struct lu_server_seq));
 		ss->ss_server_seq = NULL;
 	}
 
 	if (ss->ss_control_seq) {
 		seq_server_fini(ss->ss_control_seq, env);
-		OBD_FREE_PTR(ss->ss_control_seq);
+		/* Hybrid free auto-detects CXL vs OBD memory */
+		fid_cxl_free_hybrid(ss->ss_control_seq, sizeof(struct lu_server_seq));
 		ss->ss_control_seq = NULL;
 	}
 

@@ -94,25 +94,27 @@ int seq_store_update(const struct lu_env *env, struct lu_server_seq *seq,
 	/* Store ranges in le format. */
 	range_cpu_to_le(&info->sti_space, &seq->lss_space);
 
-	/* Write directly to CXL memory */
-	if (seq->lss_obj) {
-		// Why memcpy instead of fid_cxl_alloc? 
-		// fid_cxl_alloc is used for allocation, not for writing.
-		// https://stackoverflow.com/questions/1536006/what-is-the-difference-between-memset-and-memcpy-in-c
-		memcpy((void *)seq->lss_obj, &info->sti_space, sizeof(struct lu_seq_range)); // memcpy is used for writing by copying the data from one location to another
-		// copies the first sizeof(struct lu_seq_range) bytes of the memory area src to memory area dest
+	/* Check if we're using CXL (lss_obj is a CXL pointer, not a real dt_object)
+	 * We determine this by checking if lss_dev is NULL - if using CXL, we don't 
+	 * use the dt_device */
+	if (!seq->lss_dev && seq->lss_obj) {
+		/* CXL path: Write directly to CXL memory */
+		pr_info("[CXL_FID]: reached %s:%d struct lu_seq_range %zu\n", __func__, __LINE__, sizeof(struct lu_seq_range));
+		/* lss_obj is actually a CXL memory pointer, not a dt_object */
+		memcpy((void *)seq->lss_obj, &info->sti_space, sizeof(struct lu_seq_range));
 		
 		/* Flush and fence to ensure persistence */
 		flush_region_and_sfence((void *)seq->lss_obj, sizeof(struct lu_seq_range));
+	} else if (seq->lss_dev && seq->lss_obj) {
+		/* Traditional DT path: lss_obj is a real dt_object */
+		/* This would use dt_transaction mechanism - not implemented in original code */
+		CERROR("%s: DT storage not implemented, CXL storage required\n", seq->lss_name);
+		rc = -EOPNOTSUPP;
+		GOTO(exit, rc);
 	} else {
 		rc = -EINVAL;
 		GOTO(exit, rc);
 	}
-
-	// if (out) {
-	// 	pr_info("[CXL_FID]: Updating FLD server\n");
-	// 	rc = fld_server_create(env, seq->lss_site->ss_server_fld, out, NULL);
-	// }
 
 exit:
 	return rc;
@@ -135,14 +137,22 @@ int seq_store_read(struct lu_server_seq *seq,
 	/* Read directly from CXL memory */
 	if (seq->lss_obj) {
 		/* Invalidate cache region to ensure we read latest data from CXL */
+		pr_info("[CXL_FID]: reached %s:%d struct lu_seq_range %zu\n", __func__, __LINE__, sizeof(struct lu_seq_range));
 		invalidate_region(seq->lss_obj, sizeof(struct lu_seq_range));
 		
 		memcpy(&info->sti_space, (void *)seq->lss_obj, sizeof(struct lu_seq_range));
 		
 		range_le_to_cpu(&seq->lss_space, &info->sti_space);
-		CDEBUG(D_INFO, "%s: Space - "DRANGE"\n",
-		       seq->lss_name, PRANGE(&seq->lss_space));
-		rc = 0;
+
+		if (lu_seq_range_is_zero(&seq->lss_space)) {
+			CDEBUG(D_INFO, "%s: Zero sequence found in CXL, requesting init\n",
+			       seq->lss_name);
+			rc = -ENODATA;
+		} else {
+			CDEBUG(D_INFO, "%s: Space - "DRANGE"\n",
+			       seq->lss_name, PRANGE(&seq->lss_space));
+			rc = 0;
+		}
 	} else {
 		rc = -EINVAL;
 	}
@@ -155,43 +165,80 @@ int seq_store_init(struct lu_server_seq *seq,
 		   struct dt_device *dt)
 {
 	int rc;
+	struct lu_seq_range existing_range;
+	bool using_cxl = false;
 	ENTRY;
 
-	/* Initialize CXL if needed */
-	rc = fid_cxl_init();
-	if (rc)
-		RETURN(rc);
+	pr_info("[CXL_FID]: seq_store_init starting for %s (seq=%p)\n", seq->lss_name, seq);
 
-	/* Allocate space for the sequence range in CXL */
-	seq->lss_obj = (struct dt_object *)fid_cxl_alloc(sizeof(struct lu_seq_range));
+	/*
+	 * Allocate memory for sequence range - tries CXL first, falls back to OBD_ALLOC.
+	 */
+	seq->lss_obj = (struct dt_object *)fid_cxl_alloc_hybrid(sizeof(struct lu_seq_range));
 	if (!seq->lss_obj) {
-		CERROR("%s: Can't allocate CXL memory for sequence range\n",
+		CERROR("%s: Can't allocate memory for sequence range\n",
 		       seq->lss_name);
 		RETURN(-ENOMEM);
 	}
 
-	/* Initialize the memory with 0 if it's new, or trust it's persistent.
-	 * For this implementation, assume we might need to read it.
-	 * If it's a fresh allocation, it might be garbage or zero.
-	 * We'll assume the caller handles initialization via seq_store_update if needed,
-	 * or we should zero it here.
-	 */
-	pr_info("[CXL_FID]: Initializing sequence range in CXL memory\n");
+	/* Check if we got CXL memory */
+	using_cxl = fid_cxl_ptr_is_cxl(seq->lss_obj);
+	pr_info("[CXL_FID]: Allocated %s memory at %p for %s\n",
+		using_cxl ? "CXL" : "OBD", seq->lss_obj, seq->lss_name);
 
-	// https://stackoverflow.com/questions/1536006/what-is-the-difference-between-memset-and-memcpy-in-c
-	// memset is used for writing with memset to ensure it's initialized
-	memset(seq->lss_obj, 0, sizeof(struct lu_seq_range)); // write with memset to ensure it's initialized - it will zero the memory
-	flush_region_and_sfence(seq->lss_obj, sizeof(struct lu_seq_range)); // we need to flush the cache and fence to ensure persistence
+	if (using_cxl) {
+		/*
+		 * CXL path: Check if memory contains valid persistent data.
+		 * CXL memory may persist across reboots, so we should NOT blindly zero it.
+		 */
+		pr_info("[CXL_FID]: Checking for existing valid data in CXL memory\n");
 
+		/* Invalidate CPU cache to ensure we read the actual CXL memory contents */
+		invalidate_region(seq->lss_obj, sizeof(struct lu_seq_range));
 
-	seq->lss_dev = dt;
+		/* Read existing data to check validity */
+		memcpy(&existing_range, seq->lss_obj, sizeof(struct lu_seq_range));
+
+		/* Convert from little-endian storage format to CPU format for validation */
+		range_le_to_cpu(&existing_range, &existing_range);
+
+		/*
+		 * Check if the existing data looks valid:
+		 * - If all zeros, it's uninitialized (fresh allocation)
+		 * - If not sane (invalid range), it's garbage/corrupted
+		 * In either case, we zero it. Otherwise, preserve the existing data.
+		 */
+		if (lu_seq_range_is_zero(&existing_range)) {
+			pr_info("[CXL_FID]: CXL memory contains zeros (fresh allocation)\n");
+			flush_region_and_sfence(seq->lss_obj, sizeof(struct lu_seq_range));
+		} else if (!lu_seq_range_is_sane(&existing_range)) {
+			pr_info("[CXL_FID]: CXL memory contains invalid data, zeroing\n");
+			memset(seq->lss_obj, 0, sizeof(struct lu_seq_range));
+			flush_region_and_sfence(seq->lss_obj, sizeof(struct lu_seq_range));
+		} else {
+			pr_info("[CXL_FID]: Found existing valid sequence range in CXL: "
+				"start=0x%llx end=0x%llx index=%u flags=%u\n",
+				existing_range.lsr_start, existing_range.lsr_end,
+				existing_range.lsr_index, existing_range.lsr_flags);
+		}
+
+		/* Register as global Sequence Controller root for CXL */
+		pr_info("[CXL_FID]: Registering seq_ctrl root for %s\n", seq->lss_name);
+		fid_cxl_set_seq_ctrl(seq->lss_obj);
+	} else {
+		/*
+		 * OBD_ALLOC path: Initialize to zero (non-persistent memory)
+		 */
+		pr_info("[CXL_FID]: Initializing OBD memory to zero for %s\n", seq->lss_name);
+		memset(seq->lss_obj, 0, sizeof(struct lu_seq_range));
+	}
+
+	/* lss_dev = NULL indicates we're using memory-based storage, not DT */
+	seq->lss_dev = NULL;
 	rc = 0;
 
-	CDEBUG(D_INFO, "%s: Allocated CXL memory for sequence storage at %p\n",
-	       seq->lss_name, seq->lss_obj);
-
-	/* Register this as the Sequence Controller root */
-	fid_cxl_set_seq_ctrl(seq->lss_obj);
+	pr_info("[CXL_FID]: seq_store_init completed for %s (using %s)\n",
+		seq->lss_name, using_cxl ? "CXL" : "OBD_ALLOC");
 
 	RETURN(rc);
 }
@@ -199,12 +246,23 @@ int seq_store_init(struct lu_server_seq *seq,
 void seq_store_fini(struct lu_server_seq *seq, const struct lu_env *env)
 {
 	ENTRY;
-	pr_info("[CXL_FID]: Finalizing sequence range in CXL memory\n");
+	pr_info("[CXL_FID]: seq_store_fini called (seq=%p)\n", seq);
+
+	if (!seq) {
+		pr_warn("[CXL_FID]: seq_store_fini called with NULL seq!\n");
+		return;
+	}
+
+	pr_info("[CXL_FID]: Finalizing sequence storage for %s\n", seq->lss_name);
 
 	if (seq->lss_obj) {
-		fid_cxl_free(seq->lss_obj, sizeof(struct lu_seq_range));
+		pr_info("[CXL_FID]: Freeing memory at %p for %s\n",
+			seq->lss_obj, seq->lss_name);
+		/* Hybrid free auto-detects CXL vs OBD */
+		fid_cxl_free_hybrid(seq->lss_obj, sizeof(struct lu_seq_range));
 		seq->lss_obj = NULL;
 	}
 
+	pr_info("[CXL_FID]: seq_store_fini completed for %s\n", seq->lss_name);
 	EXIT;
 }
